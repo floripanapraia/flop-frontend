@@ -35,7 +35,8 @@ const Login: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-100 relative">
       {/* Left panel - welcome message */}
-      <div className="w-2/5 bg-blue-600 text-white p-8 flex flex-col items-center justify-center">
+      <div className="w-2/5 bg-sky-800 text-white p-8 flex flex-col items-center justify-center">
+      <img src="/assets/image.png" alt="logo" style={{ width: '140px', height: 'auto' }}   />
         <div className="text-center max-w-xs">
           <h1 className="text-3xl font-bold mb-4">Bem Vindo ao FLORIPA NA PRAIA!</h1>
 
@@ -53,7 +54,7 @@ const Login: React.FC = () => {
       {/* Right panel - login form */}
       <div className="w-3/5 flex justify-center items-center">
         <div className="bg-white rounded-lg shadow-md p-8 w-full max-w-md">
-          <h2 className="text-2xl text-blue-600 text-center mb-6 border-b pb-4">Login</h2>
+          <h2 className="text-2xl text-sky-800 text-left mb-6 border-b-2 border-sky-800 pb-2">Login</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="mb-4">
