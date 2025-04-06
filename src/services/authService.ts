@@ -8,15 +8,6 @@ interface UsuarioCreateRequest {
   isAdmin?: boolean;
 }
 
-interface UsuarioResponse {
-  id: number;
-  nome: string;
-  username: string;
-  email: string;
-  isAdmin: boolean;
-  createdAt: string;
-}
-
 // Auth response interface
 interface AuthResponse {
   token: string;
@@ -33,15 +24,15 @@ export const cadastrarUsuario = async (userData: UsuarioCreateRequest): Promise<
 };
 
 // User registration - admin user
-export const cadastrarUsuarioAdmin = async (userData: UsuarioCreateRequest): Promise<void> => {
-  try {
-    userData.isAdmin = true; // Ensure the admin flag is set
-    await apiClient.post('/auth/novo-admin', userData);
-  } catch (error) {
-    console.error('API Error:', error);
-    throw error;
-  }
-};
+// export const cadastrarUsuarioAdmin = async (userData: UsuarioCreateRequest): Promise<void> => {
+//   try {
+//     userData.isAdmin = true;
+//     await apiClient.post('/auth/novo-admin', userData);
+//   } catch (error) {
+//     console.error('API Error:', error);
+//     throw error;
+//   }
+// };
 
 // User login with Basic Auth
 export const login = async (username: string, senha: string): Promise<string> => {
