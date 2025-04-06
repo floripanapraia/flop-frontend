@@ -5,11 +5,17 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Poppins', 'sans-serif'], // substitui a padrão
+      },
       colors: {
+        'primary-blue': '#253F64',
+
         blue: {
           600: '#3490dc',
           700: '#2779bd',
-          900: '#1a365d',
+          900: '#253F64',
+          
         },
         green: {
           600: '#38a169',
