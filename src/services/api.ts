@@ -10,38 +10,4 @@ const apiClient = axios.create({
   },
 });
 
-interface UserCreateRequest {
-  username: string;
-  fullName: string;
-  email: string;
-  password: string;
-}
-
-interface UserResponse {
-  id: number;
-  username: string;
-  fullName: string;
-  email: string;
-  createdAt: string;
-}
-
-export const createUser = async (userData: UserCreateRequest): Promise<UserResponse> => {
-  try {
-    const response = await apiClient.post<UserResponse>('/users', userData);
-    return response.data;
-  } catch (error) {
-    console.error('API Error:', error);
-    throw error;
-  }
-};
-
-// authorization interceptor
-export const setAuthToken = (token: string | null) => {
-  if (token) {
-    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    delete apiClient.defaults.headers.common['Authorization'];
-  }
-};
-
 export default apiClient;
