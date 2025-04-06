@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WelcomeModal from '../components/WelcomeModal';
+import { toast } from 'react-toastify';
+import { login } from '../services/authService';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
-    email: '',
-    password: '',
+    username: '',
+    senha: '',
   });
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -18,10 +21,26 @@ const Login: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempt with:', credentials);
-    // navigate('/dashboard');
+
+    if (!credentials.username || !credentials.senha) {
+      toast.error('Por favor, preencha todos os campos');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const token = await login(credentials.username, credentials.senha);
+      toast.success('Login realizado com sucesso!');
+      navigate('/dashboard'); // TODO: Change to the appropriate route after login
+    } catch (error) {
+      console.error('Erro no login:', error);
+      toast.error('Erro ao fazer login. Verifique suas credenciais.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const goToSignup = () => {
@@ -58,10 +77,10 @@ const Login: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="mb-4">
               <input
-                name="email"
-                type="email"
-                placeholder="Email"
-                value={credentials.email}
+                name="username"
+                type="text"
+                placeholder="Nome de usuário"
+                value={credentials.username}
                 onChange={handleChange}
                 className="w-full px-3 py-2 text-gray-700 bg-gray-100 rounded text-center"
               />
@@ -69,10 +88,10 @@ const Login: React.FC = () => {
 
             <div className="mb-4">
               <input
-                name="password"
+                name="senha"
                 type="password"
                 placeholder="Senha"
-                value={credentials.password}
+                value={credentials.senha}
                 onChange={handleChange}
                 className="w-full px-3 py-2 text-gray-700 bg-gray-100 rounded text-center"
               />
@@ -92,8 +111,9 @@ const Login: React.FC = () => {
               <button
                 type="submit"
                 className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+                disabled={isLoading}
               >
-                Entrar
+                {isLoading ? 'Entrando...' : 'Entrar'}
               </button>
             </div>
           </form>

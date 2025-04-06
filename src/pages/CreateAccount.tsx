@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from '../components/Button';
-import Input from '../components/Input';
-import Checkbox from '../components/Checkbox';
-import { createUser } from '../services/api';
 import { toast } from 'react-toastify';
+import Button from '../components/Button';
+import Checkbox from '../components/Checkbox';
+import Input from '../components/Input';
+import { cadastrarUsuario } from '../services/authService';
 
 interface FormData {
   username: string;
-  fullName: string;
+  nome: string;
   email: string;
-  password: string;
-  confirmPassword: string;
+  senha: string;
+  confirmSenha: string;
   acceptTerms: boolean;
 }
 
 interface FormErrors {
   username?: string;
-  fullName?: string;
+  nome?: string;
   email?: string;
-  password?: string;
-  confirmPassword?: string;
+  senha?: string;
+  confirmSenha?: string;
   acceptTerms?: string;
 }
 
@@ -28,10 +28,10 @@ const CreateAccount: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     username: '',
-    fullName: '',
+    nome: '',
     email: '',
-    password: '',
-    confirmPassword: '',
+    senha: '',
+    confirmSenha: '',
     acceptTerms: false,
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -48,11 +48,11 @@ const CreateAccount: React.FC = () => {
     const newErrors: FormErrors = {};
 
     if (!formData.username.trim()) newErrors.username = 'Username é obrigatório';
-    if (!formData.fullName.trim()) newErrors.fullName = 'Nome completo é obrigatório';
+    if (!formData.nome.trim()) newErrors.nome = 'Nome completo é obrigatório';
     if (!formData.email.trim()) newErrors.email = 'Email é obrigatório';
     if (!/^\S+@\S+\.\S+$/.test(formData.email)) newErrors.email = 'Email inválido';
-    if (!formData.password) newErrors.password = 'Senha é obrigatória';
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'As senhas não conferem';
+    if (!formData.senha) newErrors.senha = 'Senha é obrigatória';
+    if (formData.senha !== formData.confirmSenha) newErrors.confirmSenha = 'As senhas não conferem';
     if (!formData.acceptTerms) newErrors.acceptTerms = 'Você deve aceitar os termos de serviço';
 
     setErrors(newErrors);
@@ -64,12 +64,14 @@ const CreateAccount: React.FC = () => {
 
     if (validate()) {
       try {
-        await createUser({
+        await cadastrarUsuario({
           username: formData.username,
-          fullName: formData.fullName,
+          nome: formData.nome,
           email: formData.email,
-          password: formData.password,
+          senha: formData.senha,
+          isAdmin: false
         });
+        toast.success('Conta criada com sucesso!');
         navigate('/login');
       } catch (error) {
         console.error('Error creating account:', error);
@@ -99,10 +101,10 @@ const CreateAccount: React.FC = () => {
 
           <Input
             label="Nome completo"
-            name="fullName"
-            value={formData.fullName}
+            name="nome"
+            value={formData.nome}
             onChange={handleChange}
-            error={errors.fullName}
+            error={errors.nome}
           />
 
           <Input
@@ -116,20 +118,20 @@ const CreateAccount: React.FC = () => {
 
           <Input
             label="Senha"
-            name="password"
+            name="senha"
             type="password"
-            value={formData.password}
+            value={formData.senha}
             onChange={handleChange}
-            error={errors.password}
+            error={errors.senha}
           />
 
           <Input
             label="Confirme senha"
-            name="confirmPassword"
+            name="confirmSenha"
             type="password"
-            value={formData.confirmPassword}
+            value={formData.confirmSenha}
             onChange={handleChange}
-            error={errors.confirmPassword}
+            error={errors.confirmSenha}
           />
 
           <Checkbox
