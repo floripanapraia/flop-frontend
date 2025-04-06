@@ -6,25 +6,23 @@ interface WelcomeModalProps {
 
 const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
   const categories = [
-    { name: "Ensolarado", color: "bg-yellow-400", icon: "☀️" },
-    { name: "Ondas fortes", color: "bg-blue-700", icon: "🌊" },
-    { name: "Água-viva", color: "bg-yellow-300", icon: "☀️" },
-    { name: "Lotada", color: "bg-orange-500", icon: "👥" },
-    { name: "Alimentação", color: "bg-pink-500 text-white", icon: "🍎" },
-  
-    // Linha 2:
-    { name: "Nublado", color: "bg-gray-400", icon: "☁️" },
-    { name: "Mar calmo", color: "bg-blue-400", icon: "🌊" },
-    { name: "Vento", color: "bg-teal-300", icon: "💨" },
-    { name: "Limpa", color: "bg-yellow-100", icon: "✨" },
-    { name: "Estacionamento", color: "bg-pink-300", icon: "🅿️" },
-  
-    // Linha 3:
-    { name: "Chuva", color: "bg-blue-500 text-white", icon: "🌧️" },
-    { name: "Água Gelada", color: "bg-blue-900 text-white", icon: "🧊" },
-    { name: "Música Alta", color: "bg-yellow-400", icon: "🔊" },
-    { name: "Lixo visível", color: "bg-amber-800 text-white", icon: "🗑️" },
-    { name: "Salva-vidas", color: "bg-red-300", icon: "🛟" },
+    { name: "Ensolarada", color: "bg-yellow-400", icon: "/assets/sunny.svg", isImage: true },
+    { name: "Ondas fortes", color: "bg-blue-700" },
+    { name: "Água-viva", color: "bg-yellow-300" },
+    { name: "Lotada", color: "bg-orange-500", icon: "/assets/lotada.svg", isImage: true },
+    { name: "Alimentação", color: "bg-pink-500 text-white" , icon: "/assets/food.svg", isImage: true},
+
+    { name: "Nublado", color: "bg-gray-400",  icon: "/assets/cloudy.svg", isImage: true  },
+    { name: "Mar calmo", color: "bg-blue-400" },
+    { name: "Vento", color: "bg-teal-300", icon: "/assets/windy.svg", isImage: true  },
+    { name: "Limpa", color: "bg-green-400", icon: "/assets/clean.svg", isImage: true  },
+    { name: "Estacionamento", color: "bg-pink-300" },
+
+    { name: "Chuva", color: "bg-blue-500 text-white", icon: "/assets/rain.svg", isImage: true  },
+    { name: "Água Gelada", color: "bg-blue-900 text-white" },
+    { name: "Música Alta", color: "bg-violet-400", icon: "/assets/music.svg", isImage: true  },
+    { name: "Lixo visível", color: "bg-amber-800 text-white"},
+    { name: "Salva-vidas", color: "bg-red-300" },
   ];
 
   return (
@@ -55,7 +53,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         {/* Header */}
         <div className="p-6 text-center">
           <h1 className="text-2xl font-bold text-blue-900 mb-6">
-            Bem vindo(a) ao Floripa na Praia !
+            Bem vindo(a) ao Floripa na Praia!
           </h1>
 
           <p className="text-gray-700 mb-6 text-center mx-auto max-w-2xl">
@@ -73,9 +71,17 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
               <div
                 className={`w-12 h-12 rounded-full flex items-center justify-center ${category.color}`}
               >
-                <span className="text-xl">{category.icon}</span>
+                {category.isImage ? (
+                  <img
+                    src={category.icon}
+                    alt={category.name}
+                    className="w-6 h-6"
+                  />
+                ) : (
+                  <span className="text-xl">{category.icon}</span>
+                )}
               </div>
-              <span className="mt-2 text-sm">{category.name}</span>
+              <span className="mt-2 text-sm text-center">{category.name}</span>
             </div>
           ))}
         </div>
