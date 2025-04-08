@@ -1,17 +1,51 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getCurrentUser, updateUser, deleteUser } from "../services/userService";
+import { setAuthToken } from "../services/authService";
+import axios from 'axios';
 
 const EditarUsuario: React.FC = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<number | null>(null);
 
   const [form, setForm] = useState({
-    nome: "Victoria Fernandes Galvão",
-    email: "victoriafernandes@gmail.com",
-    user: "vicfernandes",
+    nome: "",
+    email: "",
+    username: "",
     senha: "",
     confirmarSenha: "",
   });
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setLoading(true);
+        const userData = await getCurrentUser();
+        setUserId(userData.id);
+        setForm({
+          nome: userData.nome,
+          email: userData.email,
+          username: userData.username,
+          senha: "",
+          confirmarSenha: "",
+        });
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+        toast.error("Erro ao carregar dados do usuário");
+        // Redirect to login if unauthorized
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          navigate("/login");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -21,34 +55,78 @@ const EditarUsuario: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !form.nome ||
-      !form.email ||
-      !form.user ||
-      !form.senha ||
-      !form.confirmarSenha
-    ) {
-      toast.error("Por favor, preencha todos os campos.");
-      return;
+    // Validate password fields if user is changing password
+    if (form.senha || form.confirmarSenha) {
+      if (!form.senha || !form.confirmarSenha) {
+        toast.error("Por favor, preencha ambos os campos de senha.");
+        return;
+      }
+
+      if (form.senha !== form.confirmarSenha) {
+        toast.error("As senhas informadas não coincidem.");
+        return;
+      }
     }
 
-    if (form.senha !== form.confirmarSenha) {
-      toast.error("As senhas não coincidem.");
+    if (!userId) {
+      toast.error("Usuário não encontrado.");
       return;
     }
 
     try {
-      // TODO: lógica de salvar no backend
+      setLoading(true);
+
+      // Only include fields that should be updated
+      const updateData: any = {};
+
+      // Only update password if provided
+      if (form.senha) {
+        updateData.senha = form.senha;
+      }
+
+      // Update user data
+      await updateUser(userId, updateData);
       toast.success("Alterações salvas com sucesso!");
     } catch (error) {
+      console.error("Error updating user:", error);
       toast.error("Erro ao salvar alterações.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!userId) return;
+
+    // Confirm before deleting
+    if (window.confirm("Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.")) {
+      try {
+        setLoading(true);
+        await deleteUser(userId);
+        toast.success("Conta excluída com sucesso");
+        // Clear auth token and redirect to login
+        setAuthToken(null);
+        navigate("/login");
+      } catch (error) {
+        console.error("Error deleting account:", error);
+        toast.error("Erro ao excluir conta");
+        setLoading(false);
+      }
     }
   };
 
   const handleLogout = () => {
-    // TODO: lógica de logout
+    setAuthToken(null);
     navigate("/login");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 py-8">
@@ -77,26 +155,25 @@ const EditarUsuario: React.FC = () => {
               <div className="absolute bottom-2 right-2 bg-white p-1 rounded-full shadow">
                 <img
                   src="/assets/Edit.png"
-                  alt="Ícone de logout"
+                  alt="Ícone de editar"
                   className="w-5 h-5"
                 />
               </div>
             </div>
 
             <h2 className="text-lg font-semibold mt-2 mb-6 text-blue-900">
-              Olá, Kurinho!
+              Olá, {form.username}!
             </h2>
 
             <button
               onClick={handleLogout}
               className="w-40 bg-gray-100 py-2 rounded-lg shadow text-sm text-blue-900 flex items-center justify-center gap-2 mb-4"
             >
-             
               Sair
             </button>
 
             <button
-              // onClick={handleDelete}
+              onClick={handleDeleteAccount}
               className="w-40 bg-gray-100 py-2 rounded-lg text-sm text-blue-900 shadow"
             >
               Deletar conta
@@ -120,7 +197,7 @@ const EditarUsuario: React.FC = () => {
 
             <div>
               <label className="text-sm block text-[#1f2a4d]">User:</label>
-              <p className="border-b pb-1">{form.user}</p>
+              <p className="border-b pb-1">{form.username}</p>
             </div>
 
             <div>
@@ -152,16 +229,17 @@ const EditarUsuario: React.FC = () => {
             <button
               type="submit"
               className="mt-6 self-start bg-blue-900 text-white py-2 px-6 rounded-full hover:bg-[#142038] transition shadow-lg"
+              disabled={loading}
             >
-              Salvar alterações
+              {loading ? "Salvando..." : "Salvar alterações"}
             </button>
           </form>
         </div>
       </div>
-      
+
       <button
         onClick={() => navigate(-1)}
-        className="fixed bottom-6 left-6 bg-blue-900 text-white px-5 py-2 rounded-full text-sm shadow-2x1 z-20 "
+        className="fixed bottom-6 left-6 bg-blue-900 text-white px-5 py-2 rounded-full text-sm shadow-2x1 z-20"
       >
         Voltar
       </button>
