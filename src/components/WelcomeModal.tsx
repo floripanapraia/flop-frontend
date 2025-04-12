@@ -8,21 +8,21 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
   const categories = [
     { name: "Ensolarada", color: "bg-yellow-400", icon: "/assets/icons/sunny.svg", isImage: true },
     { name: "Ondas fortes", color: "bg-blue-700" },
-    { name: "Água-viva", color: "bg-violet-300",icon: "/assets/icons/jelly.svg", isImage: true  },
+    { name: "Água-viva", color: "bg-purple-800",icon: "/assets/icons/jelly.svg", isImage: true  },
     { name: "Lotada", color: "bg-orange-500", icon: "/assets/icons/lotada.svg", isImage: true },
-    { name: "Alimentação", color: "bg-pink-500 text-white" , icon: "/assets/icons/food.svg", isImage: true},
+    { name: "Alimentação", color: "bg-pink-600 text-white" , icon: "/assets/icons/food.svg", isImage: true},
 
-    { name: "Nublado", color: "bg-gray-400",  icon: "/assets/icons/cloudy.svg", isImage: true  },
+    { name: "Nublado", color: "bg-gray-500",  icon: "/assets/icons/cloudy.svg", isImage: true  },
     { name: "Mar calmo", color: "bg-blue-400" ,  icon: "/assets/icons/marcalmo.svg", isImage: true},
-    { name: "Vento", color: "bg-teal-300", icon: "/assets/icons/windy.svg", isImage: true  },
-    { name: "Limpa", color: "bg-green-400", icon: "/assets/icons/clean.svg", isImage: true  },
+    { name: "Vento", color: "bg-slate-400", icon: "/assets/icons/windy.svg", isImage: true  },
+    { name: "Limpa", color: "bg-green-500", icon: "/assets/icons/clean.svg", isImage: true  },
     { name: "Estacionamento", color: "bg-pink-300" },
 
-    { name: "Chuva", color: "bg-blue-500 text-white", icon: "/assets/icons/rain.svg", isImage: true  },
-    { name: "Água Gelada", color: "bg-blue-900 text-white" },
-    { name: "Música Alta", color: "bg-violet-400", icon: "/assets/icons/music.svg", isImage: true  },
+    { name: "Chuva", color: "bg-blue-900 text-white", icon: "/assets/icons/rain.svg", isImage: true  },
+    { name: "Água Gelada", color: "bg-indigo-400 text-white" },
+    { name: "Música Alta", color: "bg-teal-500", icon: "/assets/icons/music.svg", isImage: true  },
     { name: "Lixo visível", color: "bg-amber-800 text-white", icon: "/assets/icons/trash.svg", isImage: true},
-    { name: "Salva-vidas", color: "bg-red-300" },
+    { name: "Salva-vidas", color: "bg-red-600" },
   ];
 
   return (
