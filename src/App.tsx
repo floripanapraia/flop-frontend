@@ -4,6 +4,7 @@ import CreateAccount from './pages/CreateAccount';
 import Login from './pages/Login';
 import EditarUsuario from './pages/EditarUsuario';
 import Home from './pages/Home';
+import BeachDetails from './pages/BeachDetails';
 
 const App: React.FC = () => {
   return (
@@ -13,6 +14,7 @@ const App: React.FC = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/editar" element={<EditarUsuario />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/praia" element={<BeachDetails />} />
         <Route path="/" element={<Navigate replace to="/login" />} />
       </Routes>
     </Router>
