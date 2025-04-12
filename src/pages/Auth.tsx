@@ -128,7 +128,11 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <Components.PageWrapper>
+    <Components.PageWrapper
+    style={{ backgroundImage: "url('/assets/mapa.png')" }}
+    className="bg-cover bg-center min-h-screen"
+  >
+  
       <Components.Container>
         {/* Cadastro */}
         <Components.SignUpContainer signinIn={signIn}>
