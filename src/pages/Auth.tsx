@@ -1,9 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import WelcomeModal from "../components/WelcomeModal";
+import ErrorModal from "../components/ErrorModal";
 import { toast } from "react-toastify";
 import { login, cadastrarUsuario } from "../services/authService";
 import * as Components from "../components/LoginCadastro";
+import {
+  ErrorResponse,
+  handleErrorWithToast,
+  normalizeError,
+  shouldShowInModal
+} from "../utils/errorHandler";
 
 const Auth: React.FC = () => {
   const [signIn, toggle] = useState<boolean>(true);
@@ -26,6 +33,10 @@ const Auth: React.FC = () => {
 
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // New state for error modal
+  const [modalError, setModalError] = useState<ErrorResponse | null>(null);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   // Login handlers
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,9 +61,16 @@ const Auth: React.FC = () => {
       const token = await login(loginCredentials.username, loginCredentials.senha);
       toast.success("Login realizado com sucesso!");
       navigate("/dashboard");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro no login:", error);
-      toast.error("Erro ao fazer login. Verifique suas credenciais.");
+
+      // Determine if error should be shown in modal or toast
+      if (shouldShowInModal(error)) {
+        setModalError(normalizeError(error));
+        setShowErrorModal(true);
+      } else {
+        handleErrorWithToast(error);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -108,15 +126,21 @@ const Auth: React.FC = () => {
           username: signUpData.username,
           nome: signUpData.nome,
           email: signUpData.email,
-          senha: signUpData.senha,
-          isAdmin: false,
+          senha: signUpData.senha
         });
 
         toast.success("Conta criada com sucesso!");
         toggle(true); // Muda para o form de login depois de cadastrar o usuário
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error creating account:", error);
-        toast.error("Erro ao criar conta. Tente novamente.");
+
+        // Determine if error should be shown in modal or toast
+        if (shouldShowInModal(error)) {
+          setModalError(normalizeError(error));
+          setShowErrorModal(true);
+        } else {
+          handleErrorWithToast(error);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -127,12 +151,16 @@ const Auth: React.FC = () => {
     setShowHelpModal(!showHelpModal);
   };
 
+  const closeErrorModal = () => {
+    setShowErrorModal(false);
+    setModalError(null);
+  };
+
   return (
     <Components.PageWrapper
-    style={{ backgroundImage: "url('/assets/mapa.png')" }}
-    className="bg-cover bg-center min-h-screen"
-  >
-  
+      style={{ backgroundImage: "url('/assets/mapa.png')" }}
+      className="bg-cover bg-center min-h-screen"
+    >
       <Components.Container>
         {/* Cadastro */}
         <Components.SignUpContainer signinIn={signIn}>
@@ -186,7 +214,7 @@ const Auth: React.FC = () => {
             <Components.Input
               type="text"
               name="username"
-              placeholder="Email"
+              placeholder="Username"
               value={loginCredentials.username}
               onChange={handleLoginChange}
             />
@@ -230,6 +258,7 @@ const Auth: React.FC = () => {
           </Components.Overlay>
         </Components.OverlayContainer>
       </Components.Container>
+
       <button
         onClick={toggleHelpModal}
         className="absolute bottom-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
@@ -239,6 +268,13 @@ const Auth: React.FC = () => {
       </button>
 
       {showHelpModal && <WelcomeModal onClose={toggleHelpModal} />}
+
+      {/* Error Modal */}
+      <ErrorModal
+        error={modalError}
+        isOpen={showErrorModal}
+        onClose={closeErrorModal}
+      />
     </Components.PageWrapper>
   );
 };
