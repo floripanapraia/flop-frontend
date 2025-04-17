@@ -38,6 +38,9 @@ const Auth: React.FC = () => {
   const [modalError, setModalError] = useState<ErrorResponse | null>(null);
   const [showErrorModal, setShowErrorModal] = useState(false);
 
+  // State to track if the user just registered
+  const [justRegistered, setJustRegistered] = useState(false);
+
   // Login handlers
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
