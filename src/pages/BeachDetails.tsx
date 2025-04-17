@@ -7,6 +7,7 @@ const BeachDetails: React.FC = () => {
   const navigate = useNavigate();
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [activeTab, setActiveTab] = useState("avaliacoes");
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Mudar para true quando o usuário fizer login
 
   const toggleHelpModal = () => {
     setShowHelpModal(!showHelpModal);
@@ -14,6 +15,15 @@ const BeachDetails: React.FC = () => {
 
   return (
     <div className="relative h-screen w-screen bg-blue-50 overflow-hidden">
+      <div className="absolute top-6 right-6 z-50">
+        <button
+          onClick={() => navigate(isLoggedIn ? "/perfil" : "/login")}
+          className="bg-[#182E4D] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#1e3a5f] transition-colors"
+        >
+          {isLoggedIn ? "Perfil" : "ENTRAR"}
+        </button>
+      </div>
+
       {/* Mapa de fundo com overlay */}
       <div className="absolute inset-0 bg-blue-900/10 backdrop-blur-sm">
         <img
@@ -38,25 +48,28 @@ const BeachDetails: React.FC = () => {
                 Floripa na Praia
               </h2>
             </div>
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Barra de pesquisa*/}
@@ -83,7 +96,7 @@ const BeachDetails: React.FC = () => {
           </div>
         </div>
 
-        {/* Conteúdo principal - Agora com overflow */}
+        {/* Restante do código permanece igual */}
         <div className="flex-1 overflow-y-auto">
           {/* Cabeçalho da praia */}
           <div className="px-6 py-5 border-b border-gray-100">
@@ -114,11 +127,9 @@ const BeachDetails: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
               <span className="w-1 h-5 bg-blue-500 rounded-full mr-2"></span>
               HOJE NA JOAQUINA
-              
             </h3>
             <div className="grid grid-cols-4 gap-4">
               {[
-                
                 {
                   icon: "👥",
                   label: "Lotada",
