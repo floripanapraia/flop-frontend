@@ -216,7 +216,7 @@ const Auth: React.FC = () => {
             <Components.Input
               type="text"
               name="nome"
-              placeholder="Name"
+              placeholder="Nome"
               value={signUpData.nome}
               onChange={handleSignUpChange}
             />
