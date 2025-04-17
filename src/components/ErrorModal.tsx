@@ -70,8 +70,6 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ error, onClose, isOpen }) => {
         </div>
 
         <div className="mt-2">
-          <p className="text-sm text-gray-700">{error.message}</p>
-
           {/* Additional action suggestion based on error type */}
           {error.status === 401 && (
             <p className="mt-2 text-sm text-gray-600">
