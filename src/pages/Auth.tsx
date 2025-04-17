@@ -134,8 +134,8 @@ const Auth: React.FC = () => {
 
         toast.success("Conta criada com sucesso!");
 
-        // Store the email to use in login form
-        const registeredEmail = signUpData.username; // Assuming username is used for logging in
+        // Set the flag indicating user just registered
+        setJustRegistered(true);
 
         // Clear signup form
         setSignUpData({
@@ -144,12 +144,6 @@ const Auth: React.FC = () => {
           email: "",
           senha: "",
           confirmSenha: "",
-        });
-
-        // Update login credentials with the registered username
-        setLoginCredentials({
-          email: registeredEmail,
-          senha: "",
         });
 
         // Switch to login form
