@@ -18,7 +18,7 @@ const Auth: React.FC = () => {
 
   // Login state
   const [loginCredentials, setLoginCredentials] = useState({
-    username: "",
+    email: "",
     senha: "",
   });
 
@@ -50,7 +50,7 @@ const Auth: React.FC = () => {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!loginCredentials.username || !loginCredentials.senha) {
+    if (!loginCredentials.email || !loginCredentials.senha) {
       toast.error("Por favor, preencha todos os campos");
       return;
     }
@@ -58,9 +58,9 @@ const Auth: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const token = await login(loginCredentials.username, loginCredentials.senha);
+      const token = await login(loginCredentials.email, loginCredentials.senha);
       toast.success("Login realizado com sucesso!");
-      navigate("/dashboard");
+      navigate("/dashboard"); // TODO: Redirect to the right page after login
     } catch (error: any) {
       console.error("Erro no login:", error);
 
@@ -130,7 +130,27 @@ const Auth: React.FC = () => {
         });
 
         toast.success("Conta criada com sucesso!");
-        toggle(true); // Muda para o form de login depois de cadastrar o usuário
+
+        // Store the email to use in login form
+        const registeredEmail = signUpData.username; // Assuming username is used for logging in
+
+        // Clear signup form
+        setSignUpData({
+          username: "",
+          nome: "",
+          email: "",
+          senha: "",
+          confirmSenha: "",
+        });
+
+        // Update login credentials with the registered username
+        setLoginCredentials({
+          email: registeredEmail,
+          senha: "",
+        });
+
+        // Switch to login form
+        toggle(true);
       } catch (error: any) {
         console.error("Error creating account:", error);
 
@@ -145,6 +165,26 @@ const Auth: React.FC = () => {
         setIsLoading(false);
       }
     }
+  };
+
+  // Custom toggle function to handle form switching
+  const toggleForm = (showSignIn: boolean) => {
+    // If we're not changing the state, don't do anything
+    if (showSignIn === signIn) return;
+
+    // If switching to registration form, clear it
+    if (!showSignIn) {
+      setSignUpData({
+        username: "",
+        nome: "",
+        email: "",
+        senha: "",
+        confirmSenha: "",
+      });
+    }
+
+    // Update toggle state
+    toggle(showSignIn);
   };
 
   const toggleHelpModal = () => {
@@ -169,7 +209,7 @@ const Auth: React.FC = () => {
             <Components.Input
               type="text"
               name="username"
-              placeholder="User"
+              placeholder="Username"
               value={signUpData.username}
               onChange={handleSignUpChange}
             />
@@ -215,7 +255,7 @@ const Auth: React.FC = () => {
               type="text"
               name="username"
               placeholder="Username"
-              value={loginCredentials.username}
+              value={loginCredentials.email}
               onChange={handleLoginChange}
             />
             <Components.Input
@@ -240,7 +280,7 @@ const Auth: React.FC = () => {
                 Bem-vindo ao FLORIPA NA PRAIA!
               </Components.Title>
               <Components.Paragraph>Já possui uma conta?</Components.Paragraph>
-              <Components.GhostButton onClick={() => toggle(true)}>
+              <Components.GhostButton onClick={() => toggleForm(true)}>
                 Entrar
               </Components.GhostButton>
             </Components.LeftOverlayPanel>
@@ -251,7 +291,7 @@ const Auth: React.FC = () => {
                 Bem-vindo ao FLORIPA NA PRAIA!
               </Components.Title>
               <Components.Paragraph>Não possui uma conta?</Components.Paragraph>
-              <Components.GhostButton onClick={() => toggle(false)}>
+              <Components.GhostButton onClick={() => toggleForm(false)}>
                 Cadastre-se
               </Components.GhostButton>
             </Components.RightOverlayPanel>
