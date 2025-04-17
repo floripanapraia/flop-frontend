@@ -169,8 +169,18 @@ const Auth: React.FC = () => {
     // If we're not changing the state, don't do anything
     if (showSignIn === signIn) return;
 
-    // If switching to registration form, clear it
+    // If switching to login form without having just registered
+    if (showSignIn && !justRegistered) {
+      // Clear login fields for normal login flow
+      setLoginCredentials({
+        email: "",
+        senha: "",
+      });
+    }
+
+    // If switching to registration form
     if (!showSignIn) {
+      // Clear registration form
       setSignUpData({
         username: "",
         nome: "",
@@ -178,9 +188,12 @@ const Auth: React.FC = () => {
         senha: "",
         confirmSenha: "",
       });
+
+      // Reset the just registered flag
+      setJustRegistered(false);
     }
 
-    // Update toggle state
+    // Update the toggle state
     toggle(showSignIn);
   };
 
