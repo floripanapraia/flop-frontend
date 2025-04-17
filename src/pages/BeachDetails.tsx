@@ -7,176 +7,203 @@ const BeachDetails: React.FC = () => {
   const navigate = useNavigate();
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [activeTab, setActiveTab] = useState("avaliacoes");
-  
+
   const toggleHelpModal = () => {
     setShowHelpModal(!showHelpModal);
   };
 
   return (
-    <div className="relative h-screen w-screen bg-blue-100">
-      {/* Mapa de fundo */}
-      <img
-        src="assets/mapa.png" 
-        alt="Mapa Floripa na Praia"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+    <div className="relative h-screen w-screen bg-blue-50 overflow-hidden">
+      {/* Mapa de fundo com overlay */}
+      <div className="absolute inset-0 bg-blue-900/10 backdrop-blur-sm">
+        <img
+          src="assets/mapa.png"
+          alt="Mapa Floripa na Praia"
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-      {/* Painel lateral de detalhes - agora com altura total */}
-      <div className="absolute top-0 left-0 h-full bg-white rounded-r-3xl shadow-2xl w-[500px] max-w-full overflow-y-auto flex flex-col">
-        {/* Imagem da praia */}
-        <div className="relative">
-          <img
-            src="assets/joaca.png"
-            alt="Praia da Joaquina"
-            className="w-full h-48 object-cover"
-          />
-          <button 
-            onClick={() => navigate(-1)}
-            className="absolute top-4 left-4 bg-white p-2 rounded-full shadow-md"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      {/* Painel lateral*/}
+      <div className="absolute top-0 left-0 h-full bg-white/95 backdrop-blur-md rounded-r-3xl shadow-xl w-[620px] max-w-full flex flex-col border-r border-gray-200">
+        {/* Cabeçalho*/}
+        <div className="px-6 pt-6 pb-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-tr-3xl">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <img
+                src="/assets/LOGO.png"
+                alt="Logo"
+                className="w-10 h-10 drop-shadow-sm"
+              />
+              <h2 className="text-[#182E4D] text-xl font-bold">
+                Floripa na Praia
+              </h2>
+            </div>
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {/* Barra de pesquisa*/}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Pesquisar praia..."
+              className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 pl-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent shadow-sm"
+            />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-blue-400 absolute left-4 top-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
-          </button>
+          </div>
         </div>
 
-        {/* Conteúdo rolável */}
+        {/* Conteúdo principal - Agora com overflow */}
         <div className="flex-1 overflow-y-auto">
-          {/* Título e avaliações */}
-          <div className="px-6 py-4 border-b">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800">
-                Praia da Joaquina
-              </h2>
-              <div className="flex items-center">
-                <span className="text-sm text-gray-500 ml-1">1230 avaliações</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Destaques do dia */}
-          <div className="px-6 py-4">
-            <p className="text-sm text-gray-700 font-semibold mb-3">
-              HOJE NA JOAQUINA
-            </p>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center space-x-3">
-                <div className="bg-blue-100 p-2 rounded-full">
-                  <span className="text-blue-700">🌊</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-800">
-                    Ondas fortes
-                  </p>
-                  <p className="text-xs text-gray-500">230 votos</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="bg-orange-100 p-2 rounded-full">
-                  <span className="text-orange-500">👥</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-800">Lotada</p>
-                  <p className="text-xs text-gray-500">230 votos</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="bg-pink-100 p-2 rounded-full">
-                  <span className="text-pink-500">🍽️</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-800">Alimentação</p>
-                  <p className="text-xs text-gray-500">230 votos</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="bg-green-100 p-2 rounded-full">
-                  <span className="text-green-500">💨</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-800">Vento</p>
-                  <p className="text-xs text-gray-500">300 votos</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex justify-around border-t border-b border-gray-200 py-3 text-sm font-medium text-gray-600">
-            <button 
-              className={`px-4 py-2 rounded-lg ${activeTab === 'avaliacoes' ? 'bg-blue-50 text-blue-600' : 'hover:text-blue-600'}`}
-              onClick={() => setActiveTab('avaliacoes')}
-            >
-              Avaliações
-            </button>
-            <button 
-              className={`px-4 py-2 rounded-lg ${activeTab === 'fotos' ? 'bg-blue-50 text-blue-600' : 'hover:text-blue-600'}`}
-              onClick={() => setActiveTab('fotos')}
-            >
-              Feed Fotos
-            </button>
-            <button 
-              className={`px-4 py-2 rounded-lg ${activeTab === 'flops' ? 'bg-blue-50 text-blue-600' : 'hover:text-blue-600'}`}
-              onClick={() => setActiveTab('flops')}
-            >
-              Flops
-            </button>
-          </div>
-
-          {/* Conteúdo das tabs */}
-          <div className="px-6 py-4">
-            {activeTab === 'avaliacoes' && (
+          {/* Cabeçalho da praia */}
+          <div className="px-6 py-5 border-b border-gray-100">
+            <div className="flex justify-between items-start">
               <div>
-                <div className="flex items-start space-x-3 mb-6">
-                  <img
-                    src="/usuario.jpg"
-                    alt="Usuário"
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">vicfernandes</p>
-                    <p className="text-sm text-gray-600 mb-1">
-                      A água tá maravilhosa, vários restaurantes abertos hoje...
-                    </p>
-                    <div className="flex items-center text-xs text-gray-400">
-                      <span>2 horas atrás</span>
-                      <span className="mx-2">•</span>
-                      <span>5★</span>
-                    </div>
-                  </div>
+                <h1 className="text-2xl font-bold text-gray-800 mb-1">
+                  Praia da Joaquina
+                </h1>
+                <div className="flex items-center text-blue-600">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <span className="ml-1 text-sm font-medium">
+                    1230 avaliações
+                  </span>
                 </div>
-                {/* Mais avaliações podem ser adicionadas aqui */}
               </div>
-            )}
-
-            {activeTab === 'fotos' && (
-              <div className="grid grid-cols-3 gap-2">
-                {[1, 2, 3, 4, 5, 6].map((item) => (
-                  <img
-                    key={item}
-                    src={`/assets/beaches/joaquina${item}.jpg`}
-                    alt={`Foto ${item}`}
-                    className="w-full h-24 object-cover rounded-lg"
-                  />
-                ))}
-              </div>
-            )}
-
-            {activeTab === 'flops' && (
-              <div className="text-center py-8 text-gray-500">
-                <p>Nenhum flop reportado recentemente</p>
-              </div>
-            )}
+            </div>
           </div>
+
+          {/* Destaques do dia*/}
+          <div className="px-6 py-5">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+              <span className="w-1 h-5 bg-blue-500 rounded-full mr-2"></span>
+              HOJE NA JOAQUINA
+              
+            </h3>
+            <div className="grid grid-cols-4 gap-4">
+              {[
+                
+                {
+                  icon: "👥",
+                  label: "Lotada",
+                  votes: "230",
+                  color: "bg-purple-800",
+                },
+                {
+                  icon: "🍽️",
+                  label: "Alimentação",
+                  votes: "230",
+                  color: "bg-purple-800",
+                },
+                { icon: "💨", label: "Vento", votes: "300", color: "green" },
+                {
+                  icon: "🅿️",
+                  label: "Estacionamento",
+                  votes: "150",
+                  color: "purple",
+                },
+                {
+                  icon: "🏖️",
+                  label: "Área ampla",
+                  votes: "180",
+                  color: "yellow",
+                },
+                { icon: "🚿", label: "Ducha", votes: "95", color: "red" },
+                {
+                  icon: "🧴",
+                  label: "Protetor Solar",
+                  votes: "40",
+                  color: "indigo",
+                },
+              ].map((item, index) => (
+                <div key={index} className="flex flex-col items-center group">
+                  <div
+                    className={`bg-${item.color}-50 p-3 rounded-xl mb-2 group-hover:bg-${item.color}-100 transition-colors`}
+                  >
+                    <span className="text-2xl">{item.icon}</span>
+                  </div>
+                  <p className="text-xs font-medium text-gray-700 text-center">
+                    {item.label}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {item.votes} votos
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Navegação simplificada sem ícones */}
+        <div className="bg-white border-t border-gray-200 p-3 flex justify-around shadow-sm">
+          {[
+            { id: "avaliacoes", label: "Avaliações" },
+            { id: "fotos", label: "Fotos" },
+            { id: "flops", label: "Flops" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 text-sm font-medium ${
+                activeTab === tab.id
+                  ? "text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <div className="flex flex-col items-center">
+                <span>{tab.label}</span>
+                {activeTab === tab.id && (
+                  <div className="w-6 h-0.5 bg-blue-600 mt-1 rounded-full"></div>
+                )}
+              </div>
+            </button>
+          ))}
         </div>
       </div>
 
+      {/* Botão de ajuda*/}
       <button
         onClick={toggleHelpModal}
-        className="absolute bottom-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
+        className="absolute bottom-6 right-6 bg-white rounded-full shadow-lg hover:shadow-xl transition-all w-12 h-12 flex items-center justify-center"
         aria-label="Ajuda"
       >
-        <span className="text-sky-800 text-xl font-bold">?</span>
+        <span className="text-blue-600 text-xl font-bold leading-none">?</span>
       </button>
 
       {showHelpModal && <WelcomeModal onClose={toggleHelpModal} />}
