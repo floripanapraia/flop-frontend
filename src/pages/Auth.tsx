@@ -263,7 +263,7 @@ const Auth: React.FC = () => {
             <Components.Subtitle>Entrar</Components.Subtitle>
             <Components.Input
               type="text"
-              name="username"
+              name="email"
               placeholder="Email"
               value={loginCredentials.email}
               onChange={handleLoginChange}
