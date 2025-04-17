@@ -254,14 +254,14 @@ const Auth: React.FC = () => {
             <Components.Input
               type="text"
               name="username"
-              placeholder="Username"
+              placeholder="Email"
               value={loginCredentials.email}
               onChange={handleLoginChange}
             />
             <Components.Input
               type="password"
               name="senha"
-              placeholder="Password"
+              placeholder="Senha"
               value={loginCredentials.senha}
               onChange={handleLoginChange}
             />
