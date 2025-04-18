@@ -30,7 +30,7 @@ export const getCurrentUser = async (): Promise<Usuario> => {
 };
 
 // Update user profile
-export const updateUser = async (userId: number, userData: UsuarioUpdateRequest): Promise<Usuario> => {
+export const updateUser = async (userData: UsuarioUpdateRequest): Promise<Usuario> => {
   try {
     const response = await apiClient.put<Usuario>('/usuarios/atualizar', userData);
     return response.data;
