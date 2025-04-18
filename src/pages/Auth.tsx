@@ -63,7 +63,7 @@ const Auth: React.FC = () => {
     try {
       const token = await login(loginCredentials.email, loginCredentials.senha);
       toast.success("Login realizado com sucesso!");
-      navigate("/dashboard"); // TODO: Redirect to the right page after login
+      navigate("/editar"); // TODO: Redirect to the right page after login
     } catch (error: any) {
       console.error("Erro no login:", error);
 
