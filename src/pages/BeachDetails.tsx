@@ -1,4 +1,3 @@
-// src/pages/BeachDetails.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import WelcomeModal from "../components/WelcomeModal";
@@ -131,16 +130,16 @@ const BeachDetails: React.FC = () => {
             <div className="grid grid-cols-4 gap-4">
               {[
                 {
-                  icon: "👥",
+                  icon: "/assets/iconFull/nublado.svg",
                   label: "Lotada",
                   votes: "230",
-                  color: "bg-purple-800",
+                  color: "purple",
                 },
                 {
                   icon: "🍽️",
                   label: "Alimentação",
                   votes: "230",
-                  color: "bg-purple-800",
+                  color: "purple",
                 },
                 { icon: "💨", label: "Vento", votes: "300", color: "green" },
                 {
@@ -167,16 +166,19 @@ const BeachDetails: React.FC = () => {
                   <div
                     className={`bg-${item.color}-50 p-3 rounded-xl mb-2 group-hover:bg-${item.color}-100 transition-colors`}
                   >
-                    <span className="text-2xl">{item.icon}</span>
+                    {typeof item.icon === "string" && item.icon.includes(".svg") ? (
+                      <img src={item.icon} alt={item.label} className="w-12 h-12" />
+                    ) : (
+                      <span className="text-2xl">{item.icon}</span>
+                    )}
                   </div>
                   <p className="text-xs font-medium text-gray-700 text-center">
                     {item.label}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {item.votes} votos
-                  </p>
+                  <p className="text-xs text-gray-400 mt-1">{item.votes} votos</p>
                 </div>
               ))}
+
             </div>
           </div>
         </div>
