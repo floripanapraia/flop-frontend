@@ -2,6 +2,7 @@ import apiClient from "./api";
 
 interface Usuario {
   id: number;
+  fotoPerfil: string;
   nome: string;
   username: string;
   email: string;
@@ -10,6 +11,7 @@ interface Usuario {
 }
 
 interface UsuarioUpdateRequest {
+  fotoPerfil?: string;
   nome?: string;
   email?: string;
   username?: string;
