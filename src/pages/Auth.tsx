@@ -137,6 +137,12 @@ const Auth: React.FC = () => {
         // Set the flag indicating user just registered
         setJustRegistered(true);
 
+        // Pre-fill the login email with the registration email
+        setLoginCredentials({
+          email: signUpData.email,
+          senha: "",
+        });
+
         // Clear signup form
         setSignUpData({
           username: "",
@@ -169,18 +175,8 @@ const Auth: React.FC = () => {
     // If we're not changing the state, don't do anything
     if (showSignIn === signIn) return;
 
-    // If switching to login form without having just registered
-    if (showSignIn && !justRegistered) {
-      // Clear login fields for normal login flow
-      setLoginCredentials({
-        email: "",
-        senha: "",
-      });
-    }
-
-    // If switching to registration form
+    // If switching to registration form, clear the registration fields
     if (!showSignIn) {
-      // Clear registration form
       setSignUpData({
         username: "",
         nome: "",
@@ -191,6 +187,15 @@ const Auth: React.FC = () => {
 
       // Reset the just registered flag
       setJustRegistered(false);
+    }
+
+    // If we're switching to login form and not coming from registration,
+    // clear the login fields
+    if (showSignIn && !justRegistered) {
+      setLoginCredentials({
+        email: "",
+        senha: "",
+      });
     }
 
     // Update the toggle state
