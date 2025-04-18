@@ -5,7 +5,7 @@ import { getCurrentUser, updateUser, deleteUser } from "../services/userService"
 import { setAuthToken } from "../services/authService";
 import axios from 'axios';
 
-const EditarUsuario: React.FC = () => {
+const EditUser: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<number | null>(null);
@@ -247,4 +247,4 @@ const EditarUsuario: React.FC = () => {
   );
 };
 
-export default EditarUsuario;
+export default EditUser;

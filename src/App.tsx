@@ -1,17 +1,17 @@
 import React from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import Auth from './pages/Auth';
-import EditarUsuario from './pages/EditarUsuario';
 import { ToastContainer } from 'react-toastify';
-import Home from './pages/Home';
+import Auth from './pages/Auth';
 import BeachDetails from './pages/BeachDetails';
+import EditUser from './pages/EditUser';
+import Home from './pages/Home';
 
 const App: React.FC = () => {
   return (
     <Router>
       <Routes>
         <Route path="/auth" element={<Auth />} />
-        <Route path="/editar" element={<EditarUsuario />} />
+        <Route path="/editar" element={<EditUser />} />
         <Route path="/" element={<Navigate replace to="/auth" />} />
         <Route path="/home" element={<Home />} />
         <Route path="/praia" element={<BeachDetails />} />
