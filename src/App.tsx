@@ -3,6 +3,8 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-d
 import Auth from './pages/Auth';
 import EditarUsuario from './pages/EditarUsuario';
 import { ToastContainer } from 'react-toastify';
+import Home from './pages/Home';
+import BeachDetails from './pages/BeachDetails';
 
 const App: React.FC = () => {
   return (
@@ -11,6 +13,8 @@ const App: React.FC = () => {
         <Route path="/auth" element={<Auth />} />
         <Route path="/editar" element={<EditarUsuario />} />
         <Route path="/" element={<Navigate replace to="/auth" />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/praia" element={<BeachDetails />} />
       </Routes>
 
       {/* Toast configuration */}
