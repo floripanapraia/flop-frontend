@@ -131,43 +131,52 @@ const BeachDetails: React.FC = () => {
               {[
                 {
                   icon: "/assets/iconFull/nublado.svg",
+                  label: "Nublado",
+                  votes: "230",
+                },
+                {
+                  icon: "/assets/iconFull/sol.svg",
+                  label: "Sol",
+                  votes: "230",
+                  color: "purple",
+                },
+                {
+                  icon: "/assets/iconFull/lotada.svg",
                   label: "Lotada",
-                  votes: "230",
-                  color: "purple",
+                  votes: "300",
                 },
                 {
-                  icon: "🍽️",
-                  label: "Alimentação",
-                  votes: "230",
-                  color: "purple",
-                },
-                { icon: "💨", label: "Vento", votes: "300", color: "green" },
-                {
-                  icon: "🅿️",
-                  label: "Estacionamento",
+                  icon: "/assets/iconFull/musica.svg",
+                  label: "Música Alta",
                   votes: "150",
-                  color: "purple",
                 },
                 {
-                  icon: "🏖️",
-                  label: "Área ampla",
+                  icon: "/assets/iconFull/aguaviva.svg",
+                  label: "Água-Viva",
                   votes: "180",
-                  color: "yellow",
                 },
-                { icon: "🚿", label: "Ducha", votes: "95", color: "red" },
                 {
-                  icon: "🧴",
-                  label: "Protetor Solar",
+                  icon: "/assets/iconFull/marcalmo.svg",
+                  label: "Mar Calmo",
+                  votes: "95",
+                },
+                {
+                  icon: "/assets/iconFull/limpa.svg",
+                  label: "Limpa",
                   votes: "40",
-                  color: "indigo",
                 },
               ].map((item, index) => (
                 <div key={index} className="flex flex-col items-center group">
                   <div
                     className={`bg-${item.color}-50 p-3 rounded-xl mb-2 group-hover:bg-${item.color}-100 transition-colors`}
                   >
-                    {typeof item.icon === "string" && item.icon.includes(".svg") ? (
-                      <img src={item.icon} alt={item.label} className="w-12 h-12" />
+                    {typeof item.icon === "string" &&
+                    item.icon.includes(".svg") ? (
+                      <img
+                        src={item.icon}
+                        alt={item.label}
+                        className="w-14 h-14"
+                      />
                     ) : (
                       <span className="text-2xl">{item.icon}</span>
                     )}
@@ -175,10 +184,11 @@ const BeachDetails: React.FC = () => {
                   <p className="text-xs font-medium text-gray-700 text-center">
                     {item.label}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">{item.votes} votos</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {item.votes} votos
+                  </p>
                 </div>
               ))}
-
             </div>
           </div>
         </div>
