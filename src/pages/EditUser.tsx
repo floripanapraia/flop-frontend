@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getCurrentUser, updateUser, deleteUser } from "../services/userService";
+import {
+  getCurrentUser,
+  updateUser,
+  deleteUser,
+} from "../services/userService";
 import { setAuthToken } from "../services/authService";
-import axios from 'axios';
+import axios from "axios";
 import ConfirmationModal from "../components/ConfirmationModal";
 
 const EditUser: React.FC = () => {
@@ -60,7 +64,9 @@ const EditUser: React.FC = () => {
     setForm({ ...form, [name]: value });
   };
 
-  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -133,9 +139,8 @@ const EditUser: React.FC = () => {
       setForm({
         ...form,
         senha: "",
-        confirmarSenha: ""
+        confirmarSenha: "",
       });
-
     } catch (error) {
       console.error("Error updating user:", error);
       toast.error("Erro ao salvar alterações.");
@@ -197,7 +202,10 @@ const EditUser: React.FC = () => {
                 alt="Perfil"
                 className="w-36 h-36 object-cover rounded-full mb-2"
               />
-              <label htmlFor="profile-picture-upload" className="absolute bottom-2 right-2 bg-white p-1 rounded-full shadow cursor-pointer">
+              <label
+                htmlFor="profile-picture-upload"
+                className="absolute bottom-2 right-2 bg-white p-1 rounded-full shadow cursor-pointer"
+              >
                 <img
                   src="/assets/Edit.png"
                   alt="Editar foto"
@@ -212,7 +220,14 @@ const EditUser: React.FC = () => {
                 />
               </label>
             </div>
-
+            <div>
+              <button
+                onClick={}
+                className="w-40 bg-gray-100 py-2 rounded-lg shadow text-sm text-blue-900 flex items-center justify-center gap-2 mb-4"
+              >
+                Salvar Foto
+              </button>
+            </div>
             <h2 className="text-lg font-semibold mt-2 mb-6 text-blue-900">
               Olá, {form.nome}!
             </h2>
@@ -260,7 +275,9 @@ const EditUser: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-sm block text-[#1f2a4d]">Nova Senha:</label>
+              <label className="text-sm block text-[#1f2a4d]">
+                Nova Senha:
+              </label>
               <input
                 name="senha"
                 type="password"
