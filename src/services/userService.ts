@@ -54,9 +54,9 @@ export const updateUser = async (userData: UsuarioUpdateRequest): Promise<Usuari
 // };
 
 // Delete user account
-export const deleteUser = async (userId: number): Promise<void> => {
+export const deleteUser = async (): Promise<void> => {
   try {
-    await apiClient.delete(`/usuarios/excluir/${userId}`);
+    await apiClient.delete(`/usuarios/excluir`);
   } catch (error) {
     console.error('Error deleting user:', error);
     throw error;
