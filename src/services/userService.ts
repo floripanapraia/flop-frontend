@@ -29,6 +29,24 @@ export const getCurrentUser = async (): Promise<Usuario> => {
   }
 };
 
+// Update user profile picture
+export const updateUserProfilePicture = async (file: File): Promise<void> => {
+  try {
+    const formData = new FormData();
+    formData.append('fotoDePerfil', file);
+
+    await apiClient.post('/usuarios/salvar-foto', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    // No return expected since the endpoint returns void
+  } catch (error) {
+    console.error('Error updating user profile picture:', error);
+    throw error;
+  }
+}
+
 // Update user profile
 export const updateUser = async (userData: UsuarioUpdateRequest): Promise<Usuario> => {
   try {
