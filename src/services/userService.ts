@@ -13,8 +13,8 @@ interface Usuario {
 interface UsuarioUpdateRequest {
   fotoPerfil?: string;
   nome?: string;
-  email?: string;
   nickname?: string;
+  email?: string;
   senha?: string;
 }
 
@@ -48,9 +48,10 @@ export const updateUserProfilePicture = async (file: File): Promise<void> => {
 }
 
 // Update user profile
-export const updateUser = async (userData: UsuarioUpdateRequest): Promise<Usuario> => {
+export const updateUser = async (userData: UsuarioUpdateRequest): Promise<UsuarioUpdateRequest> => {
   try {
-    const response = await apiClient.put<Usuario>('/usuarios/atualizar', userData);
+    userData.nickname = (await getCurrentUser()).nickname;
+    const response = await apiClient.put<UsuarioUpdateRequest>('/usuarios/atualizar', userData);
     return response.data;
   } catch (error) {
     console.error('Error updating user:', error);
