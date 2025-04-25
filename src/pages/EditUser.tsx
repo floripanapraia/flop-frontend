@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import ConfirmationModal from "../components/ConfirmationModal";
+import { setAuthToken } from "../services/authService";
 import {
+  deleteUser,
   getCurrentUser,
   updateUser,
-  deleteUser,
+  updateUserProfilePicture,
 } from "../services/userService";
-import { setAuthToken } from "../services/authService";
-import axios from "axios";
-import ConfirmationModal from "../components/ConfirmationModal";
 
 const EditUser: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +19,8 @@ const EditUser: React.FC = () => {
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isChangingPicture, setIsChangingPicture] = useState(false);
+  const [uploadingPicture, setUploadingPicture] = useState(false);
+  const [pictureFile, setPictureFile] = useState<File | null>(null);
 
   const [form, setForm] = useState({
     nome: "",
@@ -149,6 +152,28 @@ const EditUser: React.FC = () => {
     }
   };
 
+  // Function to handle the profile picture upload
+  const handleSaveProfilePicture = async () => {
+    if (!pictureFile) {
+      return;
+    }
+
+    try {
+      setUploadingPicture(true);
+
+      await updateUserProfilePicture(pictureFile);
+
+      toast.success("Foto de perfil atualizada com sucesso!");
+      setIsChangingPicture(false);
+      setPictureFile(null); // Reset the file state after successful upload
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+      toast.error("Erro ao atualizar foto de perfil");
+    } finally {
+      setUploadingPicture(false);
+    }
+  };
+
   const performDeleteAccount = async () => {
     try {
       setLoading(true);
@@ -220,14 +245,20 @@ const EditUser: React.FC = () => {
                 />
               </label>
             </div>
-            <div>
-              <button
-                onClick={}
-                className="w-40 bg-gray-100 py-2 rounded-lg shadow text-sm text-blue-900 flex items-center justify-center gap-2 mb-4"
-              >
-                Salvar Foto
-              </button>
-            </div>
+
+            {/* Show save button if picture is being changed */}
+            {isChangingPicture && (
+              <div>
+                <button
+                  onClick={handleSaveProfilePicture}
+                  className="w-40 bg-gray-100 py-2 rounded-lg shadow text-sm text-blue-900 flex items-center justify-center gap-2 mb-4"
+                  disabled={uploadingPicture}
+                >
+                  {uploadingPicture ? "Salvando..." : "Salvar Foto"}
+                </button>
+              </div>
+            )}
+
             <h2 className="text-lg font-semibold mt-2 mb-6 text-blue-900">
               Olá, {form.nome}!
             </h2>
