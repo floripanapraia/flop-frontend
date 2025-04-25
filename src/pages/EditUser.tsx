@@ -79,6 +79,8 @@ const EditUser: React.FC = () => {
       return;
     }
 
+    setPictureFile(file);
+
     const reader = new FileReader();
     reader.onload = () => {
       setProfilePicture(reader.result as string);
