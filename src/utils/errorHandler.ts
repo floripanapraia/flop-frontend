@@ -139,7 +139,7 @@ export const shouldShowInModal = (error: unknown): boolean => {
   if (normalizedError.status === 400 &&
     (normalizedError.message.includes('e-mail') ||
       normalizedError.message.includes('email') ||
-      normalizedError.message.includes('username') ||
+      normalizedError.message.includes('nickname') ||
       normalizedError.message.includes('senha'))) {
     return true;
   }

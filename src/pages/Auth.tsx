@@ -24,7 +24,7 @@ const Auth: React.FC = () => {
 
   // Cadastro state
   const [signUpData, setSignUpData] = useState({
-    username: "",
+    nickname: "",
     nome: "",
     email: "",
     senha: "",
@@ -91,7 +91,7 @@ const Auth: React.FC = () => {
   const validateSignUp = (): boolean => {
     let isValid = true;
 
-    if (!signUpData.username.trim()) {
+    if (!signUpData.nickname.trim()) {
       toast.error("Username é obrigatório");
       isValid = false;
     }
@@ -126,7 +126,7 @@ const Auth: React.FC = () => {
 
       try {
         await cadastrarUsuario({
-          username: signUpData.username,
+          nickname: signUpData.nickname,
           nome: signUpData.nome,
           email: signUpData.email,
           senha: signUpData.senha
@@ -145,7 +145,7 @@ const Auth: React.FC = () => {
 
         // Clear signup form
         setSignUpData({
-          username: "",
+          nickname: "",
           nome: "",
           email: "",
           senha: "",
@@ -178,7 +178,7 @@ const Auth: React.FC = () => {
     // If switching to registration form, clear the registration fields
     if (!showSignIn) {
       setSignUpData({
-        username: "",
+        nickname: "",
         nome: "",
         email: "",
         senha: "",
@@ -223,9 +223,9 @@ const Auth: React.FC = () => {
             <Components.Subtitle>Criando minha conta</Components.Subtitle>
             <Components.Input
               type="text"
-              name="username"
+              name="nickname"
               placeholder="Username"
-              value={signUpData.username}
+              value={signUpData.nickname}
               onChange={handleSignUpChange}
             />
             <Components.Input

@@ -4,7 +4,7 @@ interface Usuario {
   id: number;
   fotoPerfil: string;
   nome: string;
-  username: string;
+  nickname: string;
   email: string;
   isAdmin: boolean;
   createdAt: string;
@@ -14,7 +14,7 @@ interface UsuarioUpdateRequest {
   fotoPerfil?: string;
   nome?: string;
   email?: string;
-  username?: string;
+  nickname?: string;
   senha?: string;
 }
 
