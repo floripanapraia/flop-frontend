@@ -24,7 +24,7 @@ const Auth: React.FC = () => {
 
   // Cadastro state
   const [signUpData, setSignUpData] = useState({
-    username: "",
+    nickname: "",
     nome: "",
     email: "",
     senha: "",
@@ -63,7 +63,7 @@ const Auth: React.FC = () => {
     try {
       const token = await login(loginCredentials.email, loginCredentials.senha);
       toast.success("Login realizado com sucesso!");
-      navigate("/dashboard"); // TODO: Redirect to the right page after login
+      navigate("/editar"); // TODO: Redirect to the right page after login
     } catch (error: any) {
       console.error("Erro no login:", error);
 
@@ -91,7 +91,7 @@ const Auth: React.FC = () => {
   const validateSignUp = (): boolean => {
     let isValid = true;
 
-    if (!signUpData.username.trim()) {
+    if (!signUpData.nickname.trim()) {
       toast.error("Username é obrigatório");
       isValid = false;
     }
@@ -126,7 +126,7 @@ const Auth: React.FC = () => {
 
       try {
         await cadastrarUsuario({
-          username: signUpData.username,
+          nickname: signUpData.nickname,
           nome: signUpData.nome,
           email: signUpData.email,
           senha: signUpData.senha
@@ -137,9 +137,15 @@ const Auth: React.FC = () => {
         // Set the flag indicating user just registered
         setJustRegistered(true);
 
+        // Pre-fill the login email with the registration email
+        setLoginCredentials({
+          email: signUpData.email,
+          senha: "",
+        });
+
         // Clear signup form
         setSignUpData({
-          username: "",
+          nickname: "",
           nome: "",
           email: "",
           senha: "",
@@ -169,20 +175,10 @@ const Auth: React.FC = () => {
     // If we're not changing the state, don't do anything
     if (showSignIn === signIn) return;
 
-    // If switching to login form without having just registered
-    if (showSignIn && !justRegistered) {
-      // Clear login fields for normal login flow
-      setLoginCredentials({
-        email: "",
-        senha: "",
-      });
-    }
-
-    // If switching to registration form
+    // If switching to registration form, clear the registration fields
     if (!showSignIn) {
-      // Clear registration form
       setSignUpData({
-        username: "",
+        nickname: "",
         nome: "",
         email: "",
         senha: "",
@@ -191,6 +187,15 @@ const Auth: React.FC = () => {
 
       // Reset the just registered flag
       setJustRegistered(false);
+    }
+
+    // If we're switching to login form and not coming from registration,
+    // clear the login fields
+    if (showSignIn && !justRegistered) {
+      setLoginCredentials({
+        email: "",
+        senha: "",
+      });
     }
 
     // Update the toggle state
@@ -218,9 +223,9 @@ const Auth: React.FC = () => {
             <Components.Subtitle>Criando minha conta</Components.Subtitle>
             <Components.Input
               type="text"
-              name="username"
+              name="nickname"
               placeholder="Username"
-              value={signUpData.username}
+              value={signUpData.nickname}
               onChange={handleSignUpChange}
             />
             <Components.Input
@@ -252,7 +257,7 @@ const Auth: React.FC = () => {
               onChange={handleSignUpChange}
             />
             <Components.Button type="submit" disabled={isLoading}>
-              {isLoading ? "Processando..." : "Cadastre-se"}
+              {isLoading ? "Entrando..." : "Cadastre-se"}
             </Components.Button>
           </Components.Form>
         </Components.SignUpContainer>
