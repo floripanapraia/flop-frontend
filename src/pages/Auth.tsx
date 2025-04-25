@@ -257,7 +257,7 @@ const Auth: React.FC = () => {
               onChange={handleSignUpChange}
             />
             <Components.Button type="submit" disabled={isLoading}>
-              {isLoading ? "Processando..." : "Cadastre-se"}
+              {isLoading ? "Entrando..." : "Cadastre-se"}
             </Components.Button>
           </Components.Form>
         </Components.SignUpContainer>
