@@ -225,7 +225,7 @@ const EditUser: React.FC = () => {
             <div className="relative">
               {/* Profile picture with default fallback */}
               <img
-                src={profilePicture || "/assets/kuro.png"}
+                src={profilePicture ? `data:image/jpeg;base64,${profilePicture}` : "/assets/kuro.png"}
                 alt="Perfil"
                 className="w-36 h-36 object-cover rounded-full mb-2"
               />
