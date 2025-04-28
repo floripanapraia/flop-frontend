@@ -53,13 +53,18 @@ export const updateUser = async (userData: UsuarioUpdateRequest): Promise<Usuari
 
     userData.nickname = currentUser.nickname;
 
-    // If password isn't being updated, send a special value that the backend recognizes
-    if (!userData.senha || userData.senha === "") {
-      // This special value is treated as "don't update password" in the backend
-      userData.senha = "NO_PASSWORD_UPDATE";
+    // Create a complete user object that includes all fields
+    const completeUserData = {
+      ...userData,
+      fotoPerfil: currentUser.fotoPerfil  // to preserve the profile picture
+    };
+
+    // If password isn't being updated, send a special value
+    if (!completeUserData.senha || completeUserData.senha === "") {
+      completeUserData.senha = "NO_PASSWORD_UPDATE";
     }
 
-    const response = await apiClient.put<UsuarioUpdateRequest>('/usuarios/atualizar', userData);
+    const response = await apiClient.put<UsuarioUpdateRequest>('/usuarios/atualizar', completeUserData);
     return response.data;
   } catch (error) {
     console.error('Error updating user:', error);
