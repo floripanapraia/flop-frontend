@@ -21,6 +21,7 @@ const EditUser: React.FC = () => {
   const [isChangingPicture, setIsChangingPicture] = useState(false);
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const [pictureFile, setPictureFile] = useState<File | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [form, setForm] = useState({
     nome: "",
@@ -83,8 +84,9 @@ const EditUser: React.FC = () => {
 
     const reader = new FileReader();
     reader.onload = () => {
+      setIsEditing(true);
       setProfilePicture(reader.result as string);
-      setIsChangingPicture(true);
+      setIsChangingPicture(true); 
     };
     reader.readAsDataURL(file);
   };
@@ -225,10 +227,15 @@ const EditUser: React.FC = () => {
             <div className="relative">
               {/* Profile picture with default fallback */}
               <img
-                src={profilePicture ? `data:image/jpeg;base64,${profilePicture}` : "/assets/kuro.png"}
+                src={
+                  isEditing
+                    ? `${profilePicture}`
+                    : `data:image/jpeg;base64,${profilePicture}`
+                } 
                 alt="Perfil"
                 className="w-36 h-36 object-cover rounded-full mb-2"
               />
+
               <label
                 htmlFor="profile-picture-upload"
                 className="absolute bottom-2 right-2 bg-white p-1 rounded-full shadow cursor-pointer"
