@@ -11,7 +11,6 @@ interface Usuario {
 }
 
 interface UsuarioUpdateRequest {
-  fotoPerfil?: string;
   nome?: string;
   nickname?: string;
   email?: string;
@@ -50,7 +49,16 @@ export const updateUserProfilePicture = async (file: File): Promise<void> => {
 // Update user profile
 export const updateUser = async (userData: UsuarioUpdateRequest): Promise<UsuarioUpdateRequest> => {
   try {
-    userData.nickname = (await getCurrentUser()).nickname;
+    const currentUser = await getCurrentUser();
+
+    userData.nickname = currentUser.nickname;
+
+    // If password isn't being updated, send a special value that the backend recognizes
+    if (!userData.senha || userData.senha === "") {
+      // This special value is treated as "don't update password" in the backend
+      userData.senha = "NO_PASSWORD_UPDATE";
+    }
+
     const response = await apiClient.put<UsuarioUpdateRequest>('/usuarios/atualizar', userData);
     return response.data;
   } catch (error) {
