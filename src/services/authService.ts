@@ -2,7 +2,7 @@ import apiClient from "./api";
 
 interface UsuarioCreateRequest {
   nome: string;
-  username: string;
+  nickname: string;
   email: string;
   senha: string;
   isAdmin?: boolean;
@@ -35,10 +35,10 @@ export const cadastrarUsuario = async (userData: UsuarioCreateRequest): Promise<
 // };
 
 // User login with Basic Auth
-export const login = async (username: string, senha: string): Promise<string> => {
+export const login = async (nickname: string, senha: string): Promise<string> => {
   try {
     // Create base64 encoded credentials for Basic Auth
-    const credentials = btoa(`${username}:${senha}`);
+    const credentials = btoa(`${nickname}:${senha}`);
 
     const response = await apiClient.post<string>('/auth/login', null, {
       headers: {
