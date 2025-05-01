@@ -93,7 +93,7 @@ const Home: React.FC = () => {
 
       {/* Botão entrar */}
       <button
-        onClick={() => navigate("/login")}
+        onClick={() => navigate("/auth")}
         className="absolute top-4 right-4 bg-[#182E4C] hover:bg-[#1a365d] text-white text-base font-bold py-2 px-5 rounded-full shadow transition-colors duration-300 tracking-wide"
       >
         ENTRAR
