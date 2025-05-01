@@ -20,11 +20,14 @@ export const Container = styled.div`
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   position: relative;
   overflow: hidden;
-  width: 768px; // Aumentei um pouco a largura
-  max-width: 100%;
-  min-height: 480px; // Aumentei a altura mínima
-`;
+  width: 768px;
+  max-width: 95%;
+  min-height: 480px;
 
+  @media (max-width: 768px) {
+    min-height: 520px; // Um pouco mais alto em telas menores
+  }
+`;
 export const SignUpContainer = styled.div<SignInProps>`
   position: absolute;
   top: 0;
@@ -34,6 +37,7 @@ export const SignUpContainer = styled.div<SignInProps>`
   width: 50%;
   opacity: 0;
   z-index: 1;
+  overflow-y: auto; /* Adiciona rolagem vertical quando necessário */
   ${(props) =>
     props.signinIn !== true
       ? `
@@ -42,6 +46,10 @@ export const SignUpContainer = styled.div<SignInProps>`
     z-index: 5;
   `
       : null}
+
+  @media (max-width: 768px) {
+    width: 100%; /* Em telas menores, usa a largura total */
+  }
 `;
 
 export const SignInContainer = styled.div<SignInProps>`
@@ -52,19 +60,27 @@ export const SignInContainer = styled.div<SignInProps>`
   left: 0;
   width: 50%;
   z-index: 2;
+  overflow-y: auto; /* Adiciona rolagem vertical quando necessário */
   ${(props) =>
     props.signinIn !== true ? `transform: translateX(100%);` : null}
-`;
 
+  @media (max-width: 768px) {
+    width: 100%; /* Em telas menores, usa a largura total */
+  }
+`;
 export const Form = styled.form`
   background-color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  padding: 0 40px; // Ajuste o padding se necessário
+  padding: 0 40px;
   height: 100%;
   text-align: center;
+  width: 100%;
+  @media (max-width: 768px) {
+    padding: 0 20px;
+  }
 `;
 
 export const Title = styled.h1`
@@ -78,36 +94,67 @@ export const Title = styled.h1`
 
 export const Subtitle = styled.h2`
   font-size: 20px;
-  color: rgb(34, 18, 93);
+  color: solid #182e4c;
   text-align: left;
   width: 100%;
-  border-bottom: 2px solid rgb(34, 18, 93);
+  border-bottom: 2px solid #182e4c;
 `;
-
+export const FormLabel = styled.label`
+  display: block;
+  text-align: left;
+  width: 100%;
+  font-weight: 500;
+  color: #333;
+  font-size: 12px;
+  color: solid #182e4c;
+`;
 export const Input = styled.input`
-  background-color: #eee;
+  background-color: #f1f1f1;
+  border: 1px solid #e6e6e6;
   border-radius: 8px;
   padding: 12px 15px;
-  margin: 8px 0;
   width: 100%;
+  box-sizing: border-box; /* Importante: inclui padding e border no cálculo da largura */
+  transition: all 0.3s;
+  font-size: 15px;
+
+  &:focus {
+    outline: none;
+
+    box-shadow: 0 0 0 2px rgba(7, 89, 133, 0.15);
+  }
+
+  &::placeholder {
+    color: #b0b0b0;
+  }
 `;
 
 export const Button = styled.button`
   border-radius: 20px;
-  border: 1px solid #182E4C;
-  background-color: #182E4C;
+  border: 1px solid #182e4c;
+  background-color: #182e4c;
   color: #ffffff;
   font-size: 12px;
   font-weight: bold;
   padding: 12px 45px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  transition: transform 80ms ease-in;
+  transition: all 0.3s ease-in-out;
+  margin-top: 15px;
+  cursor: pointer;
+
   &:active {
     transform: scale(0.95);
   }
   &:focus {
     outline: none;
+    box-shadow: 0 0 0 2px rgba(24, 46, 76, 0.5);
+  }
+  &:disabled {
+    background-color: #cccccc;
+    border-color: #bbbbbb;
+    cursor: not-allowed;
+    opacity: 0.7;
   }
 `;
 
