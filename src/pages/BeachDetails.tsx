@@ -1,23 +1,29 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import WelcomeModal from "../components/WelcomeModal";
+import EvaluationModal from "../components/EvaluationModal";
 
 const BeachDetails: React.FC = () => {
   const navigate = useNavigate();
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [activeTab, setActiveTab] = useState("avaliacoes");
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Mudar para true quando o usuário fizer login
+  const [showEvaluationModal, setShowEvaluationModal] = useState(false);
 
   const toggleHelpModal = () => {
     setShowHelpModal(!showHelpModal);
+  };
+
+  const toggleEvaluationModal = () => {
+    setShowEvaluationModal(!showEvaluationModal);
   };
 
   return (
     <div className="relative h-screen w-screen bg-blue-50 overflow-hidden">
       <div className="absolute top-6 right-6 z-50">
         <button
-          onClick={() => navigate(isLoggedIn ? "/perfil" : "/login")}
-          className="bg-[#182E4D] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#1e3a5f] transition-colors"
+          onClick={() => navigate(isLoggedIn ? "/perfil" : "/auth")}
+          className="bg-[#182E4D] text-white px-6 py-3 rounded-3xl text-sm font-medium hover:bg-[#1e3a5f] transition-colors"
         >
           {isLoggedIn ? "Perfil" : "ENTRAR"}
         </button>
@@ -192,6 +198,15 @@ const BeachDetails: React.FC = () => {
             </div>
           </div>
         </div>
+        {/* Botão Avaliar adicionado aqui */}
+        <div className="mt-6 mb-8 flex justify-center">
+          <button
+            onClick={toggleEvaluationModal}
+            className="px-5 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors shadow-md"
+          >
+            Avaliar
+          </button>
+        </div>
 
         {/* Navegação simplificada sem ícones */}
         <div className="bg-white border-t border-gray-200 p-3 flex justify-around shadow-sm">
@@ -230,6 +245,19 @@ const BeachDetails: React.FC = () => {
       </button>
 
       {showHelpModal && <WelcomeModal onClose={toggleHelpModal} />}
+
+      {/* // arrumar aqui */}
+      {showEvaluationModal && (
+        <EvaluationModal
+          onClose={toggleEvaluationModal}
+          beachName={""}
+          userName={""}
+          userNickname={""}
+          onSubmit={function (selectedConditions: string[]): void {
+            throw new Error("Function not implemented.");
+          }}
+        />
+      )}
     </div>
   );
 };
