@@ -86,7 +86,7 @@ const EditUser: React.FC = () => {
     reader.onload = () => {
       setIsEditing(true);
       setProfilePicture(reader.result as string);
-      setIsChangingPicture(true); 
+      setIsChangingPicture(true);
     };
     reader.readAsDataURL(file);
   };
@@ -194,8 +194,10 @@ const EditUser: React.FC = () => {
   };
 
   const handleLogout = () => {
-    setAuthToken(null);
-    navigate("/auth");
+    if (window.confirm("Deseja realmente sair?")) {
+      setAuthToken(null);
+      navigate("/auth");
+    }
   };
 
   if (loading) {
@@ -231,7 +233,7 @@ const EditUser: React.FC = () => {
                   isEditing
                     ? `${profilePicture}`
                     : `data:image/jpeg;base64,${profilePicture}`
-                } 
+                }
                 alt="Perfil"
                 className="w-36 h-36 object-cover rounded-full mb-2"
               />
@@ -299,7 +301,8 @@ const EditUser: React.FC = () => {
                 type="text"
                 value={form.nome}
                 onChange={handleChange}
-                className="w-full p-2 rounded bg-gray-200"
+                className="w-full p-2 rounded bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                maxLength={80}
               />
             </div>
 
@@ -310,7 +313,8 @@ const EditUser: React.FC = () => {
                 type="email"
                 value={form.email}
                 onChange={handleChange}
-                className="w-full p-2 rounded bg-gray-200"
+                className="w-full p-2 rounded bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                maxLength={100}
               />
             </div>
 
@@ -323,22 +327,33 @@ const EditUser: React.FC = () => {
                 type="password"
                 value={form.senha}
                 onChange={handleChange}
-                className="w-full p-2 rounded bg-gray-200"
+                className="w-full p-2 rounded bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
                 placeholder="Deixe em branco para manter a senha atual"
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault(); // Bloqueia a tecla de espaço
+                  }
+                }}
+                minLength={8}
+                maxLength={32}
               />
             </div>
 
             <div>
-              <label className="text-sm block text-[#1f2a4d]">
-                Confirmar Nova Senha:
-              </label>
               <input
                 name="confirmarSenha"
                 type="password"
                 value={form.confirmarSenha}
                 onChange={handleChange}
-                className="w-full p-2 rounded bg-gray-200"
+                className="w-full p-2 rounded bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
                 placeholder="Confirme a nova senha"
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault(); // Bloqueia a tecla de espaço
+                  }
+                }}
+                minLength={8}
+                maxLength={32}
               />
             </div>
 
