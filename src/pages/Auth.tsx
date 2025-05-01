@@ -9,7 +9,7 @@ import {
   ErrorResponse,
   handleErrorWithToast,
   normalizeError,
-  shouldShowInModal
+  shouldShowInModal,
 } from "../utils/errorHandler";
 
 const Auth: React.FC = () => {
@@ -129,7 +129,7 @@ const Auth: React.FC = () => {
           nickname: signUpData.nickname,
           nome: signUpData.nome,
           email: signUpData.email,
-          senha: signUpData.senha
+          senha: signUpData.senha,
         });
 
         toast.success("Conta criada com sucesso!");
@@ -220,42 +220,75 @@ const Auth: React.FC = () => {
         {/* Cadastro */}
         <Components.SignUpContainer signinIn={signIn}>
           <Components.Form onSubmit={handleSignUpSubmit}>
-            <Components.Subtitle>Criando minha conta</Components.Subtitle>
-            <Components.Input
-              type="text"
-              name="nickname"
-              placeholder="Username"
-              value={signUpData.nickname}
-              onChange={handleSignUpChange}
-            />
-            <Components.Input
-              type="text"
-              name="nome"
-              placeholder="Nome"
-              value={signUpData.nome}
-              onChange={handleSignUpChange}
-            />
-            <Components.Input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={signUpData.email}
-              onChange={handleSignUpChange}
-            />
-            <Components.Input
-              type="password"
-              name="senha"
-              placeholder="Senha"
-              value={signUpData.senha}
-              onChange={handleSignUpChange}
-            />
-            <Components.Input
-              type="password"
-              name="confirmSenha"
-              placeholder="Confirmar Senha"
-              value={signUpData.confirmSenha}
-              onChange={handleSignUpChange}
-            />
+            <div className="w-full mb-4">
+              <Components.Subtitle>Criando minha conta</Components.Subtitle>
+            </div>
+
+            <div className="w-full mb-1">
+              <Components.FormLabel>Username</Components.FormLabel>
+              <Components.Input
+                type="text"
+                name="nickname"
+                value={signUpData.nickname}
+                onChange={handleSignUpChange}
+                maxLength={20}
+              />
+            </div>
+            <div className="w-full mb-1">
+              <Components.FormLabel>Nome</Components.FormLabel>
+              <Components.Input
+                type="text"
+                name="nome"
+                value={signUpData.nome}
+                onChange={handleSignUpChange}
+                maxLength={80}
+              />
+            </div>
+
+            <div className="w-full mb-1">
+              <Components.FormLabel>Email</Components.FormLabel>
+              <Components.Input
+                type="email"
+                name="email"
+                value={signUpData.email}
+                onChange={handleSignUpChange}
+                maxLength={100}
+              />
+            </div>
+
+            <div className="w-full mb-1">
+              <Components.FormLabel>Senha</Components.FormLabel>
+              <Components.Input
+                type="password"
+                name="senha"
+                value={signUpData.senha}
+                onChange={handleSignUpChange}
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault(); // Bloqueia a tecla de espaço
+                  }
+                }}
+                minLength={8}
+                maxLength={32}
+              />
+            </div>
+
+            <div className="w-full mb-1">
+              <Components.FormLabel>Confirmar Senha</Components.FormLabel>
+              <Components.Input
+                type="password"
+                name="confirmSenha"
+                value={signUpData.confirmSenha}
+                onChange={handleSignUpChange}
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault(); // Bloqueia a tecla de espaço
+                  }
+                }}
+                minLength={8}
+                maxLength={32}
+              />
+            </div>
             <Components.Button type="submit" disabled={isLoading}>
               {isLoading ? "Entrando..." : "Cadastre-se"}
             </Components.Button>
@@ -265,21 +298,36 @@ const Auth: React.FC = () => {
         {/* Login */}
         <Components.SignInContainer signinIn={signIn}>
           <Components.Form onSubmit={handleLoginSubmit}>
-            <Components.Subtitle>Entrar</Components.Subtitle>
-            <Components.Input
-              type="text"
-              name="email"
-              placeholder="Email"
-              value={loginCredentials.email}
-              onChange={handleLoginChange}
-            />
-            <Components.Input
-              type="password"
-              name="senha"
-              placeholder="Senha"
-              value={loginCredentials.senha}
-              onChange={handleLoginChange}
-            />
+            <div className="w-full mb-4">
+              <Components.Subtitle>Entrar</Components.Subtitle>
+            </div>
+
+            <div className="w-full mb-1">
+              <Components.FormLabel>Email</Components.FormLabel>
+              <Components.Input
+                type="text"
+                name="email"
+                value={loginCredentials.email}
+                onChange={handleLoginChange}
+                maxLength={100}
+              />
+            </div>
+
+            <div className="w-full mb-1">
+              <Components.FormLabel>Senha</Components.FormLabel>
+              <Components.Input
+                type="password"
+                name="senha"
+                value={loginCredentials.senha}
+                onChange={handleLoginChange}
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault(); // Bloqueia a tecla de espaço
+                  }
+                }}
+              />
+            </div>
+
             <Components.Anchor href="#">Esqueceu sua senha?</Components.Anchor>
             <Components.Button type="submit" disabled={isLoading}>
               {isLoading ? "Processando..." : "Entrar"}
