@@ -53,14 +53,16 @@ const Home: React.FC = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Pesquisar praia..."
-          className="w-full border px-4 py-2 rounded mb-4 focus:ring-2 focus:ring-blue-500"
+          className="w-full border px-4 py-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         />
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 pb-4 max-h-80 overflow-y-auto">
+          {" "}
+          {/* Alterações aqui */}
           {filteredBeaches.map((beach) => (
             <button
               key={beach.idPraia}
               onClick={() => setSelectedBeach(beach)}
-              className="text-left bg-gray-200 px-4 py-2 rounded"
+              className="text-left bg-gray-200 text-blue-900 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
             >
               {beach.nomePraia}
             </button>
