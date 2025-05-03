@@ -1,18 +1,18 @@
 // src/pages/Home.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import WelcomeModal from "../components/WelcomeModal";
-import { filterPraias, getPraiaNow, PraiaDTO } from "../services/beachService";
+import { filterPraias, getAllPraias, PraiaDTO } from "../services/beachService";
 import MapComponent from "../components/MapComponent";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [isAIActive, setIsAIActive] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(""); // Estado para armazenar o valor do input de busca
+  const [searchQuery, setSearchQuery] = useState("");
   const [filteredBeaches, setFilteredBeaches] = useState<PraiaDTO[]>([]);
   const [selectedBeach, setSelectedBeach] = useState<PraiaDTO | null>(null);
-  const [beachInfo, setBeachInfo] = useState<PraiaDTO | null>(null);
+  const [allBeaches, setAllBeaches] = useState<PraiaDTO[]>([]);
 
   const handleSliderChange = () => {
     setIsAIActive(!isAIActive);
@@ -21,39 +21,24 @@ const Home: React.FC = () => {
     setShowHelpModal(!showHelpModal);
   };
 
-  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
+  useEffect(() => {
+    getAllPraias().then(setAllBeaches).catch(console.error);
+  }, []);
 
-    if (query.length > 2) {
-      // Filtro somente se houver mais de 2 caracteres
-      try {
-        const result = await filterPraias({ nomePraia: query }); // Passando o filtro para o serviço
-        setFilteredBeaches(result); // Atualizando as praias filtradas
-      } catch (error) {
-        console.error("Erro ao buscar praias:", error);
-      }
+  useEffect(() => {
+    if (searchQuery.length > 2) {
+      filterPraias({ nomePraia: searchQuery })
+        .then(setFilteredBeaches)
+        .catch(console.error);
     } else {
-      setFilteredBeaches([]); // Limpar as praias filtradas se a busca estiver vazia
+      setFilteredBeaches([]);
     }
-  };
-  const handleBeachSelect = async (beach: PraiaDTO) => {
-    setSelectedBeach(beach);
-    try {
-      const info = await getPraiaNow(beach.idPraia);  // busca /praias/{id}/now :contentReference[oaicite:2]{index=2}&#8203;:contentReference[oaicite:3]{index=3}
-      setBeachInfo(info);
-    } catch (err) {
-      console.error("Erro ao carregar info da praia:", err);
-    }
-  };
+  }, [searchQuery]);
 
   return (
     <div className="relative h-screen w-screen">
       {/* Passando a praia selecionada como prop para o MapComponent */}
-      <MapComponent
-        selectedBeach={selectedBeach}
-        beachInfo={beachInfo}
-      />
+      <MapComponent activeBeachFromSearch={selectedBeach} praias={allBeaches} />
       {/* Caixa de busca */}
       <div className="absolute top-4 left-4 bg-white rounded-xl shadow-lg p-6 max-w-md w-full">
         <div className="flex items-center space-x-2 mb-4">
@@ -65,20 +50,19 @@ const Home: React.FC = () => {
 
         <input
           type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Pesquisar praia..."
-          value={searchQuery} // Atualizando o valor do input com o estado
-          onChange={handleSearchChange} // Chamando a função de filtragem
-          className="w-full border border-gray-300 rounded-md px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border px-4 py-2 rounded mb-4 focus:ring-2 focus:ring-blue-500"
         />
-
-        <div className="flex flex-col space-y-2">
+        <div className="flex flex-col gap-2">
           {filteredBeaches.map((beach) => (
             <button
-              key={beach.idPraia} 
-              onClick={() => handleBeachSelect(beach)}
-              className="bg-gray-200 rounded-md px-4 py-2 text-sm text-left"
+              key={beach.idPraia}
+              onClick={() => setSelectedBeach(beach)}
+              className="text-left bg-gray-200 px-4 py-2 rounded"
             >
-              {beach.nomePraia} {/* Exiba o nome da praia */}
+              {beach.nomePraia}
             </button>
           ))}
         </div>
