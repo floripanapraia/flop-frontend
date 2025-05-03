@@ -1,48 +1,31 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  GoogleMap,
-  LoadScript,
-  Marker,
-  InfoWindow,
-} from "@react-google-maps/api";
-import { PraiaDTO } from "../services/beachService";
-import { useNavigate } from "react-router-dom";
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { PraiaDTO, getPraiaNow } from "../services/beachService";
+import BeachInfoWindow from "./BeachInfoWindow";
 
 const LIBRARIES: "places"[] = ["places"];
 
+const MY_MAP_ID = "2cdec756f1d98a30"; // ID do seu mapa personalizado
+
 interface MapComponentProps {
-  selectedBeach: PraiaDTO | null;
-  beachInfo: PraiaDTO | null;
+  activeBeachFromSearch: PraiaDTO | null;
+  praias: PraiaDTO[];
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({
-  selectedBeach,
-  beachInfo,
+  activeBeachFromSearch,
+  praias,
 }) => {
-  const navigate = useNavigate();
-  const [center, setCenter] = useState({ lat: -27.5954, lng: -48.548 });
-  const [infoOpen, setInfoOpen] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
+  const [center, setCenter] = useState({ lat: -27.5954, lng: -48.548 });
+  const [activeBeach, setActiveBeach] = useState<PraiaDTO | null>(null);
+  const [activeBeachInfo, setActiveBeachInfo] = useState<PraiaDTO | null>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const handleLoad = (map: google.maps.Map) => {
     mapRef.current = map;
   };
 
-  useEffect(() => {
-    if (selectedBeach && mapRef.current) {
-      const lat = selectedBeach.localizacao.latitude;
-      const lng = selectedBeach.localizacao.longitude;
-      setCenter({ lat, lng });
-      setInfoOpen(true);
-    }
-  }, [selectedBeach]);
-
-  const containerStyle = {
-    width: "100%",
-    height: "100%",
-  };
-
-  // Definindo os limites de Florianópolis
   const latLngBounds = {
     north: -27.3087,
     south: -27.8874,
@@ -55,80 +38,113 @@ const MapComponent: React.FC<MapComponentProps> = ({
     streetViewControl: false,
     zoomControl: false,
     cameraControl: false,
+    clickableIcons: false,
+    mapId: MY_MAP_ID,
     restriction: {
-      latLngBounds: latLngBounds, 
-      strictBounds: false, // Permite que o mapa se mova dentro dos limites, mas não fora deles
+      latLngBounds: latLngBounds,
+      strictBounds: false,
     },
+  };
+
+  useEffect(() => {
+    if (!activeBeachFromSearch) return;
+    selectBeach(activeBeachFromSearch);
+  }, [activeBeachFromSearch]);
+  const containerStyle = {
+    width: "100%",
+    height: "100%",
+  };
+
+  const selectBeach = async (beach: PraiaDTO) => {
+    setActiveBeach(beach);
+    setCenter({
+      lat: beach.localizacao.latitude,
+      lng: beach.localizacao.longitude,
+    });
+    try {
+      const info = await getPraiaNow(beach.idPraia);
+      setActiveBeachInfo(info);
+    } catch (e) {
+      console.error(e);
+      setActiveBeachInfo(null);
+    } finally {
+      setInfoOpen(true);
+    }
+  };
+
+  // Função para calcular a distância entre dois pontos usando a fórmula de Haversine
+  const calculateDistance = (
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number
+  ) => {
+    const R = 6371; // Raio da Terra em km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distância em km
+  };
+
+  // Função chamada ao clicar no mapa para encontrar a praia mais próxima
+  const handleMapClick = async (event: google.maps.MapMouseEvent) => {
+    if (!event.latLng) return;
+    const lat = event.latLng.lat(),
+      lng = event.latLng.lng();
+    let closest: PraiaDTO | null = null,
+      minD = Infinity;
+    praias.forEach((beach) => {
+      const distance = calculateDistance(
+        lat,
+        lng,
+        beach.localizacao.latitude,
+        beach.localizacao.longitude
+      );
+      if (distance < minD) {
+        minD = distance;
+        closest = beach;
+      }
+    });
+    if (closest) await selectBeach(closest);
   };
 
   return (
     <LoadScript
       googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || ""}
       libraries={LIBRARIES}
+      mapIds={[MY_MAP_ID]}
     >
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}
         zoom={12}
         onLoad={handleLoad}
+        onClick={handleMapClick} // Adicionando o evento de clique no mapa
         options={mapOptions}
       >
-        {selectedBeach && (
-          <>
-            <Marker
-              position={{
-                lat: selectedBeach.localizacao.latitude,
-                lng: selectedBeach.localizacao.longitude,
-              }}
-              title={selectedBeach.nomePraia}
-              onClick={() => setInfoOpen(true)} // também abre se clicar no próprio marcador
-            />
+        {activeBeach && (
+          <Marker
+            position={{
+              lat: activeBeach.localizacao.latitude,
+              lng: activeBeach.localizacao.longitude,
+            }}
+            title={activeBeach.nomePraia}
+            onClick={() => setInfoOpen(true)}
+          />
+        )}
 
-            {infoOpen && (
-              <InfoWindow
-                position={{
-                  lat: selectedBeach.localizacao.latitude,
-                  lng: selectedBeach.localizacao.longitude,
-                }}
-                onCloseClick={() => setInfoOpen(false)}
-              >
-                {/* Conteúdo do InfoWindow */}
-                <div style={{ maxWidth: 300 }}>
-                  <h3 style={{ margin: 0 }}>{selectedBeach.nomePraia}</h3>
-                  <strong>Condições hoje:</strong>
-                  <ul style={{ paddingLeft: 16, margin: "4px 0" }}>
-                    {beachInfo &&
-                      Object.entries(beachInfo.condicoesAvaliacoes).map(
-                        ([condicao, qtd]) => (
-                          <li key={condicao}>
-                            {condicao}: {qtd}
-                          </li>
-                        )
-                      )}
-                  </ul>
-                  <img
-                    src={`https://lh3.googleusercontent.com/gps-cs-s/AC9h4npAnwHyJdr9Q9oUQ2MjXm-ztXG1UY-Kc4F-cTN1vFCtNIjcgkC6PbaBnbXnbIs_1NGqvy31o7q8RZoDBwq-K68L2QMC-j-3CrWWeefubW1ThewXV1IN_cJyJpyAXf6nPUDQDy9D=w408-h306-k-no`}
-                    alt={selectedBeach.nomePraia}
-                    style={{ width: "100%", borderRadius: 4 }}
-                  />
-                  <button
-                    onClick={() => navigate("/praia")}
-                    style={{
-                      marginTop: 8,
-                      padding: "4px 8px",
-                      background: "#182E4D",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 4,
-                      cursor: "pointer",
-                    }}
-                  >
-                    Saber mais
-                  </button>
-                </div>
-              </InfoWindow>
-            )}
-          </>
+        {infoOpen && activeBeach && activeBeachInfo && (
+          <BeachInfoWindow
+            beach={activeBeach}
+            info={activeBeachInfo}
+            onClose={() => setInfoOpen(false)}
+          />
         )}
       </GoogleMap>
     </LoadScript>
