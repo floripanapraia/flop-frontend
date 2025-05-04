@@ -7,11 +7,12 @@ import {
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import Auth from "./pages/Auth";
-import BeachDetails from "./pages/BeachDetails";
+import BeachDetails from "./pages/FlopFeed";
 import EditUser from "./pages/EditUser";
 import Home from "./pages/Home";
 import EvaluationFeed from "./pages/EvaluationFeed";
 import PhotoFeed from "./pages/PhotoFeed";
+import FlopFeed from "./pages/FlopFeed";
 
 const App: React.FC = () => {
   return (
@@ -21,8 +22,8 @@ const App: React.FC = () => {
         <Route path="/editar" element={<EditUser />} />
         <Route path="/" element={<Navigate replace to="/auth" />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/praia" element={<BeachDetails />} />
-        <Route path="/feedfotos" element={<PhotoFeed />} />
+        <Route path="/flops" element={<FlopFeed />} />
+        <Route path="/fotos" element={<PhotoFeed />} />
         <Route path="/avaliacoes" element={<EvaluationFeed />} />
       </Routes>
 

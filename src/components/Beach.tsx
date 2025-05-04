@@ -1,57 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import EvaluationModal from "../components/EvaluationModal";
+import EvaluationModal from "./EvaluationModal";
 
-type TabType = {
-  id: "avaliacoes" | "fotos" | "flops";
-  label: string;
-};
+interface BeachProps {
+  onClose: () => void;
+  onSubmit: (selectedConditions: string[]) => void;
+}
 
-const BeachDetails: React.FC = () => {
-  const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Mudar para true quando o usuário fizer login
+const Beach: React.FC = () => {
   const [showEvaluationModal, setShowEvaluationModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<"avaliacoes" | "fotos" | "flops">(
-    "flops"
-  );
+  const navigate = useNavigate();
 
   const toggleEvaluationModal = () => {
     setShowEvaluationModal(!showEvaluationModal);
   };
 
-  const tabs: TabType[] = [
-    { id: "avaliacoes", label: "Avaliações" },
-    { id: "fotos", label: "Fotos" },
-    { id: "flops", label: "Flops" },
-  ];
-
-  const handleTabClick = (tabId: "avaliacoes" | "fotos" | "flops") => {
-    setActiveTab(tabId);
-    switch (tabId) {
-      case "avaliacoes":
-        navigate("/avaliacoes");
-        break;
-      case "fotos":
-        navigate("/feedfotos");
-        break;
-      case "flops":
-        navigate("/outrarota");
-        break;
-    }
-  };
-
   return (
-    <div className="relative h-screen w-screen bg-blue-50 overflow-hidden">
-      {/* Botão de perfil */}
-      <div className="absolute top-4 right-6 z-50">
-        <button
-          onClick={() => navigate(isLoggedIn ? "/perfil" : "/auth")}
-          className="bg-[#182E4D] text-white px-6 py-3 rounded-3xl text-sm font-medium hover:bg-[#1e3a5f] transition-colors"
-        >
-          {isLoggedIn ? "Perfil" : "ENTRAR"}
-        </button>
-      </div>
-
+    <div>
       {/* Painel lateral */}
       <div className="absolute top-0 left-0 h-full bg-white/95 backdrop-blur-md shadow-xl w-[620px] max-w-full flex flex-col  ">
         {/* Cabeçalho */}
@@ -200,9 +165,8 @@ const BeachDetails: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Botão Avaliar */}
-        <div className="mt-6 mb-8 flex justify-center">
+         {/* Botão Avaliar */}
+         <div className="mt-6 mb-8 flex justify-center">
           <button
             onClick={toggleEvaluationModal}
             className="px-5 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors shadow-md"
@@ -211,128 +175,6 @@ const BeachDetails: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {/* Área do feed */}
-      <div className="ml-[620px] h-full flex flex-col">
-        <div className="bg-white px-6 pt-5 pb-2 border-b">
-          <div className="flex items-center space-x-3">
-            <img
-              src="/assets/LOGO.png"
-              alt="Logo"
-              className="w-10 h-10 drop-shadow-sm"
-            />
-            <h2 className="text-[#182E4D] text-xl font-bold">
-              Floripa na Praia
-            </h2>
-          </div>
-        </div>
-
-        {/* Barra de navegação */}
-        <div className="bg-white border-b border-gray-200 py-2 flex justify-around shadow-sm sticky top-0 z-40">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabClick(tab.id)}
-              className={`px-3 py-1 text-xs font-medium ${
-                activeTab === tab.id
-                  ? "text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <div className="flex flex-col items-center">
-                <span>{tab.label}</span>
-                {activeTab === tab.id && (
-                  <div className="w-5 h-0.5 bg-blue-600 mt-1 rounded-full"></div>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Área de publicação */}
-        <div className="bg-white p-4 shadow-sm">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0">
-              <img
-                src="assets/defaultProfile.svg"
-                alt="Perfil"
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            </div>
-            <div className="flex-1">
-              <textarea
-                placeholder="Como está a praia hoje?"
-                className="w-full border-b border-gray-200 p-2 focus:outline-none focus:border-blue-400 resize-none text-sm"
-                rows={2}
-              />
-              <div className="flex justify-end mt-2">
-                <button className="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                  Publicar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Feed de posts */}
-        <div className="flex-1 overflow-y-auto p-6 bg-gray-50 space-y-4">
-          {/* Post  */}
-          <div className="bg-white rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0">
-                <img
-                  src="assets/defaultProfile.svg"
-                  alt="tatiana_sakuma"
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <h3 className="font-bold text-gray-800 text-sm">
-                      tatiana_sakuma
-                    </h3>
-                    {/* Bolinha separadora e tempo */}
-                    <span className="text-gray-400">•</span>
-                    <span className="text-xs text-gray-500">2h atrás</span>
-                  </div>
-
-                  {/* Ícone de denúncia (no canto direito) */}
-                  <button
-                    className="text-gray-400 hover:text-gray-600"
-                    onClick={() => console.log("Denunciar post")}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <p className="text-gray-700 mt-1 text-sm">
-                  O mar tá tranquilo hoje, sem muita onda, perfeito pra
-                  relaxar... O mar tá tranquilo hoje, sem muita onda, perfeito
-                  pra relaxar... O mar tá tranquilo hoje, sem muita onda,
-                  perfeito pra relaxar... O mar tá tranquilo hoje, sem muita
-                  onda, perfeito pra relaxar... O mar tá tranquilo hoje, sem
-                  muita onda, perfeito pra relaxar...
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Modal de avaliação */}
       {showEvaluationModal && (
         <EvaluationModal
@@ -348,5 +190,4 @@ const BeachDetails: React.FC = () => {
     </div>
   );
 };
-
-export default BeachDetails;
+export default Beach;
