@@ -136,7 +136,7 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
         {/* Header */}
         <div className="p-6">
           <h2 className="text-xl font-bold text-center text-blue-900">
-            {beachName}Praia da Joaquina
+            {beachName}
           </h2>
           <div className="flex items-center mt-2 mb-6">
             {/* Avatar do usuário */}

@@ -1,26 +1,49 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import WelcomeModal from "../components/WelcomeModal";
 import EvaluationModal from "../components/EvaluationModal";
+
+type TabType = {
+  id: "avaliacoes" | "fotos" | "flops";
+  label: string;
+};
 
 const BeachDetails: React.FC = () => {
   const navigate = useNavigate();
-  const [showHelpModal, setShowHelpModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("avaliacoes");
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Mudar para true quando o usuário fizer login
   const [showEvaluationModal, setShowEvaluationModal] = useState(false);
-
-  const toggleHelpModal = () => {
-    setShowHelpModal(!showHelpModal);
-  };
+  const [activeTab, setActiveTab] = useState<"avaliacoes" | "fotos" | "flops">(
+    "flops"
+  );
 
   const toggleEvaluationModal = () => {
     setShowEvaluationModal(!showEvaluationModal);
   };
 
+  const tabs: TabType[] = [
+    { id: "avaliacoes", label: "Avaliações" },
+    { id: "fotos", label: "Fotos" },
+    { id: "flops", label: "Flops" },
+  ];
+
+  const handleTabClick = (tabId: "avaliacoes" | "fotos" | "flops") => {
+    setActiveTab(tabId);
+    switch (tabId) {
+      case "avaliacoes":
+        navigate("/avaliacoes");
+        break;
+      case "fotos":
+        navigate("/feedfotos");
+        break;
+      case "flops":
+        navigate("/outrarota");
+        break;
+    }
+  };
+
   return (
     <div className="relative h-screen w-screen bg-blue-50 overflow-hidden">
-      <div className="absolute top-6 right-6 z-50">
+      {/* Botão de perfil */}
+      <div className="absolute top-4 right-6 z-50">
         <button
           onClick={() => navigate(isLoggedIn ? "/perfil" : "/auth")}
           className="bg-[#182E4D] text-white px-6 py-3 rounded-3xl text-sm font-medium hover:bg-[#1e3a5f] transition-colors"
@@ -29,79 +52,58 @@ const BeachDetails: React.FC = () => {
         </button>
       </div>
 
-      {/* Mapa de fundo com overlay */}
-      <div className="absolute inset-0 bg-blue-900/10 backdrop-blur-sm">
-        <img
-          src="assets/mapa.png"
-          alt="Mapa Floripa na Praia"
-          className="w-full h-full object-cover"
-        />
-      </div>
+      {/* Painel lateral */}
+      <div className="absolute top-0 left-0 h-full bg-white/95 backdrop-blur-md shadow-xl w-[620px] max-w-full flex flex-col  ">
+        {/* Cabeçalho */}
+        <div
+          className="px-6 pt-8 pb-8 border relative"
+          style={{
+            backgroundImage: "url('assets/joaca.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
+          <div className="absolute inset-0 bg-black/30 z-0"></div>
 
-      {/* Painel lateral*/}
-      <div className="absolute top-0 left-0 h-full bg-white/95 backdrop-blur-md rounded-r-3xl shadow-xl w-[620px] max-w-full flex flex-col border-r border-gray-200">
-        {/* Cabeçalho*/}
-        <div className="px-6 pt-6 pb-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-tr-3xl">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <img
-                src="/assets/LOGO.png"
-                alt="Logo"
-                className="w-10 h-10 drop-shadow-sm"
-              />
-              <h2 className="text-[#182E4D] text-xl font-bold">
-                Floripa na Praia
-              </h2>
-            </div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3"></div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => navigate(-1)}
-                className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate(-1)}
+                  className="p-2 text-white hover:text-blue-300 transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Barra de pesquisa*/}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Pesquisar praia..."
-              className="w-full bg-white border border-gray-200 rounded-full px-5 py-3 pl-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent shadow-sm"
-            />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-blue-400 absolute left-4 top-3.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            {/* Barra de pesquisa */}
+            <div className="flex-1 mx-4">
+              <input
+                type="text"
+                placeholder="Pesquisar praia..."
+                className="w-full border px-4 py-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white/90 backdrop-blur-sm"
               />
-            </svg>
+            </div>
           </div>
         </div>
 
-        {/* Restante do código permanece igual */}
         <div className="flex-1 overflow-y-auto">
           {/* Cabeçalho da praia */}
           <div className="px-6 py-5 border-b border-gray-100">
@@ -127,7 +129,7 @@ const BeachDetails: React.FC = () => {
             </div>
           </div>
 
-          {/* Destaques do dia*/}
+          {/* Destaques do dia */}
           <div className="px-6 py-5">
             <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
               <span className="w-1 h-5 bg-blue-500 rounded-full mr-2"></span>
@@ -174,7 +176,7 @@ const BeachDetails: React.FC = () => {
               ].map((item, index) => (
                 <div key={index} className="flex flex-col items-center group">
                   <div
-                    className={`bg-${item.color}-50 p-3 rounded-xl mb-2 group-hover:bg-${item.color}-100 transition-colors`}
+                    className={`bg-${item.color} p-3 rounded-xl mb-2 group-hover:bg-${item.color}-100 transition-colors`}
                   >
                     {typeof item.icon === "string" &&
                     item.icon.includes(".svg") ? (
@@ -198,7 +200,8 @@ const BeachDetails: React.FC = () => {
             </div>
           </div>
         </div>
-        {/* Botão Avaliar adicionado aqui */}
+
+        {/* Botão Avaliar */}
         <div className="mt-6 mb-8 flex justify-center">
           <button
             onClick={toggleEvaluationModal}
@@ -207,18 +210,30 @@ const BeachDetails: React.FC = () => {
             Avaliar
           </button>
         </div>
+      </div>
 
-        {/* Navegação simplificada sem ícones */}
-        <div className="bg-white border-t border-gray-200 p-3 flex justify-around shadow-sm">
-          {[
-            { id: "avaliacoes", label: "Avaliações" },
-            { id: "fotos", label: "Fotos" },
-            { id: "flops", label: "Flops" },
-          ].map((tab) => (
+      {/* Área do feed */}
+      <div className="ml-[620px] h-full flex flex-col">
+        <div className="bg-white px-6 pt-5 pb-2 border-b">
+          <div className="flex items-center space-x-3">
+            <img
+              src="/assets/LOGO.png"
+              alt="Logo"
+              className="w-10 h-10 drop-shadow-sm"
+            />
+            <h2 className="text-[#182E4D] text-xl font-bold">
+              Floripa na Praia
+            </h2>
+          </div>
+        </div>
+
+        {/* Barra de navegação */}
+        <div className="bg-white border-b border-gray-200 py-2 flex justify-around shadow-sm sticky top-0 z-40">
+          {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-sm font-medium ${
+              onClick={() => handleTabClick(tab.id)}
+              className={`px-3 py-1 text-xs font-medium ${
                 activeTab === tab.id
                   ? "text-blue-600"
                   : "text-gray-500 hover:text-gray-700"
@@ -227,32 +242,104 @@ const BeachDetails: React.FC = () => {
               <div className="flex flex-col items-center">
                 <span>{tab.label}</span>
                 {activeTab === tab.id && (
-                  <div className="w-6 h-0.5 bg-blue-600 mt-1 rounded-full"></div>
+                  <div className="w-5 h-0.5 bg-blue-600 mt-1 rounded-full"></div>
                 )}
               </div>
             </button>
           ))}
         </div>
+
+        {/* Área de publicação */}
+        <div className="bg-white p-4 shadow-sm">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <img
+                src="assets/defaultProfile.svg"
+                alt="Perfil"
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            </div>
+            <div className="flex-1">
+              <textarea
+                placeholder="Como está a praia hoje?"
+                className="w-full border-b border-gray-200 p-2 focus:outline-none focus:border-blue-400 resize-none text-sm"
+                rows={2}
+              />
+              <div className="flex justify-end mt-2">
+                <button className="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                  Publicar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Feed de posts */}
+        <div className="flex-1 overflow-y-auto p-6 bg-gray-50 space-y-4">
+          {/* Post  */}
+          <div className="bg-white rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <img
+                  src="assets/defaultProfile.svg"
+                  alt="tatiana_sakuma"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <h3 className="font-bold text-gray-800 text-sm">
+                      tatiana_sakuma
+                    </h3>
+                    {/* Bolinha separadora e tempo */}
+                    <span className="text-gray-400">•</span>
+                    <span className="text-xs text-gray-500">2h atrás</span>
+                  </div>
+
+                  {/* Ícone de denúncia (no canto direito) */}
+                  <button
+                    className="text-gray-400 hover:text-gray-600"
+                    onClick={() => console.log("Denunciar post")}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <p className="text-gray-700 mt-1 text-sm">
+                  O mar tá tranquilo hoje, sem muita onda, perfeito pra
+                  relaxar... O mar tá tranquilo hoje, sem muita onda, perfeito
+                  pra relaxar... O mar tá tranquilo hoje, sem muita onda,
+                  perfeito pra relaxar... O mar tá tranquilo hoje, sem muita
+                  onda, perfeito pra relaxar... O mar tá tranquilo hoje, sem
+                  muita onda, perfeito pra relaxar...
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Botão de ajuda*/}
-      <button
-        onClick={toggleHelpModal}
-        className="absolute bottom-6 right-6 bg-white rounded-full shadow-lg hover:shadow-xl transition-all w-12 h-12 flex items-center justify-center"
-        aria-label="Ajuda"
-      >
-        <span className="text-blue-600 text-xl font-bold leading-none">?</span>
-      </button>
-
-      {showHelpModal && <WelcomeModal onClose={toggleHelpModal} />}
-
-      {/* // arrumar aqui */}
+      {/* Modal de avaliação */}
       {showEvaluationModal && (
         <EvaluationModal
           onClose={toggleEvaluationModal}
-          beachName={""}
-          userName={""}
-          userNickname={""}
+          beachName="Praia da Joaquina"
+          userName=""
+          userNickname=""
           onSubmit={function (selectedConditions: string[]): void {
             throw new Error("Function not implemented.");
           }}
