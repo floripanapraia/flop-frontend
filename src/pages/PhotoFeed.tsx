@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Beach from "../components/Beach";
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
@@ -28,15 +29,16 @@ const PhotoFeed: React.FC = () => {
         navigate("/avaliacoes");
         break;
       case "fotos":
-        navigate("/feedfotos");
+        navigate("/fotos");
         break;
       case "flops":
-        navigate("/praia");
+        navigate("/flops");
         break;
     }
   };
   return (
     <div className="relative h-screen w-screen bg-blue-50 overflow-hidden">
+      <Beach />
       {/* Botão de perfil */}
       <div className="absolute top-4 right-6 z-50">
         <button
@@ -46,9 +48,6 @@ const PhotoFeed: React.FC = () => {
           {isLoggedIn ? "Perfil" : "ENTRAR"}
         </button>
       </div>
-
-      {/* Painel lateral Praia vai aqui dentro */}
-      <div></div>
 
       {/* Área do feed */}
       <div className="ml-[620px] h-full flex flex-col">
@@ -165,7 +164,6 @@ const PhotoFeed: React.FC = () => {
                     <span className="text-xs text-gray-500">1m atrás</span>
                   </div>
 
-                  {/* Ícone de denúncia */}
                   <button
                     className="text-blue-900 "
                     onClick={() => console.log("Denunciar post")}
