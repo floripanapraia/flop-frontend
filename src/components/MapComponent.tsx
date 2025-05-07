@@ -2,10 +2,10 @@ import React, { useEffect, useState, useRef } from "react";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import { PraiaDTO, getPraiaNow } from "../services/beachService";
 import BeachInfoWindow from "./BeachInfoWindow";
+import { getBeachPhotoByName } from "../services/googlePlacePhotoService";
 
 const LIBRARIES: "places"[] = ["places"];
-
-const MY_MAP_ID = "2cdec756f1d98a30"; // ID do seu mapa personalizado
+const MY_MAP_ID = "2cdec756f1d98a30";
 
 interface MapComponentProps {
   activeBeachFromSearch: PraiaDTO | null;
@@ -21,6 +21,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const [activeBeach, setActiveBeach] = useState<PraiaDTO | null>(null);
   const [activeBeachInfo, setActiveBeachInfo] = useState<PraiaDTO | null>(null);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   const handleLoad = (map: google.maps.Map) => {
     mapRef.current = map;
@@ -58,12 +59,25 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const selectBeach = async (beach: PraiaDTO) => {
     setActiveBeach(beach);
     setCenter({
-      lat: beach.localizacao.latitude,
-      lng: beach.localizacao.longitude,
+      lat: beach.latitude,
+      lng: beach.longitude,
     });
     try {
       const info = await getPraiaNow(beach.idPraia);
       setActiveBeachInfo(info);
+
+      if (mapRef.current) {
+        const url = await getBeachPhotoByName(
+          mapRef.current,
+          beach.nomePraia,
+          beach.latitude,
+          beach.longitude,
+          400
+        );
+        setPhotoUrl(url);
+      } else {
+        setPhotoUrl(null);
+      }
     } catch (e) {
       console.error(e);
       setActiveBeachInfo(null);
@@ -103,8 +117,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
       const distance = calculateDistance(
         lat,
         lng,
-        beach.localizacao.latitude,
-        beach.localizacao.longitude
+        beach.latitude,
+        beach.longitude
       );
       if (distance < minD) {
         minD = distance;
@@ -131,8 +145,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
         {activeBeach && (
           <Marker
             position={{
-              lat: activeBeach.localizacao.latitude,
-              lng: activeBeach.localizacao.longitude,
+              lat: activeBeach.latitude,
+              lng: activeBeach.longitude,
             }}
             title={activeBeach.nomePraia}
             onClick={() => setInfoOpen(true)}
@@ -143,6 +157,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
           <BeachInfoWindow
             beach={activeBeach}
             info={activeBeachInfo}
+            photoUrl={photoUrl}
             onClose={() => setInfoOpen(false)}
           />
         )}
