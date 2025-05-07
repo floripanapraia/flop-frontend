@@ -1,4 +1,3 @@
-// src/pages/Home.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import WelcomeModal from "../components/WelcomeModal";

@@ -1,29 +1,26 @@
 import apiClient from "./api";
 
-export interface Localizacao {
-  idLocalizacao: number;
-  latitude: number;
-  longitude: number;
-}
 
-export interface CreatePraiaDTO {
+
+
+
+export interface PraiaDTO {
+  idPraia: number;
   nomePraia: string;
   imagem: string;
-  localizacao: Localizacao;
+  latitude: number;
+  longitude: number;
+  placeId: string;
   mensagensPostagens: string[];
   imagensPostagens: string[];
-  condicoesAvaliacoes: Map<string, number>;
-}
-
-export interface PraiaDTO extends CreatePraiaDTO{
-  idPraia: number;
+  condicoesAvaliacoes: Record<string, number>;
 }
 
 interface SeletorFiltro {
     nomePraia?: string;
 }
 
-export const createPraia = async (praiaData: CreatePraiaDTO): Promise<PraiaDTO> => {
+export const createPraia = async (praiaData: PraiaDTO): Promise<PraiaDTO> => {
   try {
     const response = await apiClient.post<PraiaDTO>(
       "/praias/cadastrar",

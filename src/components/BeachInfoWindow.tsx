@@ -4,33 +4,35 @@ import { InfoWindow } from "@react-google-maps/api";
 import { useNavigate } from "react-router-dom";
 import { PraiaDTO } from "../services/beachService";
 
-const CONDITION_ICONS: Record<string,string> = {
-  AGUA_GELADA:    "/assets/iconFull/aguagelada.svg",
-  AGUA_VIVA:      "/assets/iconFull/AGUAVIVA.svg",
-  ALIMENTACAO:    "/assets/iconFull/alimentacao.svg",
-  CHUVA:          "/assets/iconFull/chuva.svg",
+const CONDITION_ICONS: Record<string, string> = {
+  AGUA_GELADA: "/assets/iconFull/aguagelada.svg",
+  AGUA_VIVA: "/assets/iconFull/AGUAVIVA.svg",
+  ALIMENTACAO: "/assets/iconFull/alimentacao.svg",
+  CHUVA: "/assets/iconFull/chuva.svg",
   ESTACIONAMENTO: "/assets/iconFull/estacionamento.svg",
-  LIMPA:          "/assets/iconFull/limpa.svg",
-  LIXO:           "/assets/iconFull/lixo.svg",
-  LOTADA:         "/assets/iconFull/LOTADA.svg",
-  MAR_CALMO:      "/assets/iconFull/marcalmo.svg",
-  MUSICA:         "/assets/iconFull/musica.svg",
-  NUBLADO:        "/assets/iconFull/nublado.svg",
-  ONDA:           "/assets/iconFull/onda.svg",
-  SALVA_VIDAS:    "/assets/iconFull/salvavidas.svg",
-  SOL:            "/assets/iconFull/SOL.svg",
-  VENTO:          "/assets/iconFull/vento.svg",
+  LIMPA: "/assets/iconFull/limpa.svg",
+  LIXO: "/assets/iconFull/lixo.svg",
+  LOTADA: "/assets/iconFull/LOTADA.svg",
+  MAR_CALMO: "/assets/iconFull/marcalmo.svg",
+  MUSICA: "/assets/iconFull/musica.svg",
+  NUBLADO: "/assets/iconFull/nublado.svg",
+  ONDA: "/assets/iconFull/onda.svg",
+  SALVA_VIDAS: "/assets/iconFull/salvavidas.svg",
+  SOL: "/assets/iconFull/SOL.svg",
+  VENTO: "/assets/iconFull/vento.svg",
 };
 
 interface BeachInfoWindowProps {
   beach: PraiaDTO;
   info: PraiaDTO;
+  photoUrl: string | null;
   onClose: () => void;
 }
 
 export default function BeachInfoWindow({
   beach,
   info,
+  photoUrl,
   onClose,
 }: BeachInfoWindowProps) {
   const navigate = useNavigate();
@@ -38,13 +40,26 @@ export default function BeachInfoWindow({
   return (
     <InfoWindow
       position={{
-        lat: beach.localizacao.latitude,
-        lng: beach.localizacao.longitude,
+        lat: beach.latitude,
+        lng: beach.longitude,
       }}
       onCloseClick={onClose}
     >
       <div style={{ maxWidth: 300 }}>
-        <h3>{beach.nomePraia}</h3>
+        <h3 style={{ margin: 0 }}>{beach.nomePraia}</h3>
+        {/* Foto da praia, se disponível */}
+        
+          <img
+            src={beach.imagem}
+            alt={beach.nomePraia}
+            style={{
+              width: "100%",
+              borderRadius: 4,
+              margin: "8px 0",
+              objectFit: "cover",
+            }}
+          />
+
         <strong>Condições hoje:</strong>
         <ul style={{ listStyle: "none", padding: 0, margin: "4px 0" }}>
           {Object.entries(info.condicoesAvaliacoes).map(([condicao, valor]) => {
@@ -72,6 +87,7 @@ export default function BeachInfoWindow({
             );
           })}
         </ul>
+        
         <button
           onClick={() => navigate(`/praia/${beach.idPraia}`)}
           style={{
