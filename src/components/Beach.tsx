@@ -18,7 +18,7 @@ const Beach: React.FC = () => {
   return (
     <div>
       {/* Painel lateral */}
-      <div className="absolute top-0 left-0 h-full bg-white/95 backdrop-blur-md shadow-xl w-[620px] max-w-full flex flex-col  ">
+      <div className="absolute top-0 left-0 h-full bg-white/95 backdrop-blur-md shadow-xl w-[620px] max-w-full flex flex-col rounded-r-3xl overflow-hidden">
         {/* Cabeçalho */}
         <div
           className="px-6 pt-8 pb-8 border relative"
@@ -169,7 +169,7 @@ const Beach: React.FC = () => {
          <div className="mt-6 mb-8 flex justify-center">
           <button
             onClick={toggleEvaluationModal}
-            className="px-5 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors shadow-md"
+            className="px-5 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-[#1e3a5f] transition-colors shadow-md"
           >
             Avaliar
           </button>
