@@ -11,10 +11,13 @@ import {
   normalizeError,
   shouldShowInModal,
 } from "../utils/errorHandler";
+import { useUser } from "../context/userContext";
 
 const Auth: React.FC = () => {
   const [signIn, toggle] = useState<boolean>(true);
   const navigate = useNavigate();
+
+  const { setUser } = useUser();
 
   // Login state
   const [loginCredentials, setLoginCredentials] = useState({
@@ -61,9 +64,19 @@ const Auth: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const token = await login(loginCredentials.email, loginCredentials.senha);
+      const { token, user } = await login(loginCredentials.email, loginCredentials.senha);
+
+      setUser(user);
+
       toast.success("Login realizado com sucesso!");
-      navigate("/editar"); // TODO: Redirect to the right page after login
+
+      // não sei se deve usar assim depois do provider ??? PERGUNTAR
+      if (user.isAdmin === 1) {
+        navigate("/admin/users");
+      } else {
+        navigate("/editar");
+      }
+
     } catch (error: any) {
       console.error("Erro no login:", error);
 
