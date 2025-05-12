@@ -6,40 +6,80 @@ import {
   Routes,
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+
+import { PrivateRoute } from "./routes/PrivateRoute";
+import { AdminRoute } from "./routes/AdminRoute";
+
 import Auth from "./pages/Auth";
-import BeachDetails from "./pages/FlopFeed";
-import EditUser from "./pages/EditUser";
 import Home from "./pages/Home";
-import EvaluationFeed from "./pages/EvaluationFeed";
-import PhotoFeed from "./pages/PhotoFeed";
+import EditUser from "./pages/EditUser";
 import FlopFeed from "./pages/FlopFeed";
+import PhotoFeed from "./pages/PhotoFeed";
+import EvaluationFeed from "./pages/EvaluationFeed";
+import { AuthProvider } from "./context/authContext";
+// import AdminUsers from "./pages/admin/AdminUsers"; // exemplo de rota admin
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/editar" element={<EditUser />} />
-        <Route path="/" element={<Navigate replace to="/auth" />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/flops" element={<FlopFeed />} />
-        <Route path="/fotos" element={<PhotoFeed />} />
-        <Route path="/avaliacoes" element={<EvaluationFeed />} />
-      </Routes>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Navigate replace to="/auth" />} />
+          <Route path="/auth" element={<Auth />} />
 
-      {/* Toast configuration */}
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-    </Router>
+          <Route
+            path="/home"
+            element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/editar"
+            element={
+              <PrivateRoute>
+                <EditUser />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/flops"
+            element={
+              <PrivateRoute>
+                <FlopFeed />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/fotos"
+            element={
+              <PrivateRoute>
+                <PhotoFeed />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/avaliacoes"
+            element={
+              <PrivateRoute>
+                <EvaluationFeed />
+              </PrivateRoute>
+            }
+          />
+          {/* <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <AdminUsers />
+              </AdminRoute>
+            }
+          /> */}
+        </Routes>
+
+        <ToastContainer position="top-right" autoClose={5000} />
+      </Router>
+    </AuthProvider>
   );
 };
 
