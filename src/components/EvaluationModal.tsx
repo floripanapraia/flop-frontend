@@ -18,7 +18,7 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
 }) => {
   const conditions = [
     { id: "sunny", name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
-    { id: "waves", name: "Ondas fortes", icon: "/assets/iconFull/onda.svg" },
+    { id: "waves", name: "Ondas fortes", icon: "/assets/iconFull/ondasFortes.svg" },
     { id: "crowded", name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
     { id: "cloudy", name: "Nublado", icon: "/assets/iconFull/nublado.svg" },
     { id: "jelly", name: "Água-viva", icon: "/assets/iconFull/aguaviva.svg" },

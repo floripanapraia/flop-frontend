@@ -37,7 +37,7 @@ const FlopFeed: React.FC = () => {
   };
 
   return (
-    <div className="relative h-screen w-screen bg-blue-50 overflow-hidden">
+    <div className="relative h-screen w-screen  overflow-hidden">
       <Beach />
       {/* Botão de perfil */}
       <div className="absolute top-4 right-6 z-50">
