@@ -7,12 +7,13 @@ import {
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import Auth from "./pages/Auth";
-import BeachDetails from "./pages/FlopFeed";
 import EditUser from "./pages/EditUser";
-import Home from "./pages/Home";
 import EvaluationFeed from "./pages/EvaluationFeed";
-import PhotoFeed from "./pages/PhotoFeed";
 import FlopFeed from "./pages/FlopFeed";
+import Home from "./pages/Home";
+import PhotoFeed from "./pages/PhotoFeed";
+import UserProfilePhotos from "./pages/UserProfilePhotos";
+import UserProfileFlops from './pages/UserProfileFlops';
 
 const App: React.FC = () => {
   return (
@@ -25,6 +26,8 @@ const App: React.FC = () => {
         <Route path="/flops" element={<FlopFeed />} />
         <Route path="/fotos" element={<PhotoFeed />} />
         <Route path="/avaliacoes" element={<EvaluationFeed />} />
+        <Route path="/perfilFotos" element={<UserProfilePhotos />} />
+        <Route path="/perfilFlops" element={<UserProfileFlops />} />
       </Routes>
 
       {/* Toast configuration */}
