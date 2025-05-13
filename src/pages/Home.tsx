@@ -40,7 +40,7 @@ const Home: React.FC = () => {
       {/* Passando a praia selecionada como prop para o MapComponent */}
       <MapComponent activeBeachFromSearch={selectedBeach} praias={allBeaches} />
       {/* Caixa de busca */}
-      <div className="absolute top-4 left-4 bg-white rounded-xl shadow-lg p-6 max-w-md w-full">
+      <div className="absolute top-4 left-4 bg-white rounded-xl shadow-lg p-4 max-w-[350px] w-full">
         <div className="flex items-center space-x-2 mb-4">
           <img src="/assets/LOGO.png" alt="Logo" className="w-10 h-10" />
           <h2 className="text-[#182E4D] text-lg font-semibold">
@@ -71,7 +71,7 @@ const Home: React.FC = () => {
 
         {/* Texto e slider na mesma linha */}
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-gray-600 leading-relaxed">
+          <p className="text-xs text-gray-600 leading-relaxed">
             Procurando a praia ideal em Floripa?
             <br />
             Nossa IA pode te ajudar a encontrar o destino perfeito para o seu
@@ -126,7 +126,7 @@ const Home: React.FC = () => {
       {/* Botão entrar */}
       <button
         onClick={() => navigate("/auth")}
-        className="absolute top-4 right-4 bg-[#182E4C] hover:bg-[#1a365d] text-white text-base font-bold py-2 px-5 rounded-full shadow transition-colors duration-300 tracking-wide"
+        className="absolute top-4 right-4 bg-[#182E4C] hover:bg-[#1a365d] text-white text-base text-white px-6 py-3 rounded-3xl text-sm font-medium hover:bg-[#1e3a5f] transition-colors"
       >
         ENTRAR
       </button>
