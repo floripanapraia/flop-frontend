@@ -200,14 +200,6 @@ const EditUser: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Carregando...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 py-8">
       {/* Background image */}
