@@ -1,3 +1,4 @@
+import { authToken } from "../config/authToken";
 import apiClient from "./api";
 
 interface UsuarioCreateRequest {
@@ -62,17 +63,18 @@ export const setAuthToken = (token: string | null) => {
   if (token) {
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     // store token in localStorage for persistence
-    localStorage.setItem('authToken', token);
+    localStorage.setItem(authToken, token);
   } else {
     delete apiClient.defaults.headers.common['Authorization'];
     // Clear from localStorage
-    localStorage.removeItem('authToken');
+    localStorage.removeItem(authToken);
   }
 };
 
 // Initialize auth from localStorage on app start (optional)
 export const initializeAuth = () => {
-  const token = localStorage.getItem('authToken');
+  // FAZER UMA CONST GERAL DESSE TOKEN
+  const token = localStorage.getItem(authToken);
   if (token) {
     setAuthToken(token);
   }
