@@ -79,10 +79,12 @@ const UserProfileFlops = () => {
         break;
     }
 
-    const toggleSuggestBeachModal = (p0: boolean) => {
+    
+  };
+
+  const toggleSuggestBeachModal = (p0: boolean) => {
       toggleSuggestBeachModal(!toggleSuggestBeachModal);
     };
-  };
   function handleSubmitBeach(beachData: {
     name: string;
     neighborhood: string;
