@@ -1,9 +1,9 @@
-// src/pages/Home.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import WelcomeModal from "../components/WelcomeModal";
 import { filterPraias, getAllPraias, PraiaDTO } from "../services/beachService";
 import MapComponent from "../components/MapComponent";
+import ProfileModal from "../components/ProfileModal";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +13,7 @@ const Home: React.FC = () => {
   const [filteredBeaches, setFilteredBeaches] = useState<PraiaDTO[]>([]);
   const [selectedBeach, setSelectedBeach] = useState<PraiaDTO | null>(null);
   const [allBeaches, setAllBeaches] = useState<PraiaDTO[]>([]);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const handleSliderChange = () => {
     setIsAIActive(!isAIActive);
@@ -126,10 +127,24 @@ const Home: React.FC = () => {
       {/* Botão entrar */}
       <button
         onClick={() => navigate("/auth")}
-        className="absolute top-4 right-4 bg-[#182E4C] hover:bg-[#1a365d] text-white text-base text-white px-6 py-3 rounded-3xl text-sm font-medium hover:bg-[#1e3a5f] transition-colors"
+        className="absolute top-4 right-24 bg-[#182E4C] hover:bg-[#1a365d] text-white px-6 py-3 rounded-3xl text-sm font-medium hover:bg-[#1e3a5f] transition-colors"
       >
         ENTRAR
       </button>
+
+      <button
+        onClick={() => setIsProfileModalOpen(true)}
+        className="absolute top-4 right-4 bg-[#182E4C] hover:bg-[#1a365d] text-white px-6 py-3 rounded-3xl text-sm font-medium hover:bg-[#1e3a5f] transition-colors"
+      >
+        PERFIL
+      </button>
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        userName="Victoria"
+        userEmail="victoriaemail@hotmail.com"
+        userImage="/caminho/para/sua/imagem.jpg"
+      />
 
       <button
         onClick={toggleHelpModal}
