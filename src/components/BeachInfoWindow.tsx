@@ -39,69 +39,49 @@ export default function BeachInfoWindow({
 
   return (
     <InfoWindow
-      position={{
-        lat: beach.latitude,
-        lng: beach.longitude,
-      }}
+      position={{ lat: beach.latitude, lng: beach.longitude }}
       onCloseClick={onClose}
     >
-      <div style={{ maxWidth: 300 }}>
-        <h3 style={{ margin: 0 }}>{beach.nomePraia}</h3>
-        {/* Foto da praia, se disponível */}
-        
-          <img
-            src={beach.imagem}
-            alt={beach.nomePraia}
-            style={{
-              width: "100%",
-              borderRadius: 4,
-              margin: "8px 0",
-              objectFit: "cover",
-            }}
-          />
+      <div className="max-w-[260px] sm:max-w-sm p-2 sm:p-3 rounded-lg bg-white shadow-lg text-sm sm:text-base">
+        <h3 className="text-base font-semibold text-gray-800">
+          {beach.nomePraia}
+        </h3>
 
-        <strong>Condições hoje:</strong>
-        <ul style={{ listStyle: "none", padding: 0, margin: "4px 0" }}>
-          {Object.entries(info.condicoesAvaliacoes).map(([condicao, valor]) => {
-            const icon = CONDITION_ICONS[condicao];
-            return (
-              <li
-                key={condicao}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  margin: "4px 0",
-                }}
-              >
-                {icon ? (
+        {photoUrl && (
+          <img
+            src={photoUrl}
+            alt={beach.nomePraia}
+            className="w-full h-32 sm:h-40 object-cover rounded-md my-2"
+          />
+        )}
+
+        <ul className="flex flex-wrap gap-2 my-2">
+          {Object.entries(info.condicoesAvaliacoes)
+            .sort(([, votosA], [, votosB]) => votosB - votosA)
+            .slice(0, 4)
+            .map(([condicao]) => {
+              const icon = CONDITION_ICONS[condicao];
+              return icon ? (
+                <li key={condicao}>
                   <img
                     src={icon}
                     alt={condicao}
-                    style={{ width: 20, marginRight: 8 }}
+                    title={condicao}
+                    className="w-8 h-8"
                   />
-                ) : (
-                  <strong style={{ marginRight: 8 }}>{condicao}:</strong>
-                )}
-                <span>{valor} votos</span>
-              </li>
-            );
-          })}
+                </li>
+              ) : null;
+            })}
         </ul>
-        
-        <button
-          onClick={() => navigate(`/praia/${beach.idPraia}`)}
-          style={{
-            marginTop: 8,
-            padding: "4px 8px",
-            background: "#182E4D",
-            color: "#fff",
-            border: "none",
-            borderRadius: 4,
-            cursor: "pointer",
-          }}
-        >
-          Saber mais
-        </button>
+
+        <div className="flex justify-end mt-2">
+          <button
+            onClick={() => navigate(`/praia/${beach.idPraia}`)}
+            className="bg-[#182E4D] text-white px-2 py-2 rounded-3xl text-sm font-small hover:bg-[#1e3a5f] transition-colors"
+          >
+            Ver detalhes
+          </button>
+        </div>
       </div>
     </InfoWindow>
   );
