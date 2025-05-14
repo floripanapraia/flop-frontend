@@ -28,10 +28,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
   };
 
   const latLngBounds = {
-    north: -27.3087,
-    south: -27.8874,
-    east: -48.2954,
-    west: -48.71,
+    north: -27.0790,
+    south: -28.0001,
+    east: -48.0767,
+    west: -48.8091,
   };
 
   const mapOptions = {
@@ -137,7 +137,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}
-        zoom={12}
+        zoom={13}
         onLoad={handleLoad}
         onClick={handleMapClick} // Adicionando o evento de clique no mapa
         options={mapOptions}

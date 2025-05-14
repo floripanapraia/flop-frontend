@@ -1,9 +1,5 @@
 import apiClient from "./api";
 
-
-
-
-
 export interface PraiaDTO {
   idPraia: number;
   nomePraia: string;
@@ -17,7 +13,7 @@ export interface PraiaDTO {
 }
 
 interface SeletorFiltro {
-    nomePraia?: string;
+  nomePraia?: string;
 }
 
 export const createPraia = async (praiaData: PraiaDTO): Promise<PraiaDTO> => {
