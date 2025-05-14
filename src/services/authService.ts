@@ -1,4 +1,4 @@
-import { authToken } from "../config/authToken";
+import { authToken, authTokenExpiresAt } from "../config/authToken";
 import apiClient from "./api";
 
 interface UsuarioCreateRequest {
@@ -59,23 +59,29 @@ export const login = async (nickname: string, senha: string): Promise<string> =>
 };
 
 // authorization interceptor
-export const setAuthToken = (token: string | null) => {
+export const setAuthToken = (token: string | null, expiresInMinutes = 60) => {
   if (token) {
+    const expiresAt = new Date().getTime() + expiresInMinutes * 60 * 1000;
+
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    // store token in localStorage for persistence
     localStorage.setItem(authToken, token);
+    localStorage.setItem(authTokenExpiresAt, expiresAt.toString());
   } else {
     delete apiClient.defaults.headers.common['Authorization'];
-    // Clear from localStorage
     localStorage.removeItem(authToken);
+    localStorage.removeItem(authTokenExpiresAt);
   }
 };
 
-// Initialize auth from localStorage on app start (optional)
+// Initialize auth from localStorage on app start
 export const initializeAuth = () => {
-  // FAZER UMA CONST GERAL DESSE TOKEN
   const token = localStorage.getItem(authToken);
-  if (token) {
+  const expiresAt = localStorage.getItem(authTokenExpiresAt);
+
+  const now = new Date().getTime();
+  if (token && expiresAt && now < parseInt(expiresAt)) {
     setAuthToken(token);
+  } else {
+    setAuthToken(null); // Remove se expirado ou ausente
   }
 };
