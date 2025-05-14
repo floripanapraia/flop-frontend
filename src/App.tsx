@@ -14,6 +14,9 @@ import Home from "./pages/Home";
 import PhotoFeed from "./pages/PhotoFeed";
 import UserProfilePhotos from "./pages/UserProfilePhotos";
 import UserProfileFlops from './pages/UserProfileFlops';
+import { initializeAuth } from "./services/authService";
+
+initializeAuth();
 
 const App: React.FC = () => {
   return (
