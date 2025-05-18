@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Beach from "../components/Beach";
+import ReportModal from "../components/ReportModal";
+import { Ellipsis } from "lucide-react";
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
@@ -10,6 +12,7 @@ type TabType = {
 const FlopFeed: React.FC = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Mudar para true quando o usuário fizer login
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const [activeTab, setActiveTab] = useState<"avaliacoes" | "fotos" | "flops">(
     "flops"
@@ -20,6 +23,12 @@ const FlopFeed: React.FC = () => {
     { id: "fotos", label: "Fotos" },
     { id: "flops", label: "Flops" },
   ];
+
+  const handleReport = (reason: string) => {
+    console.log("Denúncia enviada:", reason);
+    //  lógica para enviar a denúncia
+    alert(`Denúncia enviada: ${reason}`);
+  };
 
   const handleTabClick = (tabId: "avaliacoes" | "fotos" | "flops") => {
     setActiveTab(tabId);
@@ -134,22 +143,9 @@ const FlopFeed: React.FC = () => {
                   </div>
                   <button
                     className="text-gray-400 hover:text-gray-600"
-                    onClick={() => console.log("Denunciar post")}
+                    onClick={() => setShowReportModal(true)}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-                      />
-                    </svg>
+                    <Ellipsis className="h-4 w-4" />
                   </button>
                 </div>
 
@@ -166,6 +162,11 @@ const FlopFeed: React.FC = () => {
           </div>
         </div>
       </div>
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onReport={handleReport}
+      />
     </div>
   );
 };
