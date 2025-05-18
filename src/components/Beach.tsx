@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EvaluationModal from "./EvaluationModal";
+import { X } from 'lucide-react';
 
 interface BeachProps {
   onClose: () => void;
@@ -37,23 +38,10 @@ const Beach: React.FC = () => {
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => navigate(-1)}
+                  onClick={() => navigate('/home')}
                   className="p-2 text-white hover:text-blue-300 transition-colors"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <X className="h-6 w-6" />
                 </button>
               </div>
             </div>
@@ -165,8 +153,8 @@ const Beach: React.FC = () => {
             </div>
           </div>
         </div>
-         {/* Botão Avaliar */}
-         <div className="mt-6 mb-8 flex justify-center">
+        {/* Botão Avaliar */}
+        <div className="mt-6 mb-8 flex justify-center">
           <button
             onClick={toggleEvaluationModal}
             className="px-5 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-[#1e3a5f] transition-colors shadow-md"
