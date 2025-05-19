@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { setAuthToken } from "../services/authService";
 import SuggestBeachModal from "../components/SuggestBeachModal";
+import { LogOut, MapPin, Settings } from "lucide-react";
 
 type TabType = {
   id: "fotos" | "flops";
@@ -127,22 +128,25 @@ const UserProfileFlops = () => {
               <div className="flex flex-col w-full space-y-2">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="py-2 sm:py-3 px-4 text-left text-blue-900 hover:bg-gray-50 flex items-center"
+                  className="py-2 sm:py-3 px-4 text-left text-blue-900 hover:bg-gray-50 flex items-center gap-x-3"
                 >
-                  <span>Sugerir nova praia</span>
+                  <MapPin size={18} />
+                  <span> Sugerir nova praia</span>
                 </button>
                 <button
                   onClick={() => {
                     navigate("/editar");
                   }}
-                  className="py-2 sm:py-3 px-4 text-left text-blue-900 hover:bg-gray-50 flex items-center"
+                  className="py-2 sm:py-3 px-4 text-left text-blue-900 hover:bg-gray-50 flex items-center gap-x-3"
                 >
-                  <span>Gerenciar conta</span>
+                  <Settings size={18} />
+                  <span> Gerenciar conta</span>
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="py-2 sm:py-3 px-4 text-left text-blue-900 hover:bg-gray-50 flex items-center"
+                  className="py-2 sm:py-3 px-4 text-left text-blue-900 hover:bg-gray-50 flex items-center gap-x-3"
                 >
+                  <LogOut size={18} />
                   <span>Sair</span>
                 </button>
               </div>

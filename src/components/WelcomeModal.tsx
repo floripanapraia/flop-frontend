@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import React from "react";
 
 interface WelcomeModalProps {
@@ -6,56 +7,60 @@ interface WelcomeModalProps {
 
 const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
   const categories = [
-    { name: "Ensolarada", color: "bg-yellow-400", icon: "/assets/icons/sunny.svg", isImage: true },
-    { name: "Ondas fortes", color: "bg-blue-700" },
-    { name: "Água-viva", color: "bg-purple-800",icon: "/assets/icons/jelly.svg", isImage: true  },
-    { name: "Lotada", color: "bg-orange-500", icon: "/assets/icons/lotada.svg", isImage: true },
-    { name: "Alimentação", color: "bg-pink-600 text-white" , icon: "/assets/icons/food.svg", isImage: true},
-
-    { name: "Nublado", color: "bg-gray-500",  icon: "/assets/icons/cloudy.svg", isImage: true  },
-    { name: "Mar calmo", color: "bg-blue-400" ,  icon: "/assets/icons/marcalmo.svg", isImage: true},
-    { name: "Vento", color: "bg-slate-400", icon: "/assets/icons/windy.svg", isImage: true  },
-    { name: "Limpa", color: "bg-green-500", icon: "/assets/icons/clean.svg", isImage: true  },
-    { name: "Estacionamento", color: "bg-pink-300" },
-
-    { name: "Chuva", color: "bg-blue-900 text-white", icon: "/assets/icons/rain.svg", isImage: true  },
-    { name: "Água Gelada", color: "bg-indigo-400 text-white" },
-    { name: "Música Alta", color: "bg-teal-500", icon: "/assets/icons/music.svg", isImage: true  },
-    { name: "Lixo visível", color: "bg-amber-800 text-white", icon: "/assets/icons/trash.svg", isImage: true},
-    { name: "Salva-vidas", color: "bg-red-600" },
+    { id: "sunny", name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
+    {
+      id: "waves",
+      name: "Ondas fortes",
+      icon: "/assets/iconFull/ondasFortes.svg",
+    },
+    { id: "crowded", name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
+    { id: "cloudy", name: "Nublado", icon: "/assets/iconFull/nublado.svg" },
+    { id: "jelly", name: "Água-viva", icon: "/assets/iconFull/aguaviva.svg" },
+    { id: "trash", name: "Lixo visível", icon: "/assets/iconFull/lixo.svg" },
+    { id: "rainy", name: "Chuva", icon: "/assets/iconFull/chuva.svg" },
+    { id: "calm", name: "Mar calmo", icon: "/assets/iconFull/marcalmo.svg" },
+    { id: "clean", name: "Limpa", icon: "/assets/iconFull/limpa.svg" },
+    { id: "windy", name: "Vento", icon: "/assets/iconFull/vento.svg" },
+    {
+      id: "cold",
+      name: "Água gelada",
+      icon: "/assets/iconFull/aguagelada.svg",
+    },
+    { id: "music", name: "Música alta", icon: "/assets/iconFull/musica.svg" },
+    {
+      id: "parking",
+      name: "Estacionamento",
+      icon: "/assets/iconFull/estacionamento.svg",
+    },
+    {
+      id: "lifeguard",
+      name: "Salva-vidas",
+      icon: "/assets/iconFull/salvavidas.svg",
+    },
+    {
+      id: "food",
+      name: "Alimentação",
+      icon: "/assets/iconFull/alimentacao.svg",
+    },
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]  p-4">
-      <div className="bg-white rounded-xl max-w-3xl w-full relative">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+      <div className="bg-white rounded-xl max-w-4xl w-full relative max-h-[90vh] overflow-y-auto">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-          aria-label="Close"
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none"
+          aria-label="Fechar modal"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <X className="h-6 w-6" />
         </button>
 
         {/* Header */}
         <div className="p-6 text-center">
-          <h1 className="text-2xl font-bold text-blue-900 mb-6">
+          <h1 className="text-2xl font-bold text-blue-900 mb-4">
             Bem-vindo ao Floripa na Praia!
           </h1>
-
           <p className="text-gray-700 mb-6 text-center mx-auto max-w-2xl">
             Se você está procurando explorar o melhor de Florianópolis, chegou
             ao lugar certo. Nosso site foi pensado para facilitar a sua
@@ -64,26 +69,25 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
           </p>
         </div>
 
-        {/* Categories grid */}
-        <div className="grid grid-cols-3 md:grid-cols-5 gap-6 p-6">
-          {categories.map((category, index) => (
-            <div key={index} className="flex flex-col items-center">
+        {/* Grid de ícones - versão melhorada */}
+        <div className="px-6 pb-6">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
+            {categories.map((category) => (
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center ${category.color}`}
+                key={category.id}
+                className="flex flex-col items-center p-3  rounded-lg"
               >
-                {category.isImage ? (
-                  <img
-                    src={category.icon}
-                    alt={category.name}
-                    className="w-6 h-6"
-                  />
-                ) : (
-                  <span className="text-xl">{category.icon}</span>
-                )}
+                <img
+                  src={category.icon}
+                  alt={category.name}
+                  className="w-10 h-10 mb-2"
+                />
+                <span className="text-xs sm:text-sm font-medium text-blue-900 text-center">
+                  {category.name}
+                </span>
               </div>
-              <span className="mt-2 text-sm text-center">{category.name}</span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>

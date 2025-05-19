@@ -10,6 +10,7 @@ import {
   updateUser,
   updateUserProfilePicture,
 } from "../services/userService";
+import { LogOut } from "lucide-react";
 
 const EditUser: React.FC = () => {
   const navigate = useNavigate();
@@ -270,6 +271,7 @@ const EditUser: React.FC = () => {
               onClick={handleLogout}
               className="w-40 bg-gray-100 py-2 rounded-lg shadow text-sm text-blue-900 flex items-center justify-center gap-2 mb-4"
             >
+              <LogOut size={18} />
               Sair
             </button>
 
