@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import React, { useState } from "react";
 
 interface EvaluationModalProps {
@@ -18,7 +19,11 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
 }) => {
   const conditions = [
     { id: "sunny", name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
-    { id: "waves", name: "Ondas fortes", icon: "/assets/iconFull/ondasFortes.svg" },
+    {
+      id: "waves",
+      name: "Ondas fortes",
+      icon: "/assets/iconFull/ondasFortes.svg",
+    },
     { id: "crowded", name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
     { id: "cloudy", name: "Nublado", icon: "/assets/iconFull/nublado.svg" },
     { id: "jelly", name: "Água-viva", icon: "/assets/iconFull/aguaviva.svg" },
@@ -98,8 +103,8 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
   };
 
   const handleSubmit = () => {
+    // Só chama onSubmit, o controle do modal fica com o componente pai
     onSubmit(selectedConditions);
-    onClose();
   };
 
   return (
@@ -117,22 +122,8 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none"
           aria-label="Fechar modal"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <X className="h-6 w-6" />
         </button>
-
         {/* Header */}
         <div className="p-6">
           <h2 className="text-xl font-bold text-center text-blue-900">

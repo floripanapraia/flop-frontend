@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Beach from "../components/Beach";
 import ReportModal from "../components/ReportModal";
 import { Ellipsis } from "lucide-react";
+import ThankYouModal from "../components/ThankYouDenunciaModal";
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
@@ -13,7 +14,7 @@ const FlopFeed: React.FC = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Mudar para true quando o usuário fizer login
   const [showReportModal, setShowReportModal] = useState(false);
-
+  const [showThankYouDenunciaModal, setShowThankYouDenunciaModal] = useState(false);
   const [activeTab, setActiveTab] = useState<"avaliacoes" | "fotos" | "flops">(
     "flops"
   );
@@ -26,10 +27,10 @@ const FlopFeed: React.FC = () => {
 
   const handleReport = (reason: string) => {
     console.log("Denúncia enviada:", reason);
-    //  lógica para enviar a denúncia
-    alert(`Denúncia enviada: ${reason}`);
+    // Aqui entraria a lógica real de envio, se necessário
+    setShowReportModal(false);
+    setShowThankYouDenunciaModal(true);
   };
-
   const handleTabClick = (tabId: "avaliacoes" | "fotos" | "flops") => {
     setActiveTab(tabId);
     switch (tabId) {
@@ -166,6 +167,12 @@ const FlopFeed: React.FC = () => {
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
         onReport={handleReport}
+      />
+     
+
+      <ThankYouModal
+        isOpen={showThankYouDenunciaModal}
+        onClose={() => setShowThankYouDenunciaModal(false)}
       />
     </div>
   );
