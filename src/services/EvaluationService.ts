@@ -9,18 +9,18 @@ export enum Condicoes {
   AGUA_VIVA      = "AGUA VIVA",
   LIXO           = "LIXO",
   LIMPA          = "LIMPA",
-  MAR_ONDAS      = "MAR ONDAS",
-  MAR_CALMO      = "MAR CALMO",
+  MAR_ONDAS      = "MAR_ONDAS",
+  MAR_CALMO      = "MAR_CALMO",
   MUSICA         = "MUSICA",
   ALIMENTACAO    = "ALIMENTACAO",
-  SALVA_VIDAS    = "SALVA VIDAS",
-  AGUA_GELADA    = "AGUA GELADA",
+  SALVA_VIDAS    = "SALVA_VIDAS",
+  AGUA_GELADA    = "AGUA_GELADA",
   ESTACIONAMENTO = "ESTACIONAMENTO",
 }
 
 export interface AvaliacaoDTO {
   idAvaliacao?:  number
-  username:      string
+  nickname:      string
   criadoEm:      string         
   condicoes:     Condicoes[]
   idUsuario:     number
