@@ -3,21 +3,22 @@ import React from "react";
 import { InfoWindow } from "@react-google-maps/api";
 import { useNavigate } from "react-router-dom";
 import { PraiaDTO } from "../services/beachService";
+import { useBeach } from "../hooks/useBeach";
 
 const CONDITION_ICONS: Record<string, string> = {
-  AGUA_GELADA: "/assets/iconFull/aguagelada.svg",
-  AGUA_VIVA: "/assets/iconFull/AGUAVIVA.svg",
+  AGUA_GELADA: "/assets/iconFull/agua_gelada.svg",
+  AGUA_VIVA: "/assets/iconFull/AGUA_VIVA.svg",
   ALIMENTACAO: "/assets/iconFull/alimentacao.svg",
   CHUVA: "/assets/iconFull/chuva.svg",
   ESTACIONAMENTO: "/assets/iconFull/estacionamento.svg",
   LIMPA: "/assets/iconFull/limpa.svg",
   LIXO: "/assets/iconFull/lixo.svg",
   LOTADA: "/assets/iconFull/LOTADA.svg",
-  MAR_CALMO: "/assets/iconFull/marcalmo.svg",
+  MAR_CALMO: "/assets/iconFull/mar_calmo.svg",
   MUSICA: "/assets/iconFull/musica.svg",
   NUBLADO: "/assets/iconFull/nublado.svg",
   ONDA: "/assets/iconFull/onda.svg",
-  SALVA_VIDAS: "/assets/iconFull/salvavidas.svg",
+  SALVA_VIDAS: "/assets/iconFull/salva_vidas.svg",
   SOL: "/assets/iconFull/SOL.svg",
   VENTO: "/assets/iconFull/vento.svg",
 };
@@ -35,6 +36,8 @@ export default function BeachInfoWindow({
   photoUrl,
   onClose,
 }: BeachInfoWindowProps) {
+  const { setPraiaId, setPraiaNome, setPraiaFotoUrl, setTotalAvaliacoesDoDia } =
+    useBeach();
   const navigate = useNavigate();
 
   return (
@@ -42,7 +45,7 @@ export default function BeachInfoWindow({
       position={{ lat: beach.latitude, lng: beach.longitude }}
       onCloseClick={onClose}
     >
-      <div className="max-w-[260px] sm:max-w-sm p-2 sm:p-3 rounded-lg bg-white shadow-lg text-sm sm:text-base">
+      <div className="max-w-[80vw] sm:max-w-sm p-2 sm:p-3 rounded-lg bg-white shadow-lg text-sm sm:text-base">
         <h3 className="text-base font-semibold text-gray-800">
           {beach.nomePraia}
         </h3>
@@ -58,7 +61,7 @@ export default function BeachInfoWindow({
         <ul className="flex flex-wrap gap-2 my-2">
           {Object.entries(info.condicoesAvaliacoes)
             .sort(([, votosA], [, votosB]) => votosB - votosA)
-            .slice(0, 4)
+            .slice(0, 3)
             .map(([condicao]) => {
               const icon = CONDITION_ICONS[condicao];
               return icon ? (
@@ -76,7 +79,14 @@ export default function BeachInfoWindow({
 
         <div className="flex justify-end mt-2">
           <button
-            onClick={() => navigate(`/praia/${beach.idPraia}`)}
+            onClick={() => {
+              setPraiaId(beach.idPraia);
+              setPraiaNome(beach.nomePraia);
+              setTotalAvaliacoesDoDia(info.totalAvaliacoesDoDia);
+              setPraiaFotoUrl(photoUrl);
+
+              navigate(`/avaliacoes/${beach.idPraia}`);
+            }}
             className="bg-[#182E4D] text-white px-2 py-2 rounded-3xl text-sm font-small hover:bg-[#1e3a5f] transition-colors"
           >
             Ver detalhes
