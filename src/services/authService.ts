@@ -71,6 +71,17 @@ export const setAuthToken = (token: string | null) => {
   }
 };
 
+// Get auth token from localStorage
+export const getAuthToken = (): string | null => {
+  return localStorage.getItem(authToken);
+};
+
+// Check if user is authenticated
+export const isAuthenticated = (): boolean => {
+  const token = getAuthToken();
+  return !!token;
+};
+
 // Initialize auth from localStorage on app start (optional)
 export const initializeAuth = () => {
   // FAZER UMA CONST GERAL DESSE TOKEN
