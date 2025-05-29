@@ -6,7 +6,7 @@ export enum Condicoes {
   CHUVA          = "CHUVA",
   SOL            = "SOL",
   LOTADA         = "LOTADA",
-  AGUA_VIVA      = "AGUA VIVA",
+  AGUA_VIVA      = "AGUA_VIVA",
   LIXO           = "LIXO",
   LIMPA          = "LIMPA",
   MAR_ONDAS      = "MAR_ONDAS",
