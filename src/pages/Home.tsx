@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import WelcomeModal from "../components/WelcomeModal";
-import { filterPraias, getAllPraias, PraiaDTO } from "../services/beachService";
+import { useLocation, useNavigate } from "react-router-dom";
 import MapComponent from "../components/MapComponent";
 import ProfileModal from "../components/ProfileModal";
-import { getAuthToken, isAuthenticated } from "../services/authService";
+import WelcomeModal from "../components/WelcomeModal";
+import { isAuthenticated } from "../services/authService";
+import { filterPraias, getAllPraias, PraiaDTO } from "../services/beachService";
 import { getCurrentUser, Usuario } from "../services/userService";
 
 const Home: React.FC = () => {
@@ -34,14 +34,14 @@ const Home: React.FC = () => {
     const checkAuthStatus = async () => {
       const authenticated = isAuthenticated();
       setIsUserLoggedIn(authenticated);
-      
+
       if (authenticated) {
         try {
           // Buscar dados do usuário logado
           const user = await getCurrentUser();
           setUserData(user);
         } catch (error) {
-          console.error('Erro ao buscar dados do usuário:', error);
+          console.error("Erro ao buscar dados do usuário:", error);
           // Se houver erro, pode ser que o token seja inválido
           setIsUserLoggedIn(false);
           setUserData(null);
@@ -52,10 +52,10 @@ const Home: React.FC = () => {
     };
 
     checkAuthStatus();
-    
+
     // Verificar periodicamente
     const interval = setInterval(checkAuthStatus, 5000); // verifica a cada 5 segundos
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -124,7 +124,7 @@ const Home: React.FC = () => {
         activeBeachFromSearch={selectedBeach}
         praias={allBeaches}
       />
-      
+
       {/* Caixa de busca */}
       <div className="absolute top-4 left-4 bg-white rounded-xl shadow-lg p-4 max-w-[350px] w-full">
         <div className="flex items-center space-x-2 mb-4">
@@ -141,7 +141,7 @@ const Home: React.FC = () => {
           placeholder="Pesquisar praia..."
           className="w-full border px-4 py-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         />
-        
+
         <div className="flex flex-col gap-2 pb-4 max-h-80 overflow-y-auto">
           {filteredBeaches.map((beach) => (
             <button
@@ -229,7 +229,7 @@ const Home: React.FC = () => {
       >
         <span className="text-sky-800 text-xl font-bold">?</span>
       </button>
-      
+
       {/* Modal de ajuda */}
       {showHelpModal && <WelcomeModal onClose={toggleHelpModal} />}
     </div>
