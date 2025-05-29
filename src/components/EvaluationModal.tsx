@@ -1,73 +1,57 @@
 import { X } from "lucide-react";
 import React, { useState } from "react";
+import { createAvaliacao, Condicoes } from "../services/evaluationService";
+import { useBeach } from "../hooks/useBeach"; // para pegar o praiaId
+
 
 interface EvaluationModalProps {
-  //foto?
   beachName: string;
   userName: string;
   userNickname: string;
+  idUsuario: number; 
+  fotoPerfil: string;
   onClose: () => void;
-  onSubmit: (selectedConditions: string[]) => void;
+  onSubmit: (selectedConditions: Condicoes[]) => void;
 }
-
 const EvaluationModal: React.FC<EvaluationModalProps> = ({
   beachName,
   userName,
   userNickname,
+  idUsuario,
+  fotoPerfil,
   onClose,
   onSubmit,
 }) => {
+    
   const conditions = [
-    { id: "sunny", name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
-    {
-      id: "waves",
-      name: "Ondas fortes",
-      icon: "/assets/iconFull/ondas_Fortes.svg",
-    },
-    { id: "crowded", name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
-    { id: "cloudy", name: "Nublado", icon: "/assets/iconFull/nublado.svg" },
-    { id: "jelly", name: "Água-viva", icon: "/assets/iconFull/agua_viva.svg" },
-
-    { id: "trash", name: "Lixo visível", icon: "/assets/iconFull/lixo.svg" },
-    { id: "rainy", name: "Chuva", icon: "/assets/iconFull/chuva.svg" },
-    { id: "calm", name: "Mar calmo", icon: "/assets/iconFull/mar_calmo.svg" },
-    { id: "clean", name: "Limpa", icon: "/assets/iconFull/limpa.svg" },
-    { id: "windy", name: "Vento", icon: "/assets/iconFull/vento.svg" },
-    {
-      id: "cold",
-      name: "Água gelada",
-      icon: "/assets/iconFull/agua_gelada.svg",
-    },
-    { id: "music", name: "Música alta", icon: "/assets/iconFull/musica.svg" },
-    {
-      id: "parking",
-      name: "Estacionamento",
-      icon: "/assets/iconFull/estacionamento.svg",
-    },
-
-    {
-      id: "lifeguard",
-      name: "Salva-vidas",
-      icon: "/assets/iconFull/salva_vidas.svg",
-    },
-
-    {
-      id: "food",
-      name: "Alimentação",
-      icon: "/assets/iconFull/alimentacao.svg",
-    },
+    { id: Condicoes.SOL, name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
+    { id: Condicoes.MAR_ONDAS, name: "Ondas fortes", icon: "/assets/iconFull/ondas_Fortes.svg" },
+    { id: Condicoes.LOTADA, name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
+    { id: Condicoes.NUBLADO, name: "Nublado", icon: "/assets/iconFull/nublado.svg" },
+    { id: Condicoes.AGUA_VIVA, name: "Água-viva", icon: "/assets/iconFull/agua_viva.svg" },
+    { id: Condicoes.LIXO, name: "Lixo visível", icon: "/assets/iconFull/lixo.svg" },
+    { id: Condicoes.CHUVA, name: "Chuva", icon: "/assets/iconFull/chuva.svg" },
+    { id: Condicoes.MAR_CALMO, name: "Mar calmo", icon: "/assets/iconFull/mar_calmo.svg" },
+    { id: Condicoes.LIMPA, name: "Limpa", icon: "/assets/iconFull/limpa.svg" },
+    { id: Condicoes.VENTO, name: "Vento", icon: "/assets/iconFull/vento.svg" },
+    { id: Condicoes.AGUA_GELADA, name: "Água gelada", icon: "/assets/iconFull/agua_gelada.svg" },
+    { id: Condicoes.MUSICA, name: "Música alta", icon: "/assets/iconFull/musica.svg" },
+    { id: Condicoes.ESTACIONAMENTO, name: "Estacionamento", icon: "/assets/iconFull/estacionamento.svg" },
+    { id: Condicoes.SALVA_VIDAS, name: "Salva-vidas", icon: "/assets/iconFull/salva_vidas.svg" },
+    { id: Condicoes.ALIMENTACAO, name: "Alimentação", icon: "/assets/iconFull/alimentacao.svg" },
   ];
 
-  const conflictingGroups = [
-    ["sunny", "rainy"],
-    ["sunny", "cloudy"],
-    ["waves", "calm"],
-    ["clean", "trash"],
-  ];
+ const conflictingGroups: Condicoes[][] = [
+  [Condicoes.SOL, Condicoes.NUBLADO, Condicoes.CHUVA],
+  [Condicoes.MAR_CALMO, Condicoes.MAR_ONDAS],
+  [Condicoes.LIMPA, Condicoes.LIXO],
+];
 
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const { praiaId } = useBeach();
 
-  const toggleCondition = (conditionId: string) => {
+  const [selectedConditions, setSelectedConditions] = useState<Condicoes[]>([]);
+
+  const toggleCondition = (conditionId: Condicoes) => {
     setSelectedConditions((prev) => {
       // Se já está selecionado, remove
       if (prev.includes(conditionId)) {
@@ -89,7 +73,7 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
     });
   };
 
-  const isConditionDisabled = (conditionId: string) => {
+  const isConditionDisabled = (conditionId: Condicoes) => {
     const conflictGroup = conflictingGroups.find((group) =>
       group.includes(conditionId)
     );
@@ -102,10 +86,33 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
     );
   };
 
-  const handleSubmit = () => {
-    // Só chama onSubmit, o controle do modal fica com o componente pai
-    onSubmit(selectedConditions);
-  };
+const handleSubmit = async () => {
+console.log("Payload para avaliação:", {
+  idPraia: praiaId,
+  idUsuario,
+  nickname: userNickname,
+  condicoes: selectedConditions,
+});
+
+  if (!praiaId) {
+    console.error("Praia não definida para avaliação");
+    return;
+  }
+
+  try {
+    await createAvaliacao({
+      idPraia: praiaId,
+      condicoes: selectedConditions,
+      idUsuario: idUsuario,       // passado como prop no componente
+      nickname: userNickname,     // já vindo da prop
+    });
+
+    onSubmit(selectedConditions); // dispara ação do pai (ex: mostrar agradecimento)
+  } catch (error) {
+    console.error("Erro ao enviar avaliação:", error);
+  }
+};
+
 
   return (
     <div
@@ -133,17 +140,18 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
             {/* Avatar do usuário */}
             <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden mr-3 flex-shrink-0">
               <img
-                src="assets/defaultProfile.svg"
+                src={`data:image/jpeg;base64,${fotoPerfil}`}
+                
                 alt={`Foto de ${userName}`}
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="flex flex-col mt-2 mb- space-y-1">
               <span className="font-medium text-blue-900">
-                {userName}Victoria Fernandes
+                {userName}
               </span>
               <span className="text-blue-900 ">
-                @{userNickname}vicfernandes
+                @{userNickname}
               </span>
             </div>
           </div>
