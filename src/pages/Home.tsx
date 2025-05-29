@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import WelcomeModal from "../components/WelcomeModal";
 import { filterPraias, getAllPraias, PraiaDTO } from "../services/beachService";
 import MapComponent from "../components/MapComponent";
@@ -7,6 +7,8 @@ import ProfileModal from "../components/ProfileModal";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [isAIActive, setIsAIActive] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,7 +41,7 @@ const Home: React.FC = () => {
   return (
     <div className="relative h-screen w-screen">
       {/* Passando a praia selecionada como prop para o MapComponent */}
-      <MapComponent activeBeachFromSearch={selectedBeach} praias={allBeaches} />
+      <MapComponent  key={location.key} activeBeachFromSearch={selectedBeach} praias={allBeaches} />
       {/* Caixa de busca */}
       <div className="absolute top-4 left-4 bg-white rounded-xl shadow-lg p-4 max-w-[350px] w-full">
         <div className="flex items-center space-x-2 mb-4">
