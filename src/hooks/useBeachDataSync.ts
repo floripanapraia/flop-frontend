@@ -18,8 +18,12 @@ interface PraiaDadosSincronizados {
 }
 
 export function usePraiaDataSync(
-  options: PraiaDataOptions = {}
-): PraiaDadosSincronizados {
+  options: PraiaDataOptions = {}): PraiaDadosSincronizados & { refetch: () => void } {
+
+  const [reloadFlag, setReloadFlag] = useState(0);
+
+  const refetch = () => setReloadFlag((prev) => prev + 1);
+
   const {
     praiaId,
     setPraiaNome,
@@ -34,6 +38,7 @@ export function usePraiaDataSync(
   const [condicoesAvaliacoes, setCondicoesAvaliacoes] = useState<[string, number][]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
 
   const {
     incluirMensagens = true,
@@ -86,7 +91,7 @@ export function usePraiaDataSync(
     };
 
     fetchPraiaData();
-  }, [praiaId, incluirMensagens, incluirImagens, incluirCondicoes]);
+  }, [praiaId, incluirMensagens, incluirImagens, incluirCondicoes, reloadFlag]);
 
   return {
     praiaData,
@@ -95,5 +100,6 @@ export function usePraiaDataSync(
     condicoesAvaliacoes,
     loading,
     error,
+    refetch,
   };
 }
