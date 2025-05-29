@@ -1,18 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import EvaluationModal from "./EvaluationModal";
 import ThankYouAvaliacaoModal from "./ThankYouAvaliacaoModal";
 import { Star, X } from "lucide-react";
 import { useBeach } from "../hooks/useBeach";
 import { usePraiaDataSync } from "../hooks/useBeachDataSync";
+import { getCurrentUser, Usuario } from "../services/userService";
 
 const Beach: React.FC = () => {
+  const navigate = useNavigate();
   const [showEvaluationModal, setShowEvaluationModal] = useState(false);
   const [showThankYouModal, setShowThankYouModal] = useState(false);
-  const navigate = useNavigate();
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await getCurrentUser();
+      if (user) {
+        setUsuario(user);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const { praiaNome, praiaFotoUrl, totalAvaliacoesDoDia } = useBeach();
-  const { condicoesAvaliacoes, loading } = usePraiaDataSync({
+  const { condicoesAvaliacoes, loading, refetch } = usePraiaDataSync({
     incluirCondicoes: true,
     incluirMensagens: false,
     incluirImagens: false,
@@ -25,7 +37,7 @@ const Beach: React.FC = () => {
   const handleEvaluationSubmit = (selectedConditions: string[]) => {
     setShowEvaluationModal(false);
     setShowThankYouModal(true);
-    console.log("Condições selecionadas:", selectedConditions);
+    refetch();
   };
 
   const handleThankYouClose = () => {
@@ -38,7 +50,9 @@ const Beach: React.FC = () => {
         <div
           className="px-6 pt-8 pb-8 border relative"
           style={{
-            backgroundImage: praiaFotoUrl ? `url(${praiaFotoUrl})` : "url('assets/FlopBG.png')",
+            backgroundImage: praiaFotoUrl
+              ? `url(${praiaFotoUrl})`
+              : "url('assets/FlopBG.png')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -112,12 +126,17 @@ const Beach: React.FC = () => {
                           alt={label}
                           className="w-14 h-14"
                           onError={(e) =>
-                            ((e.target as HTMLImageElement).style.display = "none")
+                            ((e.target as HTMLImageElement).style.display =
+                              "none")
                           }
                         />
                       </div>
-                      <p className="text-xs font-medium text-gray-700 text-center">{label}</p>
-                      <p className="text-xs text-gray-400 mt-1">{votos} votos</p>
+                      <p className="text-xs font-medium text-gray-700 text-center">
+                        {label}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {votos} votos
+                      </p>
                     </div>
                   );
                 })}
@@ -136,12 +155,14 @@ const Beach: React.FC = () => {
         </div>
       </div>
 
-      {showEvaluationModal && (
+      {showEvaluationModal && usuario && (
         <EvaluationModal
           onClose={toggleEvaluationModal}
           beachName={praiaNome || ""}
-          userName=""
-          userNickname=""
+          userName={usuario.nome}
+          userNickname={usuario.nickname}
+          fotoPerfil={usuario.fotoPerfil}
+          idUsuario={usuario.id}
           onSubmit={handleEvaluationSubmit}
         />
       )}
