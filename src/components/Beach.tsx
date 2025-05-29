@@ -48,7 +48,7 @@ const Beach: React.FC = () => {
     <div>
       <div className="absolute top-0 left-0 h-full bg-white/95 backdrop-blur-md shadow-xl w-[620px] max-w-full flex flex-col rounded-r-3xl overflow-hidden">
         <div
-          className="px-6 pt-8 pb-8 border relative"
+          className="px-6 pt-8 pb-24 border relative"
           style={{
             backgroundImage: praiaFotoUrl
               ? `url(${praiaFotoUrl})`
@@ -71,13 +71,7 @@ const Beach: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="flex-1 mx-4">
-              <input
-                type="text"
-                placeholder="Pesquisar praia..."
-                className="w-full border px-4 py-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white/90 backdrop-blur-sm"
-              />
-            </div>
+            <div className="flex-1 mx-4"></div>
           </div>
         </div>
 
