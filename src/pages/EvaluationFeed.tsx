@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Beach from "../components/Beach";
+import ProfileModal from "../components/ProfileModal";
+import { isAuthenticated } from "../services/authService";
+import { getCurrentUser, Usuario } from "../services/userService";
+import { BeachContext, BeachContextType } from "../contexts/BeachContext";
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
@@ -9,12 +13,48 @@ type TabType = {
 
 const EvaluationFeed: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Mudar para true quando o usuário fizer login
+
+  const beachContext = useContext(BeachContext) as BeachContextType;
+  const { praiaId } = beachContext;
+
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<Usuario | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Estado inicial definido como 'avaliacoes'
   const [activeTab, setActiveTab] = useState<"avaliacoes" | "fotos" | "flops">(
     "avaliacoes"
   );
+
+  // Verificar se o usuário está logado e buscar dados do usuário
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const authenticated = isAuthenticated();
+      setIsUserLoggedIn(authenticated);
+
+      if (authenticated) {
+        try {
+          // Buscar dados do usuário logado
+          const user = await getCurrentUser();
+          setUserData(user);
+        } catch (error) {
+          console.error("Erro ao buscar dados do usuário:", error);
+
+          setIsUserLoggedIn(false);
+          setUserData(null);
+        }
+      } else {
+        setUserData(null);
+      }
+    };
+
+    checkAuthStatus();
+
+    // Verificar periodicamente
+    const interval = setInterval(checkAuthStatus, 5000); // verifica a cada 5 segundos
+
+    return () => clearInterval(interval);
+  }, []);
 
   const tabs: TabType[] = [
     { id: "avaliacoes", label: "Avaliações" },
@@ -23,18 +63,68 @@ const EvaluationFeed: React.FC = () => {
   ];
 
   const handleTabClick = (tabId: "avaliacoes" | "fotos" | "flops") => {
+    if (!praiaId) {
+      console.warn("Nenhuma praia selecionada");
+
+      alert("Selecione uma praia primeiro");
+      return;
+    }
+
     setActiveTab(tabId);
+
     switch (tabId) {
       case "avaliacoes":
-        navigate("/avaliacoes");
+        navigate(`/avaliacoes/${praiaId}`);
         break;
       case "fotos":
-        navigate("/fotos");
+        navigate(`/fotos/${praiaId}`);
         break;
       case "flops":
-        navigate("/flops");
+        navigate(`/flops/${praiaId}`);
         break;
     }
+  };
+
+  const handleMainButtonClick = () => {
+    if (isUserLoggedIn) {
+      setIsProfileModalOpen(true);
+    } else {
+      navigate("/auth");
+    }
+  };
+
+  // Componente do botão de perfil
+  const ProfileButton = () => {
+    if (!isUserLoggedIn || !userData) {
+      return (
+        <button
+          onClick={handleMainButtonClick}
+          className="bg-[#182E4C] hover:bg-[#1a365d] text-white px-6 py-3 rounded-3xl text-sm font-medium transition-colors"
+        >
+          ENTRAR
+        </button>
+      );
+    }
+
+    return (
+      <button
+        onClick={handleMainButtonClick}
+        className="w-12 h-12 rounded-full overflow-hidden border-4 border-white shadow-lg hover:border-[#182E4C] transition-all duration-200 hover:shadow-xl"
+        title={`Perfil de ${userData.nome}`}
+      >
+        {userData.fotoPerfil ? (
+          <img
+            src={`data:image/jpeg;base64,${userData.fotoPerfil}`}
+            alt={userData.nome}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-[#182E4C] flex items-center justify-center text-white text-lg font-medium">
+            {userData.nome.charAt(0).toUpperCase()}
+          </div>
+        )}
+      </button>
+    );
   };
 
   return (
@@ -42,13 +132,17 @@ const EvaluationFeed: React.FC = () => {
       <Beach />
       {/* Botão de perfil */}
       <div className="absolute top-4 right-6 z-50">
-        <button
-          onClick={() => navigate(isLoggedIn ? "/perfil" : "/auth")}
-          className="bg-[#182E4D] text-white px-6 py-3 rounded-3xl text-sm font-medium hover:bg-[#1e3a5f] transition-colors"
-        >
-          {isLoggedIn ? "Perfil" : "ENTRAR"}
-        </button>
+        <ProfileButton />
       </div>
+
+      {/* Modal de perfil - só renderiza se o usuário estiver logado */}
+      {isUserLoggedIn && (
+        <ProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+        />
+      )}
+
       {/* Área do feed */}
       <div className="ml-[620px] h-full flex flex-col">
         <div className="bg-white px-6 pt-5 pb-2 border-b">
