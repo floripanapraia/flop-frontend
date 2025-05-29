@@ -4,6 +4,7 @@ import {
   Route,
   BrowserRouter as Router,
   Routes,
+  Outlet,
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import Auth from "./pages/Auth";
@@ -13,7 +14,9 @@ import FlopFeed from "./pages/FlopFeed";
 import Home from "./pages/Home";
 import PhotoFeed from "./pages/PhotoFeed";
 import UserProfilePhotos from "./pages/UserProfilePhotos";
-import UserProfileFlops from './pages/UserProfileFlops';
+import UserProfileFlops from "./pages/UserProfileFlops";
+import { GeolocationProvider } from "./contexts/GeolocationContext";
+import { BeachProvider } from "./contexts/BeachContext";
 
 const App: React.FC = () => {
   return (
@@ -21,13 +24,34 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/auth" element={<Auth />} />
         <Route path="/editar" element={<EditUser />} />
-        <Route path="/" element={<Navigate replace to="/auth" />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/flops" element={<FlopFeed />} />
-        <Route path="/fotos" element={<PhotoFeed />} />
-        <Route path="/avaliacoes" element={<EvaluationFeed />} />
+        <Route path="/" element={<Navigate replace to="/home" />} />
         <Route path="/perfilFotos" element={<UserProfilePhotos />} />
         <Route path="/perfilFlops" element={<UserProfileFlops />} />
+
+        {/* Home com apenas o contexto da praia */}
+        <Route
+          path="/home"
+          element={
+            <BeachProvider>
+              <Home />
+            </BeachProvider>
+          }
+        />
+
+        {/* Avaliação, Flops e Fotos com contexto de praia + geolocalização */}
+        <Route
+          element={
+            <BeachProvider>
+              <GeolocationProvider>
+                <Outlet />
+              </GeolocationProvider>
+            </BeachProvider>
+          }
+        >
+          <Route path="/avaliacoes/:id" element={<EvaluationFeed />} />
+          <Route path="/flops/:id" element={<FlopFeed />} />
+          <Route path="/fotos/:id" element={<PhotoFeed />} />
+        </Route>
       </Routes>
 
       {/* Toast configuration */}

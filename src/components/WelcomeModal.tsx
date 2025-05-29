@@ -11,20 +11,20 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
     {
       id: "waves",
       name: "Ondas fortes",
-      icon: "/assets/iconFull/ondasFortes.svg",
+      icon: "/assets/iconFull/ondas_Fortes.svg",
     },
     { id: "crowded", name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
     { id: "cloudy", name: "Nublado", icon: "/assets/iconFull/nublado.svg" },
-    { id: "jelly", name: "Água-viva", icon: "/assets/iconFull/aguaviva.svg" },
+    { id: "jelly", name: "Água-viva", icon: "/assets/iconFull/agua_viva.svg" },
     { id: "trash", name: "Lixo visível", icon: "/assets/iconFull/lixo.svg" },
     { id: "rainy", name: "Chuva", icon: "/assets/iconFull/chuva.svg" },
-    { id: "calm", name: "Mar calmo", icon: "/assets/iconFull/marcalmo.svg" },
+    { id: "calm", name: "Mar calmo", icon: "/assets/iconFull/mar_calmo.svg" },
     { id: "clean", name: "Limpa", icon: "/assets/iconFull/limpa.svg" },
     { id: "windy", name: "Vento", icon: "/assets/iconFull/vento.svg" },
     {
       id: "cold",
       name: "Água gelada",
-      icon: "/assets/iconFull/aguagelada.svg",
+      icon: "/assets/iconFull/agua_gelada.svg",
     },
     { id: "music", name: "Música alta", icon: "/assets/iconFull/musica.svg" },
     {
@@ -35,7 +35,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
     {
       id: "lifeguard",
       name: "Salva-vidas",
-      icon: "/assets/iconFull/salvavidas.svg",
+      icon: "/assets/iconFull/salva_vidas.svg",
     },
     {
       id: "food",
