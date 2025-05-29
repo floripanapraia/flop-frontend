@@ -11,6 +11,7 @@ import {
   normalizeError,
   shouldShowInModal,
 } from "../utils/errorHandler";
+import ForgotPasswordModal from "../components/ForgotPasswordModal";
 
 const Auth: React.FC = () => {
   const [signIn, toggle] = useState<boolean>(true);
@@ -37,10 +38,15 @@ const Auth: React.FC = () => {
   // New state for error modal
   const [modalError, setModalError] = useState<ErrorResponse | null>(null);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState<boolean>(false);
 
   // State to track if the user just registered
   const [justRegistered, setJustRegistered] = useState(false);
 
+  const handleForgotPasswordSuccess = (): void => {
+    // Ação após sucesso na recuperação de senha
+    alert("Senha alterada com sucesso! Agora você pode fazer login.");
+  };
   // Login handlers
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -328,7 +334,15 @@ const Auth: React.FC = () => {
               />
             </div>
 
-            <Components.Anchor href="#">Esqueceu sua senha?</Components.Anchor>
+            <p>
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-sm  text-grey-800 link-button"
+              >
+                Esqueceu sua senha?
+              </button>
+            </p>
             <Components.Button type="submit" disabled={isLoading}>
               {isLoading ? "Processando..." : "Entrar"}
             </Components.Button>
@@ -377,6 +391,12 @@ const Auth: React.FC = () => {
         error={modalError}
         isOpen={showErrorModal}
         onClose={closeErrorModal}
+      />
+      {/* Modal de recuperação de senha */}
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        onSuccess={handleForgotPasswordSuccess}
       />
     </Components.PageWrapper>
   );
