@@ -20,14 +20,10 @@ import { AuthProvider } from "./contexts/authContext";
 import { BeachProvider } from "./contexts/beachContext";
 import { GeolocationProvider } from './contexts/geolocationContext';
 import { UserProvider } from "./contexts/userContext";
+import AdminUsers from "./pages/admin/AdminUsers";
 import FlopFeed from "./pages/FlopFeed";
 import PhotoFeed from "./pages/PhotoFeed";
 import ProtectedRoute from "./routes/ProtectedRoute";
-
-// import AdminUsers from "./pages/admin/AdminUsers"; // exemplo de rota admin só pra fazer funcionar
-function AdminUsers() {
-  return <div>Admin Users</div>;
-}
 
 const App: React.FC = () => {
   return (
