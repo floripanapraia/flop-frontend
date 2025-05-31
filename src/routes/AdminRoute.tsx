@@ -1,12 +1,24 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/authContext";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../contexts/authContext";
 
-export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+export const AdminRoute = () => {
+  const { isAuthenticated, user, isLoading } = useAuth();
 
-  if (!user) return <Navigate to="/auth" replace />;
-  if (user.isAdmin !== 1) return <Navigate to="/home" replace />;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-sky-800"></div>
+      </div>
+    );
+  }
 
-  return <>{children}</>;
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (user.isAdmin !== 1) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return <Outlet />;
 };
