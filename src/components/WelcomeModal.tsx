@@ -11,7 +11,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
     {
       id: "waves",
       name: "Ondas fortes",
-      icon: "/assets/iconFull/ondas_Fortes.svg",
+      icon: "/assets/iconFull/mar_ondas.svg",
     },
     { id: "crowded", name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
     { id: "cloudy", name: "Nublado", icon: "/assets/iconFull/nublado.svg" },
