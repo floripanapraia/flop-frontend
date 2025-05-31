@@ -22,8 +22,8 @@ import { AuthProvider } from "./contexts/authContext";
 import { BeachProvider } from "./contexts/beachContext";
 import { GeolocationProvider } from "./contexts/geolocationContext";
 import { UserProvider } from "./contexts/userContext";
-import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminUsers from "./pages/admin/AdminUsers";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 const App: React.FC = () => {
   return (
