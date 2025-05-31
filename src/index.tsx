@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
-import { User, UserContext } from './context/userContext';
+import { User, UserContext } from './contexts/userContext';
 
 const Root = () => {
   const [user, setUser] = useState<User | null>(null);
