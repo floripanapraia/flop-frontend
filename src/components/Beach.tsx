@@ -1,27 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EvaluationModal from "./EvaluationModal";
 import ThankYouAvaliacaoModal from "./ThankYouAvaliacaoModal";
 import { Star, X } from "lucide-react";
 import { useBeach } from "../hooks/useBeach";
 import { usePraiaDataSync } from "../hooks/useBeachDataSync";
-import { getCurrentUser, Usuario } from "../services/userService";
+import { useUser } from "../contexts/userContext";
+import RequireAuthModal from "./RequireAuthModal";
 
 const Beach: React.FC = () => {
   const navigate = useNavigate();
   const [showEvaluationModal, setShowEvaluationModal] = useState(false);
   const [showThankYouModal, setShowThankYouModal] = useState(false);
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const user = await getCurrentUser();
-      if (user) {
-        setUsuario(user);
-      }
-    };
-    fetchUser();
-  }, []);
+  const [showRequireAuthModal, setShowRequireAuthModal] = useState(false);
 
   const { praiaNome, praiaFotoUrl, totalAvaliacoesDoDia } = useBeach();
   const { condicoesAvaliacoes, loading, refetch } = usePraiaDataSync({
@@ -30,8 +21,24 @@ const Beach: React.FC = () => {
     incluirImagens: false,
   });
 
-  const toggleEvaluationModal = () => {
-    setShowEvaluationModal(!showEvaluationModal);
+  const { user } = useUser();
+
+ const handleAvaliarClick = () => {
+    if (user) {
+      // se o usuário estiver logado, abra o EvaluationModal
+      setShowEvaluationModal(true);
+    } else {
+      // senão, abra o RequireAuthModal
+      setShowRequireAuthModal(true);
+    }
+  };
+
+   const handleEvaluationModalClose = () => {
+    setShowEvaluationModal(false);
+  };
+
+  const handleRequireAuthModalClose = () => {
+    setShowRequireAuthModal(false);
   };
 
   const handleEvaluationSubmit = (selectedConditions: string[]) => {
@@ -141,7 +148,7 @@ const Beach: React.FC = () => {
 
         <div className="mt-6 mb-8 flex justify-center">
           <button
-            onClick={toggleEvaluationModal}
+            onClick={handleAvaliarClick}
             className="px-5 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-[#1e3a5f] transition-colors shadow-md"
           >
             Avaliar
@@ -149,16 +156,16 @@ const Beach: React.FC = () => {
         </div>
       </div>
 
-      {showEvaluationModal && usuario && (
+      {showEvaluationModal && user && (
         <EvaluationModal
-          onClose={toggleEvaluationModal}
+          onClose={handleEvaluationModalClose}
           beachName={praiaNome || ""}
-          userName={usuario.nome}
-          userNickname={usuario.nickname}
-          fotoPerfil={usuario.fotoPerfil}
-          idUsuario={usuario.id}
           onSubmit={handleEvaluationSubmit}
         />
+      )}
+
+      {showRequireAuthModal && (
+        <RequireAuthModal isOpen={showRequireAuthModal} onClose={ handleRequireAuthModalClose} />
       )}
 
       <ThankYouAvaliacaoModal
