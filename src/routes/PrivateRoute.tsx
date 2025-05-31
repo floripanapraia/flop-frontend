@@ -1,9 +1,21 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/authContext";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../contexts/authContext";
 
-export const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+export const PrivateRoute = () => {
+  const { isAuthenticated, isLoading } = useAuth();
 
-  return user ? <>{children}</> : <Navigate to="/auth" replace />;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-sky-800"></div>
+      </div>
+    );
+  }
+
+  return isAuthenticated ? (
+    <Outlet />
+  ) : (
+    <Navigate to="/auth" replace />
+  );
 };
