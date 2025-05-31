@@ -10,7 +10,7 @@ import {
   updateUser,
   updateUserProfilePicture,
 } from "../services/userService";
-import { LogOut } from "lucide-react";
+import { LogOut, Trash2 } from "lucide-react";
 
 const EditUser: React.FC = () => {
   const navigate = useNavigate();
@@ -277,8 +277,9 @@ const EditUser: React.FC = () => {
 
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="w-40 bg-gray-100 py-2 rounded-lg text-sm text-red-600 shadow hover:bg-gray-200 transition"
+              className="w-40 bg-gray-100 py-2 rounded-lg text-sm text-red-600 shadow hover:bg-gray-200 transition flex items-center justify-center gap-2"
             >
+              <Trash2 size={18} />
               Deletar conta
             </button>
           </div>
