@@ -94,11 +94,9 @@ export const login = async (email: string, senha: string): Promise<{ token: stri
     });
 
     const token = response.data;
-    console.log('Login token received:', token);
 
     // Decode JWT to extract user information
     const payload = decodeJWT(token);
-    console.log('JWT payload:', payload);
 
     // Set the token for future requests first
     setAuthToken(token);
@@ -251,4 +249,16 @@ export const isTokenValid = (): boolean => {
     console.error('Error validating token:', error);
     return false;
   }
+};
+
+// Função para pegar o token atual da sessão
+export const getAuthToken = (): string | null => {
+  return sessionStorage.getItem(AUTH_TOKEN_KEY);
+};
+
+
+// Verifica se o usuário está autenticado
+export const isAuthenticated = (): boolean => {
+  const token = getAuthToken();
+  return !!token && isTokenValid();
 };
