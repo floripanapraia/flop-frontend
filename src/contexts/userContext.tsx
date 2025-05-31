@@ -1,5 +1,6 @@
 import React, { createContext, useContext, ReactNode } from "react";
 import { useAuth } from "./authContext";
+import { createContext, useContext } from "react";
 
 export interface User {
   id: number;

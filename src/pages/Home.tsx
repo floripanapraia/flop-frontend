@@ -1,24 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import WelcomeModal from "../components/WelcomeModal";
-import { filterPraias, getAllPraias, PraiaDTO } from "../services/beachService";
+import { useLocation, useNavigate } from "react-router-dom";
 import MapComponent from "../components/MapComponent";
+import ProfileModal from "../components/ProfileModal";
+import WelcomeModal from "../components/WelcomeModal";
+import { isAuthenticated } from "../services/authService";
+import { filterPraias, getAllPraias, PraiaDTO } from "../services/beachService";
+import { getCurrentUser, Usuario } from "../services/userService";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [isAIActive, setIsAIActive] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredBeaches, setFilteredBeaches] = useState<PraiaDTO[]>([]);
   const [selectedBeach, setSelectedBeach] = useState<PraiaDTO | null>(null);
   const [allBeaches, setAllBeaches] = useState<PraiaDTO[]>([]);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<Usuario | null>(null);
 
   const handleSliderChange = () => {
     setIsAIActive(!isAIActive);
   };
+
   const toggleHelpModal = () => {
     setShowHelpModal(!showHelpModal);
   };
+
+  // Verificar se o usuário está logado e buscar dados do usuário
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const authenticated = isAuthenticated();
+      setIsUserLoggedIn(authenticated);
+
+      if (authenticated) {
+        try {
+          // Buscar dados do usuário logado
+          const user = await getCurrentUser();
+          setUserData(user);
+        } catch (error) {
+          console.error("Erro ao buscar dados do usuário:", error);
+          // Se houver erro, pode ser que o token seja inválido
+          setIsUserLoggedIn(false);
+          setUserData(null);
+        }
+      } else {
+        setUserData(null);
+      }
+    };
+
+    checkAuthStatus();
+
+    // Verificar periodicamente
+    const interval = setInterval(checkAuthStatus, 5000); // verifica a cada 5 segundos
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     getAllPraias().then(setAllBeaches).catch(console.error);
@@ -34,12 +73,60 @@ const Home: React.FC = () => {
     }
   }, [searchQuery]);
 
+  // Função para lidar com o clique do botão principal
+  const handleMainButtonClick = () => {
+    if (isUserLoggedIn) {
+      setIsProfileModalOpen(true);
+    } else {
+      navigate("/auth");
+    }
+  };
+
+  // Componente do botão de perfil
+  const ProfileButton = () => {
+    if (!isUserLoggedIn || !userData) {
+      return (
+        <button
+          onClick={handleMainButtonClick}
+          className="bg-[#182E4C] hover:bg-[#1a365d] text-white px-6 py-3 rounded-3xl text-sm font-medium transition-colors"
+        >
+          ENTRAR
+        </button>
+      );
+    }
+
+    return (
+      <button
+        onClick={handleMainButtonClick}
+        className="w-16 h-16 rounded-full overflow-hidden border-4 border-white shadow-lg hover:border-[#182E4C] transition-all duration-200 hover:shadow-xl"
+        title={`Perfil de ${userData.nome}`}
+      >
+        {userData.fotoPerfil ? (
+          <img
+            src={`data:image/jpeg;base64,${userData.fotoPerfil}`}
+            alt={userData.nome}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-[#182E4C] flex items-center justify-center text-white text-lg font-medium">
+            {userData.nome.charAt(0).toUpperCase()}
+          </div>
+        )}
+      </button>
+    );
+  };
+
   return (
     <div className="relative h-screen w-screen">
       {/* Passando a praia selecionada como prop para o MapComponent */}
-      <MapComponent activeBeachFromSearch={selectedBeach} praias={allBeaches} />
+      <MapComponent
+        key={location.key}
+        activeBeachFromSearch={selectedBeach}
+        praias={allBeaches}
+      />
+
       {/* Caixa de busca */}
-      <div className="absolute top-4 left-4 bg-white rounded-xl shadow-lg p-6 max-w-md w-full">
+      <div className="absolute top-4 left-4 bg-white rounded-xl shadow-lg p-4 max-w-[350px] w-full">
         <div className="flex items-center space-x-2 mb-4">
           <img src="/assets/LOGO.png" alt="Logo" className="w-10 h-10" />
           <h2 className="text-[#182E4D] text-lg font-semibold">
@@ -54,9 +141,8 @@ const Home: React.FC = () => {
           placeholder="Pesquisar praia..."
           className="w-full border px-4 py-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         />
+
         <div className="flex flex-col gap-2 pb-4 max-h-80 overflow-y-auto">
-          {" "}
-          {/* Alterações aqui */}
           {filteredBeaches.map((beach) => (
             <button
               key={beach.idPraia}
@@ -70,7 +156,7 @@ const Home: React.FC = () => {
 
         {/* Texto e slider na mesma linha */}
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-gray-600 leading-relaxed">
+          <p className="text-xs text-gray-600 leading-relaxed">
             Procurando a praia ideal em Floripa?
             <br />
             Nossa IA pode te ajudar a encontrar o destino perfeito para o seu
@@ -122,14 +208,20 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Botão entrar */}
-      <button
-        onClick={() => navigate("/auth")}
-        className="absolute top-4 right-4 bg-[#182E4C] hover:bg-[#1a365d] text-white text-base font-bold py-2 px-5 rounded-full shadow transition-colors duration-300 tracking-wide"
-      >
-        ENTRAR
-      </button>
+      {/* Botão de perfil com imagem do usuário */}
+      <div className="absolute top-4 right-4">
+        <ProfileButton />
+      </div>
 
+      {/* Modal de perfil - só renderiza se o usuário estiver logado */}
+      {isUserLoggedIn && (
+        <ProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+        />
+      )}
+
+      {/* Botão de ajuda */}
       <button
         onClick={toggleHelpModal}
         className="absolute bottom-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
@@ -138,6 +230,7 @@ const Home: React.FC = () => {
         <span className="text-sky-800 text-xl font-bold">?</span>
       </button>
 
+      {/* Modal de ajuda */}
       {showHelpModal && <WelcomeModal onClose={toggleHelpModal} />}
     </div>
   );

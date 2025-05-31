@@ -1,9 +1,5 @@
 import apiClient from "./api";
 
-
-
-
-
 export interface PraiaDTO {
   idPraia: number;
   nomePraia: string;
@@ -11,13 +7,14 @@ export interface PraiaDTO {
   latitude: number;
   longitude: number;
   placeId: string;
+  totalAvaliacoesDoDia: number;
   mensagensPostagens: string[];
   imagensPostagens: string[];
   condicoesAvaliacoes: Record<string, number>;
 }
 
 interface SeletorFiltro {
-    nomePraia?: string;
+  nomePraia?: string;
 }
 
 export const createPraia = async (praiaData: PraiaDTO): Promise<PraiaDTO> => {
@@ -95,7 +92,7 @@ export const filterPraias = async (
 
 export const getPraiaNow = async (praiaId: number): Promise<PraiaDTO> => {
   try {
-    const response = await apiClient.get<PraiaDTO>(`/praias/${praiaId}/now`);
+    const response = await apiClient.get<PraiaDTO>(`/praias/${praiaId}/hoje`);
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar  praia:", error);

@@ -1,3 +1,4 @@
+import { authToken } from "../config/authToken";
 import apiClient from "./api";
 
 interface UsuarioCreateRequest {

@@ -1,6 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Beach from "../components/Beach";
+import ReportModal from "../components/ReportModal";
+import ProfileModal from "../components/ProfileModal";
+import { Ellipsis } from "lucide-react";
+import ThankYouModal from "../components/ThankYouDenunciaModal";
+import { isAuthenticated } from "../services/authService";
+import { getCurrentUser, Usuario } from "../services/userService";
+import { BeachContext, BeachContextType } from "../contexts/BeachContext"; 
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
@@ -9,11 +16,57 @@ type TabType = {
 
 const FlopFeed: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Mudar para true quando o usuário fizer login
 
+
+  const beachContext = useContext(BeachContext) as BeachContextType;
+  const { praiaId } = beachContext;
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<Usuario | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showThankYouDenunciaModal, setShowThankYouDenunciaModal] =
+    useState(false);
   const [activeTab, setActiveTab] = useState<"avaliacoes" | "fotos" | "flops">(
     "flops"
   );
+
+  // Verificar se o usuário está logado e buscar dados do usuário
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const authenticated = isAuthenticated();
+      setIsUserLoggedIn(authenticated);
+
+      if (authenticated) {
+        try {
+          // Buscar dados do usuário logado
+          const user = await getCurrentUser();
+          setUserData(user);
+        } catch (error) {
+          console.error("Erro ao buscar dados do usuário:", error);
+          
+          setIsUserLoggedIn(false);
+          setUserData(null);
+        }
+      } else {
+        setUserData(null);
+      }
+    };
+
+    checkAuthStatus();
+
+    // Verificar periodicamente
+    const interval = setInterval(checkAuthStatus, 5000); // verifica a cada 5 segundos
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleReport = (reason: string) => {
+    console.log("Denúncia enviada:", reason);
+    // lógica de denuncia
+    setShowReportModal(false);
+    setShowThankYouDenunciaModal(true);
+  };
 
   const tabs: TabType[] = [
     { id: "avaliacoes", label: "Avaliações" },
@@ -22,32 +75,70 @@ const FlopFeed: React.FC = () => {
   ];
 
   const handleTabClick = (tabId: "avaliacoes" | "fotos" | "flops") => {
+    if (!praiaId) {
+      console.warn("Nenhuma praia selecionada");
+
+      alert("Selecione uma praia primeiro");
+      return;
+    }
+
     setActiveTab(tabId);
+
+   
     switch (tabId) {
       case "avaliacoes":
-        navigate("/avaliacoes");
+        navigate(`/avaliacoes/${praiaId}`);
         break;
       case "fotos":
-        navigate("/fotos");
+        navigate(`/fotos/${praiaId}`);
         break;
       case "flops":
-        navigate("/flops");
+        navigate(`/flops/${praiaId}`);
         break;
     }
   };
 
   return (
-    <div className="relative h-screen w-screen bg-blue-50 overflow-hidden">
+    <div className="relative h-screen w-screen overflow-hidden">
       <Beach />
+
       {/* Botão de perfil */}
       <div className="absolute top-4 right-6 z-50">
-        <button
-          onClick={() => navigate(isLoggedIn ? "/perfil" : "/auth")}
-          className="bg-[#182E4D] text-white px-6 py-3 rounded-3xl text-sm font-medium hover:bg-[#1e3a5f] transition-colors"
-        >
-          {isLoggedIn ? "Perfil" : "ENTRAR"}
-        </button>
+        {!isUserLoggedIn || !userData ? (
+          <button
+            onClick={() => navigate("/auth")}
+            className="bg-[#182E4C] hover:bg-[#1a365d] text-white px-6 py-3 rounded-3xl text-sm font-medium transition-colors"
+          >
+            ENTRAR
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsProfileModalOpen(true)}
+            className="w-12 h-12 rounded-full overflow-hidden border-4 border-white shadow-lg hover:border-[#182E4C] transition-all duration-200 hover:shadow-xl"
+            title={`Perfil de ${userData.nome}`}
+          >
+            {userData.fotoPerfil ? (
+              <img
+                src={`data:image/jpeg;base64,${userData.fotoPerfil}`}
+                alt={userData.nome}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-[#182E4C] flex items-center justify-center text-white text-lg font-medium">
+                {userData.nome.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </button>
+        )}
       </div>
+
+      {/* Modal de perfil - só renderiza se o usuário estiver logado */}
+      {isUserLoggedIn && (
+        <ProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+        />
+      )}
 
       {/* Área do feed */}
       <div className="ml-[620px] h-full flex flex-col">
@@ -90,11 +181,27 @@ const FlopFeed: React.FC = () => {
         <div className="bg-white p-4 shadow-sm">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0">
-              <img
-                src="assets/defaultProfile.svg"
-                alt="Perfil"
-                className="w-10 h-10 rounded-full object-cover"
-              />
+              {isUserLoggedIn && userData ? (
+                // Mostrar foto do usuário logado ou inicial do nome
+                userData.fotoPerfil ? (
+                  <img
+                    src={`data:image/jpeg;base64,${userData.fotoPerfil}`}
+                    alt={userData.nome}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-[#182E4C] flex items-center justify-center text-white text-sm font-medium">
+                    {userData.nome.charAt(0).toUpperCase()}
+                  </div>
+                )
+              ) : (
+                // Imagem padrão se não estiver logado
+                <img
+                  src="assets/defaultProfile.svg"
+                  alt="Perfil"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              )}
             </div>
             <div className="flex-1">
               <textarea
@@ -134,22 +241,9 @@ const FlopFeed: React.FC = () => {
                   </div>
                   <button
                     className="text-gray-400 hover:text-gray-600"
-                    onClick={() => console.log("Denunciar post")}
+                    onClick={() => setShowReportModal(true)}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-                      />
-                    </svg>
+                    <Ellipsis className="h-4 w-4" />
                   </button>
                 </div>
 
@@ -166,6 +260,17 @@ const FlopFeed: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onReport={handleReport}
+      />
+
+      <ThankYouModal
+        isOpen={showThankYouDenunciaModal}
+        onClose={() => setShowThankYouDenunciaModal(false)}
+      />
     </div>
   );
 };

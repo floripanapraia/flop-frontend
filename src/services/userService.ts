@@ -1,6 +1,6 @@
 import apiClient from "./api";
 
-interface Usuario {
+export interface Usuario {
   id: number;
   fotoPerfil: string;
   nome: string;
