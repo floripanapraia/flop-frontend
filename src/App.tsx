@@ -1,71 +1,122 @@
 import React from "react";
 import {
   Navigate,
+  Outlet,
   Route,
   BrowserRouter as Router,
   Routes,
   Outlet,
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+import { BeachProvider } from "./contexts/BeachContext";
+import { GeolocationProvider } from "./contexts/GeolocationContext";
 import Auth from "./pages/Auth";
 import EditUser from "./pages/EditUser";
 import EvaluationFeed from "./pages/EvaluationFeed";
-import FlopFeed from "./pages/FlopFeed";
 import Home from "./pages/Home";
-import PhotoFeed from "./pages/PhotoFeed";
-import UserProfilePhotos from "./pages/UserProfilePhotos";
 import UserProfileFlops from "./pages/UserProfileFlops";
-import { GeolocationProvider } from "./contexts/GeolocationContext";
-import { BeachProvider } from "./contexts/BeachContext";
+import UserProfilePhotos from "./pages/UserProfilePhotos";
+
+import { AuthProvider } from "./contexts/authContext";
+import { UserProvider } from "./contexts/userContext";
+import FlopFeed from "./pages/FlopFeed";
+import PhotoFeed from "./pages/PhotoFeed";
+import ProtectedRoute from "./routes/ProtectedRoute";
+
+// import AdminUsers from "./pages/admin/AdminUsers"; // exemplo de rota admin só pra fazer funcionar
+function AdminUsers() {
+  return <div>Admin Users</div>;
+}
 
 const App: React.FC = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/editar" element={<EditUser />} />
-        <Route path="/" element={<Navigate replace to="/home" />} />
-        <Route path="/perfilFotos" element={<UserProfilePhotos />} />
-        <Route path="/perfilFlops" element={<UserProfileFlops />} />
+      <AuthProvider>
+        <UserProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/flops/:id" element={<FlopFeed />} />
+            <Route path="/fotos/:id" element={<PhotoFeed />} />
 
-        {/* Home com apenas o contexto da praia */}
-        <Route
-          path="/home"
-          element={
-            <BeachProvider>
-              <Home />
-            </BeachProvider>
-          }
-        />
+            {/* Redirect root to auth */}
+            <Route path="/" element={<Navigate to="/auth" replace />} />
 
-        {/* Avaliação, Flops e Fotos com contexto de praia + geolocalização */}
-        <Route
-          element={
-            <BeachProvider>
-              <GeolocationProvider>
-                <Outlet />
-              </GeolocationProvider>
-            </BeachProvider>
-          }
-        >
-          <Route path="/avaliacoes/:id" element={<EvaluationFeed />} />
-          <Route path="/flops/:id" element={<FlopFeed />} />
-          <Route path="/fotos/:id" element={<PhotoFeed />} />
-        </Route>
-      </Routes>
+            {/* Private Routes */}
+            {/* Avaliações, Flops e Fotos com contexto de praia + geolocalização */}
+            <Route
+              element={
+                <ProtectedRoute>
+                  <BeachProvider>
+                    <GeolocationProvider>
+                      <Outlet />
+                    </GeolocationProvider>
+                  </BeachProvider>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/avaliacoes/:id" element={
+              <ProtectedRoute>
+                <EvaluationFeed />
+              </ProtectedRoute>
+            }
+            />
+            <Route
+              path="/editar"
+              element={
+                <ProtectedRoute>
+                  <EditUser />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/perfilFotos"
+              element={
+                <ProtectedRoute>
+                  <UserProfilePhotos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/perfilFlops"
+              element={
+                <ProtectedRoute>
+                  <UserProfileFlops />
+                </ProtectedRoute>
+              }
+            />
 
-      {/* Toast configuration */}
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+            {/* Admin Routes */}
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AdminUsers />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Catch all route - redirect to auth */}
+            <Route path="*" element={<Navigate to="/auth" replace />} />
+          </Routes>
+
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
+        </UserProvider>
+      </AuthProvider>
     </Router>
   );
 };

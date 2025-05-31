@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import WelcomeModal from "../components/WelcomeModal";
-import ErrorModal from "../components/ErrorModal";
 import { toast } from "react-toastify";
-import { login, cadastrarUsuario } from "../services/authService";
+import ErrorModal from "../components/ErrorModal";
 import * as Components from "../components/LoginCadastro";
+import WelcomeModal from "../components/WelcomeModal";
+import { useAuth } from "../contexts/authContext";
+import { cadastrarUsuario, login } from "../services/authService";
 import {
   ErrorResponse,
   handleErrorWithToast,
@@ -16,6 +17,8 @@ import ForgotPasswordModal from "../components/ForgotPasswordModal";
 const Auth: React.FC = () => {
   const [signIn, toggle] = useState<boolean>(true);
   const navigate = useNavigate();
+
+  const { login: authLogin } = useAuth();
 
   // Login state
   const [loginCredentials, setLoginCredentials] = useState({
@@ -67,9 +70,20 @@ const Auth: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const token = await login(loginCredentials.email, loginCredentials.senha);
+      const { token, user } = await login(loginCredentials.email, loginCredentials.senha);
+
+      // Use the integrated auth context
+      authLogin(token, user);
+
       toast.success("Login realizado com sucesso!");
-      navigate("/editar"); // TODO: Redirect to the right page after login
+
+      // Navigate based on user role
+      if (user.isAdmin === 1) {
+        navigate("/admin/users");
+      } else {
+        navigate("/editar");
+      }
+
     } catch (error: any) {
       console.error("Erro no login:", error);
 
@@ -114,6 +128,9 @@ const Auth: React.FC = () => {
     }
     if (!signUpData.senha) {
       toast.error("Senha é obrigatória");
+      isValid = false;
+    } else if (signUpData.senha.length < 8) {
+      toast.error("Senha deve ter pelo menos 8 caracteres");
       isValid = false;
     }
     if (signUpData.senha !== signUpData.confirmSenha) {
@@ -238,6 +255,7 @@ const Auth: React.FC = () => {
                 value={signUpData.nickname}
                 onChange={handleSignUpChange}
                 maxLength={20}
+                disabled={isLoading}
               />
             </div>
             <div className="w-full mb-1">
@@ -248,6 +266,7 @@ const Auth: React.FC = () => {
                 value={signUpData.nome}
                 onChange={handleSignUpChange}
                 maxLength={80}
+                disabled={isLoading}
               />
             </div>
 
@@ -259,6 +278,7 @@ const Auth: React.FC = () => {
                 value={signUpData.email}
                 onChange={handleSignUpChange}
                 maxLength={100}
+                disabled={isLoading}
               />
             </div>
 
@@ -276,6 +296,7 @@ const Auth: React.FC = () => {
                 }}
                 minLength={8}
                 maxLength={32}
+                disabled={isLoading}
               />
             </div>
 
@@ -293,10 +314,11 @@ const Auth: React.FC = () => {
                 }}
                 minLength={8}
                 maxLength={32}
+                disabled={isLoading}
               />
             </div>
             <Components.Button type="submit" disabled={isLoading}>
-              {isLoading ? "Entrando..." : "Cadastre-se"}
+              {isLoading ? "Cadastrando..." : "Cadastre-se"}
             </Components.Button>
           </Components.Form>
         </Components.SignUpContainer>
@@ -316,6 +338,7 @@ const Auth: React.FC = () => {
                 value={loginCredentials.email}
                 onChange={handleLoginChange}
                 maxLength={100}
+                disabled={isLoading}
               />
             </div>
 
@@ -331,6 +354,7 @@ const Auth: React.FC = () => {
                     e.preventDefault(); // Bloqueia a tecla de espaço
                   }
                 }}
+                disabled={isLoading}
               />
             </div>
 
@@ -344,7 +368,7 @@ const Auth: React.FC = () => {
               </button>
             </p>
             <Components.Button type="submit" disabled={isLoading}>
-              {isLoading ? "Processando..." : "Entrar"}
+              {isLoading ? "Entrando..." : "Entrar"}
             </Components.Button>
           </Components.Form>
         </Components.SignInContainer>
@@ -380,6 +404,7 @@ const Auth: React.FC = () => {
         onClick={toggleHelpModal}
         className="absolute bottom-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
         aria-label="Ajuda"
+        disabled={isLoading}
       >
         <span className="text-sky-800 text-xl font-bold">?</span>
       </button>
