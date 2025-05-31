@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { BeachContext, BeachContextType } from "../contexts/BeachContext";
+import { BeachContext, BeachContextType } from "../contexts/beachContext";
 
 export function useBeach(): BeachContextType {
   const context = useContext(BeachContext);

@@ -7,7 +7,7 @@ import { Ellipsis } from "lucide-react";
 import ThankYouModal from "../components/ThankYouDenunciaModal";
 import { isAuthenticated } from "../services/authService";
 import { getCurrentUser, Usuario } from "../services/userService";
-import { BeachContext, BeachContextType } from "../contexts/BeachContext"; 
+import { BeachContext, BeachContextType } from "../contexts/beachContext";
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
@@ -44,7 +44,7 @@ const FlopFeed: React.FC = () => {
           setUserData(user);
         } catch (error) {
           console.error("Erro ao buscar dados do usuário:", error);
-          
+
           setIsUserLoggedIn(false);
           setUserData(null);
         }
@@ -84,7 +84,7 @@ const FlopFeed: React.FC = () => {
 
     setActiveTab(tabId);
 
-   
+
     switch (tabId) {
       case "avaliacoes":
         navigate(`/avaliacoes/${praiaId}`);
@@ -161,11 +161,10 @@ const FlopFeed: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
-              className={`px-3 py-1 text-xs font-medium ${
-                activeTab === tab.id
+              className={`px-3 py-1 text-xs font-medium ${activeTab === tab.id
                   ? "text-blue-600"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               <div className="flex flex-col items-center">
                 <span>{tab.label}</span>

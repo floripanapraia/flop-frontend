@@ -9,8 +9,6 @@ import {
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import { BeachProvider } from "./contexts/BeachContext";
-import { GeolocationProvider } from "./contexts/GeolocationContext";
 import Auth from "./pages/Auth";
 import EditUser from "./pages/EditUser";
 import EvaluationFeed from "./pages/EvaluationFeed";
@@ -19,6 +17,8 @@ import UserProfileFlops from "./pages/UserProfileFlops";
 import UserProfilePhotos from "./pages/UserProfilePhotos";
 
 import { AuthProvider } from "./contexts/authContext";
+import { BeachProvider } from "./contexts/beachContext";
+import { GeolocationProvider } from './contexts/geolocationContext';
 import { UserProvider } from "./contexts/userContext";
 import FlopFeed from "./pages/FlopFeed";
 import PhotoFeed from "./pages/PhotoFeed";
