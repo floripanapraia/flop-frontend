@@ -26,6 +26,11 @@ interface JWTPayload {
   exp: number;
 }
 
+// Session storage keys
+const AUTH_TOKEN_KEY = 'authToken';
+const AUTH_TOKEN_EXPIRES_AT_KEY = 'authTokenExpiresAt';
+const USER_DATA_KEY = 'userData';
+
 // decode JWT token (client-side decoding - not for security validation)
 const decodeJWT = (token: string): JWTPayload => {
   try {
@@ -115,6 +120,9 @@ export const login = async (email: string, senha: string): Promise<{ token: stri
       isAdmin: payload.roles.includes('ADMIN') ? 1 : 0
     };
 
+    // Store user data in sessionStorage
+    storeUserData(user);
+
     return { token, user };
   } catch (error) {
     console.error('Login Error:', error);
@@ -125,57 +133,63 @@ export const login = async (email: string, senha: string): Promise<{ token: stri
 // Logout function
 export const logout = (): void => {
   setAuthToken(null);
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('userData');
+  sessionStorage.removeItem(AUTH_TOKEN_KEY);
+  sessionStorage.removeItem(AUTH_TOKEN_EXPIRES_AT_KEY);
+  sessionStorage.removeItem(USER_DATA_KEY);
 };
 
-// Authorization interceptor
-export const setAuthToken = (token: string | null) => {
+// Authorization interceptor with session storage
+export const setAuthToken = (token: string | null, expiresInMinutes = 60) => {
   if (token) {
+    const expiresAt = new Date().getTime() + expiresInMinutes * 60 * 1000;
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    localStorage.setItem('authToken', token);
+    sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+    sessionStorage.setItem(AUTH_TOKEN_EXPIRES_AT_KEY, expiresAt.toString());
   } else {
     delete apiClient.defaults.headers.common['Authorization'];
-    localStorage.removeItem('authToken');
+    sessionStorage.removeItem(AUTH_TOKEN_KEY);
+    sessionStorage.removeItem(AUTH_TOKEN_EXPIRES_AT_KEY);
   }
 };
 
-// Get stored auth data
+// Get stored auth data from sessionStorage
 export const getStoredAuthData = (): { token: string | null; user: User | null } => {
-  const token = localStorage.getItem('authToken');
-  const userDataString = localStorage.getItem('userData');
+  const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
+  const userDataString = sessionStorage.getItem(USER_DATA_KEY);
 
   let user: User | null = null;
   if (userDataString) {
     try {
       user = JSON.parse(userDataString);
     } catch (error) {
-      console.error('Error parsing user data from localStorage:', error);
-      localStorage.removeItem('userData');
+      console.error('Error parsing user data from sessionStorage:', error);
+      sessionStorage.removeItem(USER_DATA_KEY);
     }
   }
 
   return { token, user };
 };
 
-// Store user data
+// Store user data in sessionStorage
 export const storeUserData = (user: User): void => {
-  localStorage.setItem('userData', JSON.stringify(user));
+  sessionStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
 };
 
-// Initialize auth from localStorage on app start
+// Initialize auth from sessionStorage on app start
 export const initializeAuth = (): { token: string | null; user: User | null } => {
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
+  const expiresAt = sessionStorage.getItem(AUTH_TOKEN_EXPIRES_AT_KEY);
+  const now = new Date().getTime();
 
-  if (token) {
+  if (token && expiresAt && now < parseInt(expiresAt)) {
     try {
       // Decode JWT to check if it's still valid and extract user data
       const payload = decodeJWT(token);
 
-      // Check if token is expired
-      const now = Math.floor(Date.now() / 1000);
-      if (payload.exp < now) {
-        console.log('Token expired, clearing auth data');
+      // Check if token is expired (double check with JWT exp)
+      const jwtExpTime = payload.exp * 1000; // Convert to milliseconds
+      if (jwtExpTime < now) {
+        console.log('JWT token expired, clearing auth data');
         logout();
         return { token: null, user: null };
       }
@@ -184,7 +198,7 @@ export const initializeAuth = (): { token: string | null; user: User | null } =>
       setAuthToken(token);
 
       // Try to get stored user data first
-      const storedUserData = localStorage.getItem('userData');
+      const storedUserData = sessionStorage.getItem(USER_DATA_KEY);
       let user: User | null = null;
 
       if (storedUserData) {
@@ -207,7 +221,34 @@ export const initializeAuth = (): { token: string | null; user: User | null } =>
       logout();
       return { token: null, user: null };
     }
+  } else {
+    // Token expired or doesn't exist
+    logout();
+    return { token: null, user: null };
+  }
+};
+
+// Check if token is still valid
+export const isTokenValid = (): boolean => {
+  const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
+  const expiresAt = sessionStorage.getItem(AUTH_TOKEN_EXPIRES_AT_KEY);
+  const now = new Date().getTime();
+
+  if (!token || !expiresAt) {
+    return false;
   }
 
-  return { token: null, user: null };
+  // Check session storage expiration
+  if (now >= parseInt(expiresAt)) {
+    return false;
+  }
+
+  try {
+    const payload = decodeJWT(token);
+    const jwtExpTime = payload.exp * 1000;
+    return jwtExpTime > now;
+  } catch (error) {
+    console.error('Error validating token:', error);
+    return false;
+  }
 };
