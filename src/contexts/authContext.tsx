@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { User } from './userContext';
-import { initializeAuth, logout as logoutService, storeUserData } from '../services/authService';
+import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { User, initializeAuth, logout as logoutService, storeUserData } from '../services/authService';
 
 interface AuthState {
   isAuthenticated: boolean;
