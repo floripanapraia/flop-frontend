@@ -81,7 +81,7 @@ const Auth: React.FC = () => {
       if (user.isAdmin === 1) {
         navigate("/admin/users");
       } else {
-        navigate("/editar");
+        navigate("/home");
       }
 
     } catch (error: any) {
