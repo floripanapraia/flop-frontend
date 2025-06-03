@@ -8,7 +8,12 @@ import { usePraiaDataSync } from "../hooks/useBeachDataSync";
 import { useUser } from "../contexts/userContext";
 import RequireAuthModal from "./RequireAuthModal";
 
-const Beach: React.FC = () => {
+interface BeachProps {
+  onNewAvaliacao?: () => void;
+}
+
+
+const Beach: React.FC <BeachProps> = ({ onNewAvaliacao }) => {
   const navigate = useNavigate();
   const [showEvaluationModal, setShowEvaluationModal] = useState(false);
   const [showThankYouModal, setShowThankYouModal] = useState(false);
@@ -44,6 +49,9 @@ const Beach: React.FC = () => {
   const handleEvaluationSubmit = (selectedConditions: string[]) => {
     setShowEvaluationModal(false);
     setShowThankYouModal(true);
+    if (onNewAvaliacao) {
+      onNewAvaliacao();
+    }
     refetch();
   };
 
