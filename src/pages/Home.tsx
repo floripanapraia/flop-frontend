@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MapComponent from "../components/MapComponent";
 import ProfileModal from "../components/ProfileModal";
+import RequireAuthModal from "../components/RequireAuthModal";
 import WelcomeModal from "../components/WelcomeModal";
-import { filterPraias, getAllPraias, PraiaDTO } from "../services/beachService";
 import { useUser } from "../contexts/userContext"; // <-- usamos o UserContext
+import { filterPraias, getAllPraias, PraiaDTO } from "../services/beachService";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -17,12 +18,24 @@ const Home: React.FC = () => {
   const [selectedBeach, setSelectedBeach] = useState<PraiaDTO | null>(null);
   const [allBeaches, setAllBeaches] = useState<PraiaDTO[]>([]);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [showRequireAuthModal, setShowRequireAuthModal] = useState(false);
 
   // Pegamos o user diretamente do contexto:
   const { user } = useUser();
 
-  const handleSliderChange = () => {
-    setIsAIActive(!isAIActive);
+  const handleAiClick = () => {
+    if (user) {
+      // Se o usuário estiver logado, ativa/desativa a IA
+      setIsAIActive(!isAIActive);
+      // Lógica da IA ?
+      console.log("IA ativada/desativada:", !isAIActive);
+    } else {
+      setShowRequireAuthModal(true);
+    }
+  };
+
+  const handleRequireAuthModalClose = () => {
+    setShowRequireAuthModal(false);
   };
 
   const toggleHelpModal = () => {
@@ -30,9 +43,7 @@ const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    getAllPraias()
-      .then(setAllBeaches)
-      .catch(console.error);
+    getAllPraias().then(setAllBeaches).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -46,8 +57,6 @@ const Home: React.FC = () => {
   }, [searchQuery]);
 
   const handleMainButtonClick = () => {
-    // Se o usuário está autenticado (ou seja, existe um objeto `user` no contexto),
-    // abra o modal de perfil; senão, redirecione para /auth
     if (user) {
       setIsProfileModalOpen(true);
     } else {
@@ -56,7 +65,6 @@ const Home: React.FC = () => {
   };
 
   const ProfileButton = () => {
-    // Se não há user (ou seja, user === null), mostramos botão "ENTRAR"
     if (!user) {
       return (
         <button
@@ -68,7 +76,6 @@ const Home: React.FC = () => {
       );
     }
 
-    // Se há user, mostramos a foto de perfil ou a inicial
     return (
       <button
         onClick={handleMainButtonClick}
@@ -130,7 +137,8 @@ const Home: React.FC = () => {
           <p className="text-xs text-gray-600 leading-relaxed">
             Procurando a praia ideal em Floripa?
             <br />
-            Nossa IA pode te ajudar a encontrar o destino perfeito para o seu dia!
+            Nossa IA pode te ajudar a encontrar o destino perfeito para o seu
+            dia!
           </p>
 
           <div className="flex items-center ml-4">
@@ -138,7 +146,7 @@ const Home: React.FC = () => {
               <input
                 type="checkbox"
                 checked={isAIActive}
-                onChange={handleSliderChange}
+                onChange={handleAiClick}
                 className="sr-only peer"
               />
               <div
@@ -165,7 +173,11 @@ const Home: React.FC = () => {
               : "bg-transparent"
           }`}
         >
-          <p className={`text-xs ${isAIActive ? "text-indigo-600" : "text-transparent"}`}>
+          <p
+            className={`text-xs ${
+              isAIActive ? "text-indigo-600" : "text-transparent"
+            }`}
+          >
             {isAIActive
               ? "Modo IA ativo: Buscas inteligentes habilitadas"
               : "."}
@@ -193,6 +205,12 @@ const Home: React.FC = () => {
       </button>
 
       {showHelpModal && <WelcomeModal onClose={toggleHelpModal} />}
+      {showRequireAuthModal && (
+        <RequireAuthModal
+          isOpen={showRequireAuthModal}
+          onClose={handleRequireAuthModalClose}
+        />
+      )}
     </div>
   );
 };
