@@ -19,10 +19,7 @@ interface UserData {
   fotoPerfil?: string;
 }
 
-export default function ProfileModal({
-  isOpen,
-  onClose,
-}: ProfileModalProps) {
+export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -40,7 +37,7 @@ export default function ProfileModal({
       } catch (error) {
         console.error("Failed to fetch user data:", error);
         toast.error("Erro ao carregar dados do usuário");
-        
+
         // Redirect to login if unauthorized
         if (axios.isAxiosError(error) && error.response?.status === 401) {
           setAuthToken(null);
@@ -125,7 +122,7 @@ export default function ProfileModal({
       className="fixed top-0 right-0 w-full h-full flex justify-end bg-black bg-opacity-25 z-50"
       onClick={handleOutsideClick}
     >
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-xs h-[54vh] m-4 p-6 flex flex-col gap-6">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-xs h-auto min-h-[54vh] max-h-[90vh] m-4 p-6 flex flex-col gap-4 overflow-y-auto">
         {/* Cabeçalho do perfil */}
         <div className="flex flex-col items-center gap-3">
           <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
