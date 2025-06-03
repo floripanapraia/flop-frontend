@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useContext } from "react";
+import { Ellipsis } from "lucide-react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Beach from "../components/Beach";
-import ReportModal from "../components/ReportModal";
 import ProfileModal from "../components/ProfileModal";
-import { Ellipsis } from "lucide-react";
+import ReportModal from "../components/ReportModal";
+import RequireAuthModal from "../components/RequireAuthModal";
 import ThankYouModal from "../components/ThankYouDenunciaModal";
-import { isAuthenticated } from "../services/authService";
-import { getCurrentUser, Usuario } from "../services/userService";
 import { BeachContext, BeachContextType } from "../contexts/beachContext";
+import { useUser } from "../contexts/userContext"; // <-- usamos o UserContext
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
@@ -17,12 +17,11 @@ type TabType = {
 const FlopFeed: React.FC = () => {
   const navigate = useNavigate();
 
-
   const beachContext = useContext(BeachContext) as BeachContextType;
   const { praiaId } = beachContext;
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
-  const [userData, setUserData] = useState<Usuario | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [showRequireAuthModal, setShowRequireAuthModal] = useState(false);
+  const [postContent, setPostContent] = useState("");
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [showThankYouDenunciaModal, setShowThankYouDenunciaModal] =
@@ -31,35 +30,69 @@ const FlopFeed: React.FC = () => {
     "flops"
   );
 
-  // Verificar se o usuário está logado e buscar dados do usuário
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      const authenticated = isAuthenticated();
-      setIsUserLoggedIn(authenticated);
+  // Pegamos o user diretamente do contexto:
+  const { user } = useUser();
 
-      if (authenticated) {
-        try {
-          // Buscar dados do usuário logado
-          const user = await getCurrentUser();
-          setUserData(user);
-        } catch (error) {
-          console.error("Erro ao buscar dados do usuário:", error);
+  const handleMainButtonClick = () => {
+    if (user) {
+      setIsProfileModalOpen(true);
+    } else {
+      navigate("/auth");
+    }
+  };
 
-          setIsUserLoggedIn(false);
-          setUserData(null);
-        }
-      } else {
-        setUserData(null);
+  const ProfileButton = () => {
+    if (!user) {
+      return (
+        <button
+          onClick={handleMainButtonClick}
+          className="bg-[#182E4C] hover:bg-[#1a365d] text-white px-6 py-3 rounded-3xl text-sm font-medium transition-colors"
+        >
+          ENTRAR
+        </button>
+      );
+    }
+
+    return (
+      <button
+        onClick={handleMainButtonClick}
+        className="w-12 h-12 rounded-full overflow-hidden border-4 border-white shadow-lg hover:border-[#182E4C] transition-all duration-200 hover:shadow-xl"
+        title={`Perfil de ${user.nome}`}
+      >
+        {user.fotoPerfil ? (
+          <img
+            src={`data:image/jpeg;base64,${user.fotoPerfil}`}
+            alt={user.nome}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-[#182E4C] flex items-center justify-center text-white text-lg font-medium">
+            {user.nome.charAt(0).toUpperCase()}
+          </div>
+        )}
+      </button>
+    );
+  };
+
+  const handlePublicarClick = () => {
+    if (user) {
+      // Se o usuário estiver logado, executa a lógica de publicação
+      if (postContent.trim()) {
+        // lógica para enviar o post
+        console.log("Publicando post:", postContent);
+        console.log("Usuário:", user.nome);
+
+        // Limpar o conteúdo após publicar
+        setPostContent("");
       }
-    };
+    } else {
+      setShowRequireAuthModal(true);
+    }
+  };
 
-    checkAuthStatus();
-
-    // Verificar periodicamente
-    const interval = setInterval(checkAuthStatus, 5000); // verifica a cada 5 segundos
-
-    return () => clearInterval(interval);
-  }, []);
+  const handleRequireAuthModalClose = () => {
+    setShowRequireAuthModal(false);
+  };
 
   const handleReport = (reason: string) => {
     console.log("Denúncia enviada:", reason);
@@ -84,7 +117,6 @@ const FlopFeed: React.FC = () => {
 
     setActiveTab(tabId);
 
-
     switch (tabId) {
       case "avaliacoes":
         navigate(`/avaliacoes/${praiaId}`);
@@ -104,36 +136,9 @@ const FlopFeed: React.FC = () => {
 
       {/* Botão de perfil */}
       <div className="absolute top-4 right-6 z-50">
-        {!isUserLoggedIn || !userData ? (
-          <button
-            onClick={() => navigate("/auth")}
-            className="bg-[#182E4C] hover:bg-[#1a365d] text-white px-6 py-3 rounded-3xl text-sm font-medium transition-colors"
-          >
-            ENTRAR
-          </button>
-        ) : (
-          <button
-            onClick={() => setIsProfileModalOpen(true)}
-            className="w-12 h-12 rounded-full overflow-hidden border-4 border-white shadow-lg hover:border-[#182E4C] transition-all duration-200 hover:shadow-xl"
-            title={`Perfil de ${userData.nome}`}
-          >
-            {userData.fotoPerfil ? (
-              <img
-                src={`data:image/jpeg;base64,${userData.fotoPerfil}`}
-                alt={userData.nome}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-[#182E4C] flex items-center justify-center text-white text-lg font-medium">
-                {userData.nome.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </button>
-        )}
+        <ProfileButton />
       </div>
-
-      {/* Modal de perfil - só renderiza se o usuário estiver logado */}
-      {isUserLoggedIn && (
+      {user && (
         <ProfileModal
           isOpen={isProfileModalOpen}
           onClose={() => setIsProfileModalOpen(false)}
@@ -161,10 +166,11 @@ const FlopFeed: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
-              className={`px-3 py-1 text-xs font-medium ${activeTab === tab.id
+              className={`px-3 py-1 text-xs font-medium ${
+                activeTab === tab.id
                   ? "text-blue-600"
                   : "text-gray-500 hover:text-gray-700"
-                }`}
+              }`}
             >
               <div className="flex flex-col items-center">
                 <span>{tab.label}</span>
@@ -180,17 +186,16 @@ const FlopFeed: React.FC = () => {
         <div className="bg-white p-4 shadow-sm">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0">
-              {isUserLoggedIn && userData ? (
-                // Mostrar foto do usuário logado ou inicial do nome
-                userData.fotoPerfil ? (
+              {user ? (
+                user.fotoPerfil ? (
                   <img
-                    src={`data:image/jpeg;base64,${userData.fotoPerfil}`}
-                    alt={userData.nome}
+                    src={`data:image/jpeg;base64,${user.fotoPerfil}`}
+                    alt={user.nome}
                     className="w-10 h-10 rounded-full object-cover"
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-[#182E4C] flex items-center justify-center text-white text-sm font-medium">
-                    {userData.nome.charAt(0).toUpperCase()}
+                    {user.nome.charAt(0).toUpperCase()}
                   </div>
                 )
               ) : (
@@ -205,11 +210,16 @@ const FlopFeed: React.FC = () => {
             <div className="flex-1">
               <textarea
                 placeholder="Como está a praia hoje?"
+                value={postContent}
+                onChange={(e) => setPostContent(e.target.value)}
                 className="w-full border-b border-gray-200 p-2 focus:outline-none focus:border-blue-400 resize-none text-sm"
                 rows={2}
               />
               <div className="flex justify-end mt-2">
-                <button className="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                <button
+                  onClick={handlePublicarClick}
+                  className="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                >
                   Publicar
                 </button>
               </div>
@@ -269,6 +279,11 @@ const FlopFeed: React.FC = () => {
       <ThankYouModal
         isOpen={showThankYouDenunciaModal}
         onClose={() => setShowThankYouDenunciaModal(false)}
+      />
+
+      <RequireAuthModal
+        isOpen={showRequireAuthModal}
+        onClose={handleRequireAuthModalClose}
       />
     </div>
   );
