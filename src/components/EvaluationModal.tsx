@@ -1,8 +1,8 @@
 import { X } from "lucide-react";
-import React, { useState } from "react";
-import { createAvaliacao, Condicoes } from "../services/evaluationService";
-import { useBeach } from "../hooks/useBeach";
+import React, { useEffect, useState } from "react";
 import { useUser } from "../contexts/userContext";
+import { useBeach } from "../hooks/useBeach";
+import { Condicoes, createAvaliacao, filterAvaliacoes, updateAvaliacao } from "../services/evaluationService";
 
 interface EvaluationModalProps {
   beachName: string;
@@ -87,6 +87,46 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
   const { user } = useUser();
 
   const [selectedConditions, setSelectedConditions] = useState<Condicoes[]>([]);
+  const [existingEvaluationId, setExistingEvaluationId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Carregar avaliação existente do usuário
+  useEffect(() => {
+    const loadExistingEvaluation = async () => {
+      if (!praiaId || !user) return;
+
+      try {
+        setIsLoading(true);
+        
+        // Criar data de hoje no formato correto
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+        
+        const existingEvaluations = await filterAvaliacoes({
+          idUsuario: user.id,
+          idPraia: praiaId,
+          criadoEmInicio: todayStart.toISOString(),
+          criadoEmFim: todayEnd.toISOString(),
+          limite: 1
+        });
+        
+        if (existingEvaluations && existingEvaluations.length > 0) {
+          const evaluation = existingEvaluations[0];
+          setSelectedConditions(evaluation.condicoes);
+          setExistingEvaluationId(evaluation.idAvaliacao!);
+          setIsEditing(true);
+        }
+      } catch (error) {
+        console.log("Nenhuma avaliação encontrada para hoje");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadExistingEvaluation();
+  }, [praiaId, user]);
 
   const toggleCondition = (conditionId: Condicoes) => {
     setSelectedConditions((prev) => {
@@ -125,12 +165,20 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
     }
 
     try {
-      await createAvaliacao({
-        idPraia: praiaId,
-        condicoes: selectedConditions,
-        idUsuario: user.id,
-        nickname: user.nickname,
-      });
+      if (isEditing && existingEvaluationId) {
+        // Atualizar avaliação existente
+        await updateAvaliacao(existingEvaluationId, {
+          condicoes: selectedConditions,
+        });
+      } else {
+        // Criar nova avaliação
+        await createAvaliacao({
+          idPraia: praiaId,
+          condicoes: selectedConditions,
+          idUsuario: user.id,
+          nickname: user.nickname,
+        });
+      }
 
       onSubmit(selectedConditions);
     } catch (error) {
@@ -138,11 +186,13 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
     }
   };
 
-  if (!user) {
+  if (!user || isLoading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
         <div className="bg-white rounded-xl p-6 text-center">
-          <p className="text-blue-900 mb-4">Carregando dados do usuário...</p>
+          <p className="text-blue-900 mb-4">
+            {!user ? "Carregando dados do usuário..." : "Carregando avaliação..."}
+          </p>
           <button onClick={onClose} className="px-4 py-2 bg-blue-900 text-white rounded-full">
             Fechar
           </button>
@@ -172,8 +222,16 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
           <h2 className="text-xl font-bold text-center text-blue-900">
             {beachName}
           </h2>
+
+          {isEditing && (
+            <div className="text-center mt-2">
+              <span className="text-sm text-orange-600 font-medium bg-orange-50 px-3 py-1 rounded-full">
+                Editando sua avaliação de hoje
+              </span>
+            </div>
+          )}
           
-          <div className="flex items-center mt-2 mb-6">
+          <div className="flex items-center mt-4 mb-6">
             <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden mr-3 flex-shrink-0">
               {user.fotoPerfil ? (
                 <img
@@ -197,7 +255,10 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
           </div>
           
           <p className="text-sm text-gray-900 mb-6">
-            Marque as opções abaixo que melhor descrevem as condições da praia hoje!
+            {isEditing 
+              ? "Modifique as condições da praia conforme necessário:"
+              : "Marque as opções abaixo que melhor descrevem as condições da praia hoje!"
+            }
           </p>
 
           <div className="grid grid-cols-3 gap-3 mb-6">
@@ -240,7 +301,7 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
                   : "bg-blue-900 border-blue-700 text-white"
               }`}
             >
-              Postar
+              {isEditing ? "Atualizar " : "Postar"}
             </button>
           </div>
         </div>
