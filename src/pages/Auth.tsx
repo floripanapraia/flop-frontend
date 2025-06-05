@@ -108,15 +108,21 @@ const Auth: React.FC = () => {
     });
   };
 
-  const validateSignUp = (): boolean => {
+const validateSignUp = (): boolean => {
     let isValid = true;
 
     if (!signUpData.nickname.trim()) {
       toast.error("Username é obrigatório");
       isValid = false;
+    } else if (signUpData.nickname.trim().length < 3) {
+      toast.error("Username deve ter pelo menos 3 caracteres");
+      isValid = false;
     }
     if (!signUpData.nome.trim()) {
       toast.error("Nome é obrigatório");
+      isValid = false;
+    } else if (signUpData.nome.trim().length < 3) {
+      toast.error("Nome deve ter pelo menos 3 caracteres");
       isValid = false;
     }
     if (!signUpData.email.trim()) {
