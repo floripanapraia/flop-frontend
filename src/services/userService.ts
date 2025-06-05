@@ -72,18 +72,6 @@ export const updateUser = async (userData: UsuarioUpdateRequest): Promise<Usuari
   }
 };
 
-// Change password
-// export const changePassword = async (userId: number, oldPassword: string, newPassword: string): Promise<void> => {
-//   try {
-//     await apiClient.post(`/usuarios/${userId}/trocar-senha`, {
-//       senhaAntiga: oldPassword,
-//       senhaNova: newPassword
-//     });
-//   } catch (error) {
-//     console.error('Error changing password:', error);
-//     throw error;
-//   }
-// };
 
 // Delete user account
 export const deleteUser = async (): Promise<void> => {
