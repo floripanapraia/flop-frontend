@@ -2,24 +2,27 @@ import apiClient from "./api";
 
 export interface PostagemDTO {
   idPostagem?: number;
-  idUsuario:number;
+  usuarioId:number;
+  fotoDoUsuario: string;
   nickname: string;
-  idPraia: number;
+  praiaId: number;
   nomePraia: string;
   criadoEm: string;
-  imagem: string;
+  imagem?: string;
   mensagem: string;
-  excluida: string;
+  excluida: boolean;
 }
 
 export interface PostagemSeletor {
   titulo?: string;
   descricao?: string;
+  imagem?: string;
+  idPraia?: number;
   idUsuario?: number;
   criadoEmInicio?: string;
   criadoEmFim?: string;
-  page?: number;
-  size?: number;
+  pagina?: number;
+  limite?: number;
   sort?: string;
 }
 
