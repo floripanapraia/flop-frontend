@@ -12,7 +12,6 @@ interface BeachProps {
   onNewAvaliacao?: () => void;
 }
 
-
 const Beach: React.FC <BeachProps> = ({ onNewAvaliacao }) => {
   const navigate = useNavigate();
   const [showEvaluationModal, setShowEvaluationModal] = useState(false);
