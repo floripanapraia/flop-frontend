@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import SuggestBeachModal from "./SuggestBeachModal";
 import { setAuthToken } from "../services/authService";
 import { getCurrentUser } from "../services/userService";
-
+import { Sugestao } from "../services/suggestionService";
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -67,15 +67,14 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     }
   };
 
-  const handleSubmitBeach = (beachData: {
-    name: string;
-    neighborhood: string;
-    locationDetails: string;
-  }) => {
-    // Implementar lógica de submissão da praia
-    console.log("Beach data submitted:", beachData);
+  const handleSugestaoSuccess = (sugestao: Sugestao) => {
+    toast.success(`Sugestão "${sugestao.nomePraia}" enviada com sucesso! Nossa equipe irá analisar em breve.`);
     setIsModalOpen(false);
-    toast.success("Praia sugerida com sucesso!");
+    
+  };
+
+  const handleSugestaoError = (error: string) => {
+    toast.error(`Erro ao enviar sugestão: ${error}`);
   };
 
   // Loading state
@@ -189,7 +188,8 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
       {isModalOpen && (
         <SuggestBeachModal
           onClose={() => setIsModalOpen(false)}
-          onSubmit={handleSubmitBeach}
+          onSuccess={handleSugestaoSuccess}
+          onError={handleSugestaoError}
         />
       )}
     </div>

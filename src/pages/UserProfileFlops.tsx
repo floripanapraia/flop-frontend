@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { setAuthToken } from "../services/authService";
 import SuggestBeachModal from "../components/SuggestBeachModal";
+import { Sugestao } from "../services/suggestionService";
 import { LogOut, MapPin, Settings } from "lucide-react";
 
 type TabType = {
@@ -79,20 +80,16 @@ const UserProfileFlops = () => {
         navigate("/perfilFlops");
         break;
     }
-
-    
   };
 
-  const toggleSuggestBeachModal = (p0: boolean) => {
-      toggleSuggestBeachModal(!toggleSuggestBeachModal);
-    };
-  function handleSubmitBeach(beachData: {
-    name: string;
-    neighborhood: string;
-    locationDetails: string;
-  }): void {
-    throw new Error("Function not implemented.");
-  }
+  const handleSugestaoSuccess = (sugestao: Sugestao) => {
+    toast.success(`Sugestão "${sugestao.nomePraia}" enviada com sucesso! Nossa equipe irá analisar em breve.`);
+    setIsModalOpen(false);
+  };
+
+  const handleSugestaoError = (error: string) => {
+    toast.error(`Erro ao enviar sugestão: ${error}`);
+  };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-1 sm:px-2 py-2 sm:py-4">
@@ -298,7 +295,8 @@ const UserProfileFlops = () => {
       {isModalOpen && (
         <SuggestBeachModal
           onClose={() => setIsModalOpen(false)}
-          onSubmit={handleSubmitBeach}
+          onSuccess={handleSugestaoSuccess}
+          onError={handleSugestaoError}
         />
       )}
     </div>
