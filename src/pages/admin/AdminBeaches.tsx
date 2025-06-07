@@ -105,11 +105,7 @@ const AdminBeaches: React.FC = () => {
         columns={columns}
         filters={filters}
         loading={loading}
-        searchPlaceholder="Buscar praias..."
-        onRowClick={(praia) => {
-          console.log('Clicou na praia:', praia);
-          // Implementar navegação para detalhes
-        }}
+        emptyMessage="Nenhuma praia encontrada"
       />
     </div>
   );
