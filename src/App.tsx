@@ -25,6 +25,7 @@ import { UserProvider } from "./contexts/userContext";
 import AdminBeaches from "./pages/admin/AdminBeaches";
 import AdminUsers from "./pages/admin/AdminUsers";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import RegisterBeach from "./pages/admin/RegisterBeach";
 
 const App: React.FC = () => {
   return (
@@ -92,6 +93,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute adminOnly>
                   <AdminBeaches />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/praias/cadastrar"
+              element={
+                <ProtectedRoute adminOnly>
+                  <RegisterBeach />
                 </ProtectedRoute>
               }
             />
