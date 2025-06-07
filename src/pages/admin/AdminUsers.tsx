@@ -1,6 +1,7 @@
+import { AlertTriangle, Ban, UserCheck } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import DataTable, { Action, Column, Filter } from '../../components/DataTable';
-import { getAllUsers, Usuario } from '../../services/userService';
+import { getAllUsers, toggleBlockUser, Usuario } from '../../services/userService';
 
 const AdminUsers: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'relatorio' | 'banidos'>('relatorio');
@@ -133,19 +134,68 @@ const AdminUsers: React.FC = () => {
     }
   ];
 
+  // Função para banir/desbanir usuário
+  const handleToggleBan = async (usuario: Usuario) => {
+    // Verificar se é admin ou se já está processando
+    if (Number(usuario.isAdmin) === 1) {
+      alert('Não é possível banir um administrador.');
+      return;
+    }
+
+    if (actionLoading === usuario.id) {
+      return; // Já está processando
+    }
+
+    const action = usuario.isBloqueado ? 'desbanir' : 'banir';
+    const confirmMessage = usuario.isBloqueado
+      ? `Tem certeza que deseja desbanir o usuário ${usuario.nickname}?`
+      : `Tem certeza que deseja banir o usuário ${usuario.nickname}? Esta ação impedirá o usuário de acessar o sistema.`;
+
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    setActionLoading(usuario.id);
+
+    try {
+      if (usuario.isBloqueado) {
+        // Desbanir usuário
+        await toggleBlockUser(usuario.id, false);
+        console.log(`Usuário ${usuario.nickname} foi desbanido com sucesso`);
+      } else {
+        // Banir usuário
+        await toggleBlockUser(usuario.id, true);
+        console.log(`Usuário ${usuario.nickname} foi banido com sucesso`);
+      }
+
+      // Atualizar estado local
+      setUsuarios(prev =>
+        prev.map(u =>
+          u.id === usuario.id
+            ? { ...u, isBloqueado: u.isBloqueado === 1 ? 0 : 1 }
+            : u
+        )
+      );
+
+      // Mostrar notificação de sucesso
+      alert(`Usuário ${action}do com sucesso!`);
+
+    } catch (error) {
+      console.error(`Erro ao ${action} usuário:`, error);
+      alert(`Erro ao ${action} usuário. Tente novamente.`);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   // Configuração das ações
   const actions: Action<Usuario>[] = [
     {
-      label: (usuario: Usuario) => usuario.isBloqueado ? 'Desbanir' : 'Banir',
-      icon: (usuario: Usuario) =>
-        usuario.isBloqueado ? <UserCheck className="w-4 h-4" /> : <Ban className="w-4 h-4" />,
-      variant: (usuario: Usuario) => (usuario.isBloqueado ? 'default' : 'warning'),
-      onClick: (usuario: Usuario) => {
-        setUsuarios(prev =>
-          prev.map(u => (u.id === usuario.id ? { ...u, isBloqueado: !u.isBloqueado } : u))
-        );
-      }
-    },
+      label: 'Banir/Desbanir',
+      icon: <Ban className="w-4 h-4" />,
+      variant: 'warning',
+      onClick: handleToggleBan
+    }
   ];
 
   return (
@@ -163,8 +213,8 @@ const AdminUsers: React.FC = () => {
             <button
               onClick={() => setActiveTab('relatorio')}
               className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'relatorio'
-                  ? 'border-sky-500 text-sky-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-sky-500 text-sky-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
             >
               Relatório usuários
@@ -172,8 +222,8 @@ const AdminUsers: React.FC = () => {
             <button
               onClick={() => setActiveTab('banidos')}
               className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'banidos'
-                  ? 'border-sky-500 text-sky-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-sky-500 text-sky-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
             >
               Usuários banidos ({usuarios.filter(u => u.isBloqueado).length})
@@ -215,18 +265,13 @@ const AdminUsers: React.FC = () => {
         data={dadosFiltrados}
         columns={columns}
         filters={filters}
-        // actions={actions}
+        actions={actions}
         loading={loading}
-        searchPlaceholder="Buscar usuários..."
         emptyMessage={
           activeTab === 'banidos'
             ? "Nenhum usuário banido encontrado"
             : "Nenhum usuário encontrado"
         }
-        onRowClick={(usuario) => {
-          console.log('Clicou no usuário:', usuario);
-          // Implementar navegação para detalhes
-        }}
       />
     </div>
   );
