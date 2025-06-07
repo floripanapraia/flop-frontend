@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Filter, Search } from 'lucide-react';
+import { ChevronDown, ChevronUp, Filter } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 export interface Column<T = any> {
@@ -32,8 +32,6 @@ interface DataTableProps<T = any> {
   columns: Column<T>[];
   filters?: Filter[];
   actions?: Action<T>[];
-  searchable?: boolean;
-  searchPlaceholder?: string;
   emptyMessage?: string;
   loading?: boolean;
   className?: string;
@@ -45,14 +43,11 @@ const DataTable = <T extends Record<string, any>>({
   columns,
   filters = [],
   actions = [],
-  searchable = true,
-  searchPlaceholder = "Buscar...",
   emptyMessage = "Nenhum registro encontrado",
   loading = false,
   className = "",
   onRowClick
 }: DataTableProps<T>) => {
-  const [searchTerm, setSearchTerm] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [sortConfig, setSortConfig] = useState<{
     key: string;
@@ -60,18 +55,9 @@ const DataTable = <T extends Record<string, any>>({
   } | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Filtros e busca
+  // Aplicar apenas filtros específicos
   const filteredData = useMemo(() => {
     let filtered = [...data];
-
-    // Aplicar busca
-    if (searchTerm) {
-      filtered = filtered.filter(row =>
-        Object.values(row).some(value =>
-          String(value).toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    }
 
     // Aplicar filtros
     Object.entries(filterValues).forEach(([key, value]) => {
@@ -96,7 +82,7 @@ const DataTable = <T extends Record<string, any>>({
     });
 
     return filtered;
-  }, [data, searchTerm, filterValues, filters]);
+  }, [data, filterValues, filters]);
 
   // Ordenação
   const sortedData = useMemo(() => {
@@ -139,7 +125,6 @@ const DataTable = <T extends Record<string, any>>({
 
   const clearFilters = () => {
     setFilterValues({});
-    setSearchTerm('');
   };
 
   const getSortIcon = (key: string) => {
@@ -161,48 +146,32 @@ const DataTable = <T extends Record<string, any>>({
 
   return (
     <div className={`bg-white rounded-lg shadow-sm ${className}`}>
-      {/* Header com busca e filtros */}
-      {(searchable || filters.length > 0) && (
+      {/* Header com filtros */}
+      {filters.length > 0 && (
         <div className="p-4 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            {/* Busca */}
-            {searchable && (
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder={searchPlaceholder}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                />
-              </div>
-            )}
-
-            {/* Botão de filtros */}
-            {filters.length > 0 && (
-              <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium text-gray-900">Filtros</h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                <Filter className="w-4 h-4" />
+                {showFilters ? 'Ocultar' : 'Mostrar'} Filtros
+              </button>
+              {Object.keys(filterValues).some(key => filterValues[key]) && (
                 <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  onClick={clearFilters}
+                  className="text-sm text-sky-600 hover:text-sky-800"
                 >
-                  <Filter className="w-4 h-4" />
-                  Filtros
+                  Limpar Filtros
                 </button>
-                {Object.keys(filterValues).some(key => filterValues[key]) && (
-                  <button
-                    onClick={clearFilters}
-                    className="text-sm text-sky-600 hover:text-sky-800"
-                  >
-                    Limpar
-                  </button>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Filtros expandidos */}
-          {showFilters && filters.length > 0 && (
+          {showFilters && (
             <div className="mt-4 pt-4 border-t border-gray-200">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filters.map(filter => (
@@ -308,10 +277,10 @@ const DataTable = <T extends Record<string, any>>({
                                 action.onClick(row, index);
                               }}
                               className={`inline-flex items-center gap-1 px-3 py-1 rounded text-sm font-medium transition-colors ${action.variant === 'danger'
-                                  ? 'text-red-600 hover:bg-red-50'
-                                  : action.variant === 'warning'
-                                    ? 'text-yellow-600 hover:bg-yellow-50'
-                                    : 'text-sky-600 hover:bg-sky-50'
+                                ? 'text-red-600 hover:bg-red-50'
+                                : action.variant === 'warning'
+                                  ? 'text-yellow-600 hover:bg-yellow-50'
+                                  : 'text-sky-600 hover:bg-sky-50'
                                 }`}
                             >
                               {action.icon}
