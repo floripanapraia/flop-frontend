@@ -116,10 +116,23 @@ export const getUserById = async (id: number): Promise<Usuario> => {
 
 export const getAllUsers = async (): Promise<Usuario[]> => {
   try {
-    const response = await apiClient.get<Usuario[]>('/usuarios/todos');
-    return response.data;
+    const response = await apiClient.get<any[]>('/usuarios/todos');
+
+    // Mapeia os dados do backend para a interface esperada no frontend
+    const usuarios: Usuario[] = response.data.map((u) => ({
+      id: u.idUsuario, // converte para o campo `id` esperado no frontend
+      nome: u.nome,
+      nickname: u.nickname,
+      email: u.email,
+      fotoPerfil: u.fotoPerfil,
+      isAdmin: u.isAdmin,
+      isBloqueado: u.isBloqueado,
+      createdAt: u.dataCriacao, // se seu DTO tiver esse campo
+    }));
+
+    return usuarios;
   } catch (error) {
-    console.error('Error fetching all users:', error);
+    console.error('Erro ao buscar usuários:', error);
     throw error;
   }
 };
