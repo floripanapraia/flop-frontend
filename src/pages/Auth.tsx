@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import ErrorModal from "../components/ErrorModal";
+import ForgotPasswordModal from "../components/ForgotPasswordModal";
 import * as Components from "../components/LoginCadastro";
 import WelcomeModal from "../components/WelcomeModal";
 import { useAuth } from "../contexts/authContext";
@@ -12,7 +13,7 @@ import {
   normalizeError,
   shouldShowInModal,
 } from "../utils/errorHandler";
-import ForgotPasswordModal from "../components/ForgotPasswordModal";
+import { X } from "lucide-react";
 
 const Auth: React.FC = () => {
   const [signIn, toggle] = useState<boolean>(true);
@@ -70,7 +71,10 @@ const Auth: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const { token, user } = await login(loginCredentials.email, loginCredentials.senha);
+      const { token, user } = await login(
+        loginCredentials.email,
+        loginCredentials.senha
+      );
 
       // Use the integrated auth context
       authLogin(token, user);
@@ -83,7 +87,6 @@ const Auth: React.FC = () => {
       } else {
         navigate("/home");
       }
-
     } catch (error: any) {
       console.error("Erro no login:", error);
 
@@ -108,7 +111,7 @@ const Auth: React.FC = () => {
     });
   };
 
-const validateSignUp = (): boolean => {
+  const validateSignUp = (): boolean => {
     let isValid = true;
 
     if (!signUpData.nickname.trim()) {
@@ -249,6 +252,16 @@ const validateSignUp = (): boolean => {
         {/* Cadastro */}
         <Components.SignUpContainer signinIn={signIn}>
           <Components.Form onSubmit={handleSignUpSubmit}>
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={() => navigate("/home")}
+                className="text-blue-900 hover:text-gray-900 transition"
+                aria-label="Fechar"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
             <div className="w-full mb-4">
               <Components.Subtitle>Criando minha conta</Components.Subtitle>
             </div>
@@ -331,11 +344,12 @@ const validateSignUp = (): boolean => {
 
         {/* Login */}
         <Components.SignInContainer signinIn={signIn}>
+           
           <Components.Form onSubmit={handleLoginSubmit}>
             <div className="w-full mb-4">
               <Components.Subtitle>Entrar</Components.Subtitle>
             </div>
-
+           
             <div className="w-full mb-1">
               <Components.FormLabel>Email</Components.FormLabel>
               <Components.Input

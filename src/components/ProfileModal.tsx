@@ -61,16 +61,48 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   };
 
   const handleLogout = () => {
-    if (window.confirm("Deseja realmente sair?")) {
-      setAuthToken(null);
-      navigate("/auth");
-    }
+    toast(
+      ({ closeToast }) => (
+        <div className="flex flex-col items-center text-center gap-4">
+          <p className="text-sm text-gray-800 font-medium">
+            Deseja realmente sair?
+          </p>
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={() => closeToast?.()}
+              className="px-4 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => {
+                setAuthToken(null);
+                closeToast?.();
+                navigate("/auth");
+              }}
+              className="px-4 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Sair
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        closeButton: false,
+        draggable: false,
+        icon: false,
+      }
+    );
   };
 
   const handleSugestaoSuccess = (sugestao: Sugestao) => {
-    toast.success(`Sugestão "${sugestao.nomePraia}" enviada com sucesso! Nossa equipe irá analisar em breve.`);
+    toast.success(
+      `Sugestão "${sugestao.nomePraia}" enviada com sucesso! Nossa equipe irá analisar em breve.`
+    );
     setIsModalOpen(false);
-    
   };
 
   const handleSugestaoError = (error: string) => {
