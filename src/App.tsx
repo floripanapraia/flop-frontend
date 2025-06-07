@@ -12,16 +12,17 @@ import "react-toastify/dist/ReactToastify.css";
 import Auth from "./pages/Auth";
 import EditUser from "./pages/EditUser";
 import EvaluationFeed from "./pages/EvaluationFeed";
+import FlopFeed from "./pages/FlopFeed";
 import Home from "./pages/Home";
+import PhotoFeed from "./pages/PhotoFeed";
 import UserProfileFlops from "./pages/UserProfileFlops";
 import UserProfilePhotos from "./pages/UserProfilePhotos";
-import FlopFeed from "./pages/FlopFeed";
-import PhotoFeed from "./pages/PhotoFeed";
 
 import { AuthProvider } from "./contexts/authContext";
 import { BeachProvider } from "./contexts/beachContext";
 import { GeolocationProvider } from "./contexts/geolocationContext";
 import { UserProvider } from "./contexts/userContext";
+import AdminBeaches from "./pages/admin/AdminBeaches";
 import AdminUsers from "./pages/admin/AdminUsers";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
@@ -83,6 +84,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute adminOnly>
                   <AdminUsers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/praias"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AdminBeaches />
                 </ProtectedRoute>
               }
             />
