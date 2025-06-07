@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import DataTable, { Column, Filter } from '../../components/DataTable';
+import DataTable, { Action, Column, Filter } from '../../components/DataTable';
 import { getAllUsers, Usuario } from '../../services/userService';
 
 const AdminUsers: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'relatorio' | 'banidos'>('relatorio');
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchUsuarios = async () => {
@@ -133,43 +134,19 @@ const AdminUsers: React.FC = () => {
   ];
 
   // Configuração das ações
-  // const actions: Action<Usuario>[] = [
-  //   {
-  //     label: 'Ver',
-  //     icon: <Eye className="w-4 h-4" />,
-  //     onClick: (usuario: Usuario) => {
-  //       console.log('Ver usuário:', usuario);
-  //     }
-  //   },
-  //   {
-  //     label: 'Email',
-  //     icon: <Mail className="w-4 h-4" />,
-  //     onClick: (usuario: Usuario) => {
-  //       window.open(`mailto:${usuario.email}`, '_blank');
-  //     }
-  //   },
-  //   {
-  //     label: (usuario: Usuario) => usuario.isBloqueado ? 'Desbanir' : 'Banir',
-  //     icon: (usuario: Usuario) =>
-  //       usuario.isBloqueado ? <UserCheck className="w-4 h-4" /> : <Ban className="w-4 h-4" />,
-  //     variant: (usuario: Usuario) => (usuario.isBloqueado ? 'default' : 'warning'),
-  //     onClick: (usuario: Usuario) => {
-  //       setUsuarios(prev =>
-  //         prev.map(u => (u.id === usuario.id ? { ...u, isBloqueado: !u.isBloqueado } : u))
-  //       );
-  //     }
-  //   },
-  //   {
-  //     label: 'Excluir',
-  //     icon: <Trash2 className="w-4 h-4" />,
-  //     variant: 'danger',
-  //     onClick: (usuario: Usuario) => {
-  //       if (window.confirm(`Tem certeza que deseja excluir o usuário ${usuario.nickname}?`)) {
-  //         setUsuarios(prev => prev.filter(u => u.id !== usuario.id));
-  //       }
-  //     }
-  //   }
-  // ];
+  const actions: Action<Usuario>[] = [
+    {
+      label: (usuario: Usuario) => usuario.isBloqueado ? 'Desbanir' : 'Banir',
+      icon: (usuario: Usuario) =>
+        usuario.isBloqueado ? <UserCheck className="w-4 h-4" /> : <Ban className="w-4 h-4" />,
+      variant: (usuario: Usuario) => (usuario.isBloqueado ? 'default' : 'warning'),
+      onClick: (usuario: Usuario) => {
+        setUsuarios(prev =>
+          prev.map(u => (u.id === usuario.id ? { ...u, isBloqueado: !u.isBloqueado } : u))
+        );
+      }
+    },
+  ];
 
   return (
     <div>
