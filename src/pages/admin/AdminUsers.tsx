@@ -201,22 +201,22 @@ const AdminUsers: React.FC = () => {
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm">
           <div className="text-2xl font-bold text-green-600">
-            {usuarios.filter(u => !u.bloqueado).length}
+            {usuarios.filter(u => !u.isBloqueado).length}
           </div>
           <div className="text-sm text-gray-600">Usuários Ativos</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm">
           <div className="text-2xl font-bold text-red-600">
-            {usuarios.filter(u => u.bloqueado).length}
+            {usuarios.filter(u => u.isBloqueado).length}
           </div>
           <div className="text-sm text-gray-600">Usuários Banidos</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm">
+        {/* <div className="bg-white p-4 rounded-lg shadow-sm">
           <div className="text-2xl font-bold text-yellow-600">
             {usuarios.filter(u => u.posts_bloqueados > 0).length}
           </div>
           <div className="text-sm text-gray-600">Com Posts Bloqueados</div>
-        </div>
+        </div> */}
       </div>
 
       {/* Tabela */}
