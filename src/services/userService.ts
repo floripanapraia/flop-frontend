@@ -6,9 +6,9 @@ export interface Usuario {
   nome: string;
   nickname: string;
   email: string;
-  isAdmin: boolean;
+  isAdmin: number;
   createdAt: string;
-  isBloqueado: boolean;
+  isBloqueado: number;
 }
 
 interface UsuarioUpdateRequest {
