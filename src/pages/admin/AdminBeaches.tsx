@@ -24,14 +24,14 @@ const AdminBeaches: React.FC = () => {
   // Configuração das colunas
   const columns: Column<PraiaDTO>[] = [
     {
-      key: 'id',
+      key: 'idPraia',
       label: 'ID',
       sortable: true,
       width: '80px',
       align: 'center'
     },
     {
-      key: 'name',
+      key: 'nomePraia',
       label: 'NOME',
       sortable: true,
       render: (value) => (
@@ -39,23 +39,15 @@ const AdminBeaches: React.FC = () => {
       )
     },
     {
-      key: 'localizacao',
-      label: 'LOCALIZAÇÃO',
-      sortable: true,
-      render: (value) => (
-        <span className="font-medium">{value}</span>
-      )
-    },
-    {
       key: 'totalAvaliacoesDoDia',
-      label: 'TOTAL AVALIAÇÕES',
+      label: 'AVALIAÇÕES HOJE',
       sortable: true,
       align: 'center',
       width: '150px',
       render: (value) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${value > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${value > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
           }`}>
-          {value}
+          {value || 0}
         </span>
       )
     },
@@ -64,16 +56,16 @@ const AdminBeaches: React.FC = () => {
   // Configuração dos filtros
   const filters: Filter[] = [
     {
-      key: 'id',
+      key: 'idPraia',
       label: 'ID',
       type: 'text',
-      placeholder: 'ID'
+      placeholder: 'ID da praia'
     },
     {
-      key: 'nome',
+      key: 'nomePraia',
       label: 'Nome',
       type: 'text',
-      placeholder: 'Nome'
+      placeholder: 'Nome da praia'
     },
   ];
 
@@ -93,6 +85,18 @@ const AdminBeaches: React.FC = () => {
           </div>
           <div className="text-sm text-gray-600">Total de Praias</div>
         </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <div className="text-2xl font-bold text-green-600">
+            {praias.filter(p => p.totalAvaliacoesDoDia > 0).length}
+          </div>
+          <div className="text-sm text-gray-600">Com Avaliações Hoje</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <div className="text-2xl font-bold text-blue-600">
+            {praias.reduce((total, p) => total + (p.mensagensPostagens?.length || 0), 0)}
+          </div>
+          <div className="text-sm text-gray-600">Total de Flops</div>
+        </div>
       </div>
 
       {/* Tabela */}
@@ -100,7 +104,6 @@ const AdminBeaches: React.FC = () => {
         data={praias}
         columns={columns}
         filters={filters}
-        // actions={actions}
         loading={loading}
         searchPlaceholder="Buscar praias..."
         onRowClick={(praia) => {
