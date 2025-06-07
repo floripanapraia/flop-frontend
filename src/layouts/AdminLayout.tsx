@@ -43,7 +43,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     },
     {
       name: 'Usuários',
-      path: '/admin/usuarios',
+      path: '/admin/users',
     }
   ];
 
