@@ -117,8 +117,8 @@ const AdminUsers: React.FC = () => {
       label: 'Status',
       type: 'select' as const,
       options: [
-        { value: 'false', label: 'Ativo' },
-        { value: 'true', label: 'Banido' }
+        { value: '0', label: 'Ativo' },
+        { value: '1', label: 'Banido' }
       ]
     }] : []),
     {
@@ -126,8 +126,8 @@ const AdminUsers: React.FC = () => {
       label: 'Tipo',
       type: 'select',
       options: [
-        { value: 'false', label: 'Usuário' },
-        { value: 'true', label: 'Admin' }
+        { value: '0', label: 'Usuário' },
+        { value: '1', label: 'Admin' }
       ]
     }
   ];
