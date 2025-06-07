@@ -11,6 +11,7 @@ const AdminUsers: React.FC = () => {
     const fetchUsuarios = async () => {
       try {
         const dados = await getAllUsers();
+        console.log('Dados recebidos do backend:', dados); // Debug
         setUsuarios(dados);
       } catch (error) {
         console.error('Erro ao buscar usuários:', error);
@@ -21,7 +22,6 @@ const AdminUsers: React.FC = () => {
 
     fetchUsuarios();
   }, []);
-
 
   // Filtrar dados baseado na aba ativa
   const dadosFiltrados = usuarios.filter(usuario => {
@@ -41,6 +41,22 @@ const AdminUsers: React.FC = () => {
       align: 'center'
     },
     {
+      key: 'nome',
+      label: 'NOME',
+      sortable: true,
+      render: (value) => (
+        <span className="font-medium">{value || 'N/A'}</span>
+      )
+    },
+    {
+      key: 'nickname',
+      label: 'NICKNAME',
+      sortable: true,
+      render: (value) => (
+        <span className="font-medium text-blue-600">@{value}</span>
+      )
+    },
+    {
       key: 'email',
       label: 'EMAIL',
       sortable: true,
@@ -51,36 +67,26 @@ const AdminUsers: React.FC = () => {
       )
     },
     {
-      key: 'user',
-      label: 'USER',
-      sortable: true,
-      render: (value) => (
-        <span className="font-medium">{value}</span>
-      )
-    },
-    {
-      key: 'posts_bloqueados',
-      label: 'POSTS BLOQUEADOS',
+      key: 'isAdmin',
+      label: 'ADMIN',
       sortable: true,
       align: 'center',
-      width: '150px',
+      width: '100px',
       render: (value) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${value > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-          }`}>
-          {value}
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${Number(value) === 1 ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
+          {Number(value) === 1 ? 'Admin' : 'User'}
         </span>
       )
     },
     ...(activeTab === 'relatorio' ? [{
-      key: 'bloqueado',
+      key: 'isBloqueado',
       label: 'STATUS',
       sortable: true,
       align: 'center' as const,
       width: '120px',
-      render: (value: boolean) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${value ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-          }`}>
-          {value ? 'Banido' : 'Ativo'}
+      render: (value: number) => (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${Number(value) === 1 ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
+          {Number(value) === 1 ? 'Banido' : 'Ativo'}
         </span>
       )
     }] : [])
@@ -89,10 +95,16 @@ const AdminUsers: React.FC = () => {
   // Configuração dos filtros
   const filters: Filter[] = [
     {
-      key: 'user',
-      label: 'Usuário',
+      key: 'nome',
+      label: 'Nome',
       type: 'text',
-      placeholder: 'Nome de usuário...'
+      placeholder: 'Nome do usuário...'
+    },
+    {
+      key: 'nickname',
+      label: 'Nickname',
+      type: 'text',
+      placeholder: 'Nickname do usuário...'
     },
     {
       key: 'email',
@@ -101,7 +113,7 @@ const AdminUsers: React.FC = () => {
       placeholder: 'Email do usuário...'
     },
     ...(activeTab === 'relatorio' ? [{
-      key: 'bloqueado',
+      key: 'isBloqueado',
       label: 'Status',
       type: 'select' as const,
       options: [
@@ -110,10 +122,13 @@ const AdminUsers: React.FC = () => {
       ]
     }] : []),
     {
-      key: 'posts_bloqueados',
-      label: 'Posts Bloqueados',
-      type: 'number',
-      placeholder: 'Número de posts...'
+      key: 'isAdmin',
+      label: 'Tipo',
+      type: 'select',
+      options: [
+        { value: 'false', label: 'Usuário' },
+        { value: 'true', label: 'Admin' }
+      ]
     }
   ];
 
@@ -134,13 +149,13 @@ const AdminUsers: React.FC = () => {
   //     }
   //   },
   //   {
-  //     label: (usuario: Usuario) => usuario.bloqueado ? 'Desbanir' : 'Banir',
+  //     label: (usuario: Usuario) => usuario.isBloqueado ? 'Desbanir' : 'Banir',
   //     icon: (usuario: Usuario) =>
-  //       usuario.bloqueado ? <UserCheck className="w-4 h-4" /> : <Ban className="w-4 h-4" />,
-  //     variant: (usuario: Usuario) => (usuario.bloqueado ? 'default' : 'warning'),
+  //       usuario.isBloqueado ? <UserCheck className="w-4 h-4" /> : <Ban className="w-4 h-4" />,
+  //     variant: (usuario: Usuario) => (usuario.isBloqueado ? 'default' : 'warning'),
   //     onClick: (usuario: Usuario) => {
   //       setUsuarios(prev =>
-  //         prev.map(u => (u.id === usuario.id ? { ...u, bloqueado: !u.bloqueado } : u))
+  //         prev.map(u => (u.id === usuario.id ? { ...u, isBloqueado: !u.isBloqueado } : u))
   //       );
   //     }
   //   },
@@ -149,13 +164,12 @@ const AdminUsers: React.FC = () => {
   //     icon: <Trash2 className="w-4 h-4" />,
   //     variant: 'danger',
   //     onClick: (usuario: Usuario) => {
-  //       if (window.confirm(`Tem certeza que deseja excluir o usuário ${usuario.user}?`)) {
+  //       if (window.confirm(`Tem certeza que deseja excluir o usuário ${usuario.nickname}?`)) {
   //         setUsuarios(prev => prev.filter(u => u.id !== usuario.id));
   //       }
   //     }
   //   }
   // ];
-
 
   return (
     <div>
@@ -172,8 +186,8 @@ const AdminUsers: React.FC = () => {
             <button
               onClick={() => setActiveTab('relatorio')}
               className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'relatorio'
-                ? 'border-sky-500 text-sky-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-sky-500 text-sky-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
             >
               Relatório usuários
@@ -181,11 +195,11 @@ const AdminUsers: React.FC = () => {
             <button
               onClick={() => setActiveTab('banidos')}
               className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'banidos'
-                ? 'border-sky-500 text-sky-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-sky-500 text-sky-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
             >
-              Usuários banidos
+              Usuários banidos ({usuarios.filter(u => u.isBloqueado).length})
             </button>
           </nav>
         </div>
@@ -211,12 +225,12 @@ const AdminUsers: React.FC = () => {
           </div>
           <div className="text-sm text-gray-600">Usuários Banidos</div>
         </div>
-        {/* <div className="bg-white p-4 rounded-lg shadow-sm">
-          <div className="text-2xl font-bold text-yellow-600">
-            {usuarios.filter(u => u.posts_bloqueados > 0).length}
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <div className="text-2xl font-bold text-purple-600">
+            {usuarios.filter(u => u.isAdmin).length}
           </div>
-          <div className="text-sm text-gray-600">Com Posts Bloqueados</div>
-        </div> */}
+          <div className="text-sm text-gray-600">Administradores</div>
+        </div>
       </div>
 
       {/* Tabela */}
