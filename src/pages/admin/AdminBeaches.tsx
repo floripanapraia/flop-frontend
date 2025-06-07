@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DataTable, { Column, Filter } from '../../components/DataTable';
 import { getAllPraias, PraiaDTO } from '../../services/beachService';
+import { Plus } from 'lucide-react';
 
 const AdminBeaches: React.FC = () => {
   const [praias, setPraias] = useState<PraiaDTO[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPraias = async () => {
@@ -69,12 +72,25 @@ const AdminBeaches: React.FC = () => {
     },
   ];
 
+  const handleCadastrarPraia = () => {
+    navigate('/admin/praias/cadastrar');
+  };
+
   return (
     <div>
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Praias</h1>
-        <p className="text-gray-600 mt-2">Gerencie praias do sistema</p>
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Praias</h1>
+          <p className="text-gray-600 mt-2">Gerencie praias do sistema</p>
+        </div>
+        <button
+          onClick={handleCadastrarPraia}
+          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          Cadastrar Praia
+        </button>
       </div>
 
       {/* Stats Cards */}
