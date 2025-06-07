@@ -98,12 +98,12 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
 
       try {
         setIsLoading(true);
-        
+
         // Criar data de hoje no formato correto
         const today = new Date();
         const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
-        
+
         const existingEvaluations = await filterAvaliacoes({
           idUsuario: user.id,
           idPraia: praiaId,
@@ -111,7 +111,7 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
           criadoEmFim: todayEnd.toISOString(),
           limite: 1
         });
-        
+
         if (existingEvaluations && existingEvaluations.length > 0) {
           const evaluation = existingEvaluations[0];
           setSelectedConditions(evaluation.condicoes);
@@ -217,7 +217,7 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
         >
           <X className="h-6 w-6" />
         </button>
-        
+
         <div className="p-6">
           <h2 className="text-xl font-bold text-center text-blue-900">
             {beachName}
@@ -230,7 +230,7 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
               </span>
             </div>
           )}
-          
+
           <div className="flex items-center mt-4 mb-6">
             <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden mr-3 flex-shrink-0">
               {user.fotoPerfil ? (
@@ -247,15 +247,15 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
                 </div>
               )}
             </div>
-            
+
             <div className="flex flex-col">
               <span className="font-medium text-blue-900">{user.nome}</span>
               <span className="text-blue-900">@{user.nickname}</span>
             </div>
           </div>
-          
+
           <p className="text-sm text-gray-900 mb-6">
-            {isEditing 
+            {isEditing
               ? "Modifique as condições da praia conforme necessário:"
               : "Marque as opções abaixo que melhor descrevem as condições da praia hoje!"
             }
@@ -268,20 +268,18 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
                 type="button"
                 onClick={() => toggleCondition(condition.id)}
                 disabled={isConditionDisabled(condition.id)}
-                className={`flex items-center p-2 rounded-3xl transition-colors h-full ${
-                  selectedConditions.includes(condition.id)
-                    ? "bg-gray-200 border-gray-200 text-black-700 rounded-5xl"
-                    : isConditionDisabled(condition.id)
+                className={`flex items-center p-2 rounded-3xl transition-colors h-full ${selectedConditions.includes(condition.id)
+                  ? "bg-gray-200 border-gray-200 text-black-700 rounded-5xl"
+                  : isConditionDisabled(condition.id)
                     ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
                     : "bg-white border-gray-200 hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 <img
                   src={condition.icon}
                   alt={condition.name}
-                  className={`w-12 h-12 mr-2 ${
-                    isConditionDisabled(condition.id) ? "opacity-50" : ""
-                  }`}
+                  className={`w-12 h-12 mr-2 ${isConditionDisabled(condition.id) ? "opacity-50" : ""
+                    }`}
                 />
                 <span className="text-sm font-medium text-center text-blue-900">
                   {condition.name}
@@ -295,11 +293,10 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
               type="button"
               onClick={handleSubmit}
               disabled={selectedConditions.length === 0}
-              className={`px-6 py-3 rounded-full transition-colors ${
-                selectedConditions.length === 0
-                  ? "bg-gray-300 border-blue-700 text-gray-500 cursor-not-allowed"
-                  : "bg-blue-900 border-blue-700 text-white"
-              }`}
+              className={`px-6 py-3 rounded-full transition-colors ${selectedConditions.length === 0
+                ? "bg-gray-300 border-blue-700 text-gray-500 cursor-not-allowed"
+                : "bg-blue-900 border-blue-700 text-white"
+                }`}
             >
               {isEditing ? "Atualizar " : "Postar"}
             </button>
