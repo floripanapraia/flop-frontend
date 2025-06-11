@@ -26,6 +26,7 @@ import AdminBeaches from "./pages/admin/AdminBeaches";
 import AdminUsers from "./pages/admin/AdminUsers";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import RegisterBeach from "./pages/admin/RegisterBeach";
+import AdminSuggestions from "./pages/admin/AdminSuggestions";
 
 const App: React.FC = () => {
   return (
@@ -101,6 +102,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute adminOnly>
                   <RegisterBeach />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/sugestoes"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AdminSuggestions />
                 </ProtectedRoute>
               }
             />
