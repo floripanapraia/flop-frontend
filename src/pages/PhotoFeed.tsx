@@ -60,10 +60,13 @@ const PhotoFeed: React.FC = () => {
 
   const filterDate = () => {
     const now = new Date();
+    // Início do dia de 7 dias atrás 
+    const hojeMenos7Dias = new Date(now);
+    hojeMenos7Dias.setDate(now.getDate() - 7);
     const inicio = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
+      hojeMenos7Dias.getFullYear(),
+      hojeMenos7Dias.getMonth(),
+      hojeMenos7Dias.getDate(),
       0,
       0,
       0,
@@ -344,11 +347,10 @@ const PhotoFeed: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
-              className={`px-3 py-1 text-xs font-medium ${
-                activeTab === tab.id
+              className={`px-3 py-1 text-xs font-medium ${activeTab === tab.id
                   ? "text-blue-600"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               <div className="flex flex-col items-center">
                 <span>{tab.label}</span>
