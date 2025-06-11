@@ -2,18 +2,20 @@ import { X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useUser } from "../contexts/userContext";
 import { useBeach } from "../hooks/useBeach";
-import { Condicoes, createAvaliacao, filterAvaliacoes, updateAvaliacao } from "../services/evaluationService";
+import { Condicoes, createAvaliacao, updateAvaliacao, AvaliacaoDTO } from "../services/evaluationService";
 
 interface EvaluationModalProps {
   beachName: string;
   onClose: () => void;
   onSubmit: (selectedConditions: Condicoes[]) => void;
+  initialEvaluation?: AvaliacaoDTO | null;
 }
 
 const EvaluationModal: React.FC<EvaluationModalProps> = ({
   beachName,
   onClose,
   onSubmit,
+  initialEvaluation = null,
 }) => {
   const conditions = [
     { id: Condicoes.SOL, name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
@@ -88,45 +90,24 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
 
   const [selectedConditions, setSelectedConditions] = useState<Condicoes[]>([]);
   const [existingEvaluationId, setExistingEvaluationId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(!initialEvaluation);
+  const [isEditing, setIsEditing] = useState<boolean>(!!initialEvaluation);
 
-  // Carregar avaliação existente do usuário
   useEffect(() => {
-    const loadExistingEvaluation = async () => {
-      if (!praiaId || !user) return;
+    if (initialEvaluation) {
+      setSelectedConditions(initialEvaluation.condicoes);
+      setExistingEvaluationId(initialEvaluation.idAvaliacao!);
+      setIsEditing(true);
+      setIsLoading(false); 
+    } else {
+      // Se não houver avaliação, prepara para uma nova
+      setSelectedConditions([]);
+      setExistingEvaluationId(null);
+      setIsEditing(false);
+      setIsLoading(false); 
+    }
+  }, [initialEvaluation]);
 
-      try {
-        setIsLoading(true);
-
-        // Criar data de hoje no formato correto
-        const today = new Date();
-        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
-
-        const existingEvaluations = await filterAvaliacoes({
-          idUsuario: user.id,
-          idPraia: praiaId,
-          criadoEmInicio: todayStart.toISOString(),
-          criadoEmFim: todayEnd.toISOString(),
-          limite: 1
-        });
-
-        if (existingEvaluations && existingEvaluations.length > 0) {
-          const evaluation = existingEvaluations[0];
-          setSelectedConditions(evaluation.condicoes);
-          setExistingEvaluationId(evaluation.idAvaliacao!);
-          setIsEditing(true);
-        }
-      } catch (error) {
-        console.log("Nenhuma avaliação encontrada para hoje");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadExistingEvaluation();
-  }, [praiaId, user]);
 
   const toggleCondition = (conditionId: Condicoes) => {
     setSelectedConditions((prev) => {
