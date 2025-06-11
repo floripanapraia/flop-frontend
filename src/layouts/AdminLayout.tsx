@@ -34,8 +34,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       path: '/admin/denuncias',
     },
     {
-      name: 'Central Mensagens',
-      path: '/admin/mensagens',
+      name: 'Sugestão',
+      path: '/admin/sugestoes',
     },
     {
       name: 'Praias',
