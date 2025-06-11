@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import EvaluationModal from "./EvaluationModal";
 import ThankYouAvaliacaoModal from "./ThankYouAvaliacaoModal";
@@ -6,38 +6,61 @@ import { Star, X } from "lucide-react";
 import { useBeach } from "../hooks/useBeach";
 import { usePraiaDataSync } from "../hooks/useBeachDataSync";
 import { useUser } from "../contexts/userContext";
+import { useAuth } from "../contexts/authContext";
 import RequireAuthModal from "./RequireAuthModal";
+import { getAvaliacaoUsuarioHojeNaPraia, verificarAvaliacaoExistente ,AvaliacaoDTO } from "../services/evaluationService";
 
 interface BeachProps {
   onNewAvaliacao?: () => void;
 }
 
-const Beach: React.FC <BeachProps> = ({ onNewAvaliacao }) => {
+const Beach: React.FC<BeachProps> = ({ onNewAvaliacao }) => {
   const navigate = useNavigate();
   const [showEvaluationModal, setShowEvaluationModal] = useState(false);
   const [showThankYouModal, setShowThankYouModal] = useState(false);
   const [showRequireAuthModal, setShowRequireAuthModal] = useState(false);
+  const [initialEvaluation, setInitialEvaluation] = useState<AvaliacaoDTO | null>(null);
 
-  const { praiaNome, praiaFotoUrl, totalAvaliacoesDoDia } = useBeach();
+  const { praiaNome, praiaFotoUrl, totalAvaliacoesDoDia, praiaId } = useBeach();
   const { condicoesAvaliacoes, loading, refetch } = usePraiaDataSync({
     incluirCondicoes: true,
     incluirMensagens: false,
     incluirImagens: false,
   });
 
-  const { user } = useUser();
+  const { user,  } = useUser();
+  const { isLoading: authLoading } = useAuth();
 
- const handleAvaliarClick = () => {
-    if (user) {
-      // se o usuário estiver logado, abra o EvaluationModal
-      setShowEvaluationModal(true);
+  const handleAvaliarClick = async () => {
+  if (!user || !user.id) {
+    setShowRequireAuthModal(true);
+    return;
+  }
+
+  if (!praiaId) {
+    console.error("ID da praia não definido");
+    return;
+  }
+
+  try {
+    const existeAvaliacao = await verificarAvaliacaoExistente(user.id, praiaId);
+
+    if (existeAvaliacao) {
+      // Se já existir uma avaliação, configura para editar
+      setInitialEvaluation(await getAvaliacaoUsuarioHojeNaPraia(user.id, praiaId));
     } else {
-      // senão, abra o RequireAuthModal
-      setShowRequireAuthModal(true);
+      // Se não houver avaliação, configura para criar uma nova
+      setInitialEvaluation(null);  
     }
-  };
+  } catch (err: any) {
+    console.error("Erro ao verificar avaliação:", err);
+    setInitialEvaluation(null); 
+  }
 
-   const handleEvaluationModalClose = () => {
+  setShowEvaluationModal(true); 
+};
+
+  const handleEvaluationModalClose = () => {
     setShowEvaluationModal(false);
   };
 
@@ -134,8 +157,8 @@ const Beach: React.FC <BeachProps> = ({ onNewAvaliacao }) => {
                           alt={label}
                           className="w-14 h-14"
                           onError={(e) =>
-                            ((e.target as HTMLImageElement).style.display =
-                              "none")
+                          ((e.target as HTMLImageElement).style.display =
+                            "none")
                           }
                         />
                       </div>
@@ -156,7 +179,7 @@ const Beach: React.FC <BeachProps> = ({ onNewAvaliacao }) => {
         <div className="mt-6 mb-8 flex justify-center">
           <button
             onClick={handleAvaliarClick}
-            className="px-5 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-[#1e3a5f] transition-colors shadow-md"
+             className="px-5 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-[#1e3a5f] transition-colors shadow-md"
           >
             Avaliar
           </button>
@@ -167,12 +190,13 @@ const Beach: React.FC <BeachProps> = ({ onNewAvaliacao }) => {
         <EvaluationModal
           onClose={handleEvaluationModalClose}
           beachName={praiaNome || ""}
+          initialEvaluation={initialEvaluation}
           onSubmit={handleEvaluationSubmit}
         />
       )}
 
       {showRequireAuthModal && (
-        <RequireAuthModal isOpen={showRequireAuthModal} onClose={ handleRequireAuthModalClose} />
+        <RequireAuthModal isOpen={showRequireAuthModal} onClose={handleRequireAuthModalClose} />
       )}
 
       <ThankYouAvaliacaoModal
