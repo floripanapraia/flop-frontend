@@ -1,16 +1,24 @@
-import { AlertCircle, Calendar, Check, Clock, MapPin, User } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
-import { analisarSugestao, getAllSugestoes, SugestaoDTO } from '../../services/suggestionService';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Check, Clock, MapPin, User, Calendar, AlertCircle, Search, Filter, X } from 'lucide-react';
+import { getAllSugestoes, analisarSugestao, SugestaoDTO, filterSugestoes } from '../../services/suggestionService';
 
 const AdminSuggestions: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'pendentes' | 'finalizadas'>('pendentes');
   const [sugestoes, setSugestoes] = useState<SugestaoDTO[]>([]);
+  const [filteredSugestoes, setFilteredSugestoes] = useState<SugestaoDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Filtros
+  const [showFilters, setShowFilters] = useState(false);
+  const [nomeUsuarioFilter, setNomeUsuarioFilter] = useState('');
+  const [dataInicioFilter, setDataInicioFilter] = useState('');
+  const [dataFimFilter, setDataFimFilter] = useState('');
+  const [hasActiveFilters, setHasActiveFilters] = useState(false);
 
   const ITEMS_PER_PAGE = 10;
 
@@ -19,7 +27,17 @@ const AdminSuggestions: React.FC = () => {
       if (pageNum === 0) setLoading(true);
       else setLoadingMore(true);
 
-      const dados = await getAllSugestoes();
+      let dados: SugestaoDTO[];
+
+      // Se há filtros ativos, usar o service de filtro
+      if (hasActiveFilters) {
+        dados = await filterSugestoes({
+          dataInicio: dataInicioFilter || undefined,
+          dataFim: dataFimFilter || undefined,
+        });
+      } else {
+        dados = await getAllSugestoes();
+      }
 
       // Simular paginação (já que a API retorna todos os dados)
       const startIndex = pageNum * ITEMS_PER_PAGE;
@@ -41,15 +59,34 @@ const AdminSuggestions: React.FC = () => {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, []);
+  }, [hasActiveFilters, dataInicioFilter, dataFimFilter]);
 
   useEffect(() => {
     setPage(0);
     fetchSuggestions(0, true);
   }, [fetchSuggestions]);
 
+  // Aplicar filtros locais (nome do usuário)
+  useEffect(() => {
+    let filtered = [...sugestoes];
+
+    if (nomeUsuarioFilter) {
+      filtered = filtered.filter(sugestao =>
+        sugestao.nomeUsuario.toLowerCase().includes(nomeUsuarioFilter.toLowerCase())
+      );
+    }
+
+    setFilteredSugestoes(filtered);
+  }, [sugestoes, nomeUsuarioFilter]);
+
+  // Verificar se há filtros ativos
+  useEffect(() => {
+    const hasFilters = Boolean(nomeUsuarioFilter || dataInicioFilter || dataFimFilter);
+    setHasActiveFilters(hasFilters);
+  }, [nomeUsuarioFilter, dataInicioFilter, dataFimFilter]);
+
   // Filtrar dados baseado na aba ativa
-  const dadosFiltrados = sugestoes.filter(sugestao => {
+  const dadosFiltrados = filteredSugestoes.filter(sugestao => {
     if (activeTab === 'pendentes') {
       return !sugestao.analisada;
     }
@@ -75,6 +112,27 @@ const AdminSuggestions: React.FC = () => {
     } finally {
       setActionLoading(null);
     }
+  };
+
+  const handleApplyFilters = () => {
+    setPage(0);
+    fetchSuggestions(0, true);
+  };
+
+  const handleClearFilters = () => {
+    setNomeUsuarioFilter('');
+    setDataInicioFilter('');
+    setDataFimFilter('');
+    setPage(0);
+    fetchSuggestions(0, true);
+  };
+
+  const getTotalCounts = () => {
+    const allSugestoes = hasActiveFilters ? filteredSugestoes : sugestoes;
+    return {
+      pendentes: allSugestoes.filter(s => !s.analisada).length,
+      finalizadas: allSugestoes.filter(s => s.analisada).length
+    };
   };
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -185,6 +243,101 @@ const AdminSuggestions: React.FC = () => {
           </p>
         </div>
 
+        {/* Filters */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              Filtros
+              {hasActiveFilters && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  Ativos
+                </span>
+              )}
+            </button>
+
+            {hasActiveFilters && (
+              <button
+                onClick={handleClearFilters}
+                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <X className="w-4 h-4 mr-1" />
+                Limpar Filtros
+              </button>
+            )}
+          </div>
+
+          {showFilters && (
+            <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Filtro por Nome do Usuário */}
+                <div>
+                  <label htmlFor="nomeUsuario" className="block text-sm font-medium text-gray-700 mb-2">
+                    Nome do Usuário
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      id="nomeUsuario"
+                      value={nomeUsuarioFilter}
+                      onChange={(e) => setNomeUsuarioFilter(e.target.value)}
+                      placeholder="Digite o nome do usuário..."
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Filtro por Data Início */}
+                <div>
+                  <label htmlFor="dataInicio" className="block text-sm font-medium text-gray-700 mb-2">
+                    Data Início
+                  </label>
+                  <input
+                    type="date"
+                    id="dataInicio"
+                    value={dataInicioFilter}
+                    onChange={(e) => setDataInicioFilter(e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                {/* Filtro por Data Fim */}
+                <div>
+                  <label htmlFor="dataFim" className="block text-sm font-medium text-gray-700 mb-2">
+                    Data Fim
+                  </label>
+                  <input
+                    type="date"
+                    id="dataFim"
+                    value={dataFimFilter}
+                    onChange={(e) => setDataFimFilter(e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleApplyFilters}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Aplicar Filtros
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Tabs */}
         <div className="mb-6">
           <div className="border-b border-gray-200">
@@ -192,30 +345,30 @@ const AdminSuggestions: React.FC = () => {
               <button
                 onClick={() => setActiveTab('pendentes')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'pendentes'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
               >
                 <div className="flex items-center">
                   <Clock className="w-4 h-4 mr-2" />
                   Pendentes
                   <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                    {sugestoes.filter(s => !s.analisada).length}
+                    {getTotalCounts().pendentes}
                   </span>
                 </div>
               </button>
               <button
                 onClick={() => setActiveTab('finalizadas')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'finalizadas'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
               >
                 <div className="flex items-center">
                   <Check className="w-4 h-4 mr-2" />
                   Finalizadas
                   <span className="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                    {sugestoes.filter(s => s.analisada).length}
+                    {getTotalCounts().finalizadas}
                   </span>
                 </div>
               </button>
