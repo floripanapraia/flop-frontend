@@ -108,3 +108,40 @@ export const filterAvaliacoes = async (
     throw error;
   }
 };
+
+export const getAvaliacaoUsuarioHojeNaPraia = async (
+  idUsuario: number,
+  idPraia: number
+): Promise<AvaliacaoDTO> => {
+  try {
+    
+    const response = await apiClient.get<AvaliacaoDTO>(
+      `/avaliacoes/usuario/${idUsuario}/praia/${idPraia}/hoje`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Erro ao buscar avaliação do usuário ${idUsuario} hoje na praia ${idPraia}:`,
+      error
+    );
+    throw error;
+  }
+};
+
+export const verificarAvaliacaoExistente = async (
+  idUsuario: number,
+  idPraia: number
+): Promise<boolean> => {
+  try {
+    const response = await apiClient.get<boolean>(
+      `/avaliacoes/usuario/${idUsuario}/praia/${idPraia}/existe`
+    );
+    return response.data; // Retorna true ou false
+  } catch (error) {
+    console.error(
+      `Erro ao verificar se existe avaliação do usuário ${idUsuario} na praia ${idPraia}:`,
+      error
+    );
+    throw error;
+  }
+};
