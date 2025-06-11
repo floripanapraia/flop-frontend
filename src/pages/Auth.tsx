@@ -6,7 +6,7 @@ import ForgotPasswordModal from "../components/ForgotPasswordModal";
 import * as Components from "../components/LoginCadastro";
 import WelcomeModal from "../components/WelcomeModal";
 import { useAuth } from "../contexts/authContext";
-import { cadastrarUsuario, login } from "../services/authService";
+import { cadastrarUsuario, User } from "../services/authService";
 import {
   ErrorResponse,
   handleErrorWithToast,
@@ -14,6 +14,7 @@ import {
   shouldShowInModal,
 } from "../utils/errorHandler";
 import { X } from "lucide-react";
+import TwoFactorAuthModal from "../components/TwoFactorAuthModal";
 
 const Auth: React.FC = () => {
   const [signIn, toggle] = useState<boolean>(true);
@@ -21,7 +22,7 @@ const Auth: React.FC = () => {
 
   const { login: authLogin } = useAuth();
 
-  // Login state
+  // Login state - agora só precisamos do email e senha para o primeiro passo
   const [loginCredentials, setLoginCredentials] = useState({
     email: "",
     senha: "",
@@ -47,10 +48,14 @@ const Auth: React.FC = () => {
   // State to track if the user just registered
   const [justRegistered, setJustRegistered] = useState(false);
 
+  // 2FA Modal state
+  const [is2FAModalOpen, setIs2FAModalOpen] = useState<boolean>(false);
+
   const handleForgotPasswordSuccess = (): void => {
     // Ação após sucesso na recuperação de senha
     alert("Senha alterada com sucesso! Agora você pode fazer login.");
   };
+
   // Login handlers
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -60,6 +65,7 @@ const Auth: React.FC = () => {
     });
   };
 
+  // Novo handler para o login com 2FA
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -68,39 +74,42 @@ const Auth: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      const { token, user } = await login(
-        loginCredentials.email,
-        loginCredentials.senha
-      );
-
-      // Use the integrated auth context
-      authLogin(token, user);
-
-      toast.success("Login realizado com sucesso!");
-
-      // Navigate based on user role
-      if (user.isAdmin === 1) {
-        navigate("/admin/users");
-      } else {
-        navigate("/home");
-      }
-    } catch (error: any) {
-      console.error("Erro no login:", error);
-
-      // Determine if error should be shown in modal or toast
-      if (shouldShowInModal(error)) {
-        setModalError(normalizeError(error));
-        setShowErrorModal(true);
-      } else {
-        handleErrorWithToast(error);
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    // Abre o modal de 2FA com as credenciais
+    setIs2FAModalOpen(true);
   };
+
+  // Handler para fechar o modal de 2FA
+  const handleClose2FAModal = (): void => {
+    setIs2FAModalOpen(false);
+  };
+
+  // Handler para sucesso no login com 2FA
+  const handleLoginSuccess = (token: string, userData: User): void => {
+    // Use the integrated auth context
+    authLogin(token, userData);
+
+    toast.success("Login realizado com sucesso!");
+
+    // Navigate based on user role
+    if (userData.isAdmin === 1) {
+      navigate("/admin/users");
+    } else {
+      navigate("/home");
+    }
+
+    // Fechar o modal
+    setIs2FAModalOpen(false);
+
+    // Limpar as credenciais por segurança
+    setLoginCredentials({
+      email: "",
+      senha: "",
+    });
+  };
+
+  // Se o TwoFactorAuthModal precisar das credenciais, você pode criar um contexto
+  // ou modificar o modal para aceitar as credenciais via props
+  // Por enquanto, vamos usar sem essas props
 
   // Cadastro handlers
   const handleSignUpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -344,12 +353,11 @@ const Auth: React.FC = () => {
 
         {/* Login */}
         <Components.SignInContainer signinIn={signIn}>
-           
           <Components.Form onSubmit={handleLoginSubmit}>
             <div className="w-full mb-4">
               <Components.Subtitle>Entrar</Components.Subtitle>
             </div>
-           
+
             <div className="w-full mb-1">
               <Components.FormLabel>Email</Components.FormLabel>
               <Components.Input
@@ -437,11 +445,21 @@ const Auth: React.FC = () => {
         isOpen={showErrorModal}
         onClose={closeErrorModal}
       />
+
       {/* Modal de recuperação de senha */}
       <ForgotPasswordModal
         isOpen={showForgotPassword}
         onClose={() => setShowForgotPassword(false)}
         onSuccess={handleForgotPasswordSuccess}
+      />
+
+      {/* Modal de Autenticação 2FA */}
+      <TwoFactorAuthModal
+        isOpen={is2FAModalOpen}
+        onClose={handleClose2FAModal}
+        onSuccess={handleLoginSuccess}
+        email={loginCredentials.email}
+        senha={loginCredentials.senha}
       />
     </Components.PageWrapper>
   );
