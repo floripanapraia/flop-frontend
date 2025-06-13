@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import EvaluationModal from "./EvaluationModal";
-import ThankYouAvaliacaoModal from "./ThankYouAvaliacaoModal";
 import { Star, X } from "lucide-react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/authContext";
+import { useUser } from "../contexts/userContext";
 import { useBeach } from "../hooks/useBeach";
 import { usePraiaDataSync } from "../hooks/useBeachDataSync";
-import { useUser } from "../contexts/userContext";
-import { useAuth } from "../contexts/authContext";
+import { AvaliacaoDTO, getAvaliacaoUsuarioHojeNaPraia, verificarAvaliacaoExistente } from "../services/evaluationService";
+import EvaluationModal from "./EvaluationModal";
 import RequireAuthModal from "./RequireAuthModal";
-import { getAvaliacaoUsuarioHojeNaPraia, verificarAvaliacaoExistente ,AvaliacaoDTO } from "../services/evaluationService";
+import ThankYouAvaliacaoModal from "./ThankYouAvaliacaoModal";
 
 interface BeachProps {
   onNewAvaliacao?: () => void;
