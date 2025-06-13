@@ -11,6 +11,8 @@ import {
 } from "../services/evaluationService";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import ProfileButton from "../components/ProfileButton";
+
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
@@ -201,39 +203,6 @@ const EvaluationFeed: React.FC = () => {
     }
   };
 
-  const ProfileButton = () => {
-    if (!user) {
-      return (
-        <button
-          onClick={handleMainButtonClick}
-          className="bg-[#182E4C] hover:bg-[#1a365d] text-white px-6 py-3 rounded-3xl text-sm font-medium transition-colors"
-        >
-          ENTRAR
-        </button>
-      );
-    }
-
-    return (
-      <button
-        onClick={handleMainButtonClick}
-        className="w-12 h-12 rounded-full overflow-hidden border-4 border-white shadow-lg hover:border-[#182E4C] transition-all duration-200 hover:shadow-xl"
-        title={`Perfil de ${user.nome}`}
-      >
-        {user.fotoPerfil ? (
-          <img
-            src={`data:image/jpeg;base64,${user.fotoPerfil}`}
-            alt={user.nome}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-[#182E4C] flex items-center justify-center text-white text-lg font-medium">
-            {user.nome.charAt(0).toUpperCase()}
-          </div>
-        )}
-      </button>
-    );
-  };
-
   const refreshEvaluations = () => {
     // limpa tudo e busca a 1ª página de novo:
     setAvaliacoes([]);
@@ -252,7 +221,7 @@ const EvaluationFeed: React.FC = () => {
       <Beach onNewAvaliacao={refreshEvaluations} />
       {/* Botão de perfil */}
       <div className="absolute top-4 right-6 z-50">
-        <ProfileButton />
+        <ProfileButton onProfileClick={() => setIsProfileModalOpen(true)} size={48} />
       </div>
 
       {/* Modal de perfil - só renderiza se o usuário estiver logado */}

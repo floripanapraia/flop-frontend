@@ -16,6 +16,8 @@ import {
 } from "../services/postService";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import ProfileButton from "../components/ProfileButton";
+
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
@@ -62,7 +64,7 @@ const FlopFeed: React.FC = () => {
 
     // Início do dia de 7 dias atrás 
     const hojeMenos7Dias = new Date(now);
-    hojeMenos7Dias.setDate(now.getDate() - 7); 
+    hojeMenos7Dias.setDate(now.getDate() - 7);
     const inicio = new Date(
       hojeMenos7Dias.getFullYear(),
       hojeMenos7Dias.getMonth(),
@@ -182,39 +184,6 @@ const FlopFeed: React.FC = () => {
     }
   };
 
-  const ProfileButton = () => {
-    if (!user) {
-      return (
-        <button
-          onClick={handleMainButtonClick}
-          className="bg-[#182E4C] hover:bg-[#1a365d] text-white px-6 py-3 rounded-3xl text-sm font-medium transition-colors"
-        >
-          ENTRAR
-        </button>
-      );
-    }
-
-    return (
-      <button
-        onClick={handleMainButtonClick}
-        className="w-12 h-12 rounded-full overflow-hidden border-4 border-white shadow-lg hover:border-[#182E4C] transition-all duration-200 hover:shadow-xl"
-        title={`Perfil de ${user.nome}`}
-      >
-        {user.fotoPerfil ? (
-          <img
-            src={`data:image/jpeg;base64,${user.fotoPerfil}`}
-            alt={user.nome}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-[#182E4C] flex items-center justify-center text-white text-lg font-medium">
-            {user.nome.charAt(0).toUpperCase()}
-          </div>
-        )}
-      </button>
-    );
-  };
-
   const refreshPostagens = () => {
     setPostagens([]);
     setPaginaAtual(1);
@@ -310,7 +279,7 @@ const FlopFeed: React.FC = () => {
 
       {/* Botão de perfil */}
       <div className="absolute top-4 right-6 z-50">
-        <ProfileButton />
+        <ProfileButton onProfileClick={() => setIsProfileModalOpen(true)} size={48} />
       </div>
       {user && (
         <ProfileModal
@@ -341,8 +310,8 @@ const FlopFeed: React.FC = () => {
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
               className={`px-3 py-1 text-xs font-medium ${activeTab === tab.id
-                  ? "text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
+                ? "text-blue-600"
+                : "text-gray-500 hover:text-gray-700"
                 }`}
             >
               <div className="flex flex-col items-center">
