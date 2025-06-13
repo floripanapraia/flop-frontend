@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { loginWithTwoFactor, resendTwoFactorCode, User, verifyTwoFactorAndLogin } from "../services/authService";
+import {
+  loginWithTwoFactor,
+  resendTwoFactorCode,
+  User,
+  verifyTwoFactorAndLogin,
+} from "../services/authService";
 
 interface TwoFactorAuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (token: string, user: User) => void;
-  email?: string; 
-  senha?: string; 
+  email?: string;
+  senha?: string;
 }
 
 type MessageType = "success" | "error";
@@ -32,7 +37,7 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
     if (isOpen) {
       setEmail(initialEmail);
       setPassword(initialPassword);
-      
+
       // Se as credenciais já foram fornecidas, pular direto para o passo 2
       if (initialEmail && initialPassword) {
         handleAutoLogin();
@@ -40,7 +45,6 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
     }
   }, [isOpen, initialEmail, initialPassword]);
 
-  
   if (!isOpen) return null;
 
   const showMessage = (msg: string, type: MessageType): void => {
@@ -133,8 +137,11 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
     setLoading(true);
 
     try {
-      const { token, user } = await verifyTwoFactorAndLogin(email, parseInt(otp));
-      
+      const { token, user } = await verifyTwoFactorAndLogin(
+        email,
+        parseInt(otp)
+      );
+
       if (token && user) {
         showMessage("Login realizado com sucesso!", "success");
         setTimeout(() => {
@@ -157,16 +164,21 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
   };
 
   const handleResendCode = async (): Promise<void> => {
-    if (!email) {
-      showMessage("Email não encontrado", "error");
+    if (!email || !password) {
+      showMessage("Credenciais não encontradas", "error");
       return;
     }
 
     setLoading(true);
 
     try {
-      await resendTwoFactorCode(email);
-      showMessage("Novo código enviado para seu email!", "success");
+      const result = await loginWithTwoFactor(email, password);
+
+      if (result.success) {
+        showMessage("Novo código enviado para seu email!", "success");
+      } else {
+        showMessage(result.message || "Erro ao reenviar código", "error");
+      }
     } catch (error) {
       showMessage("Erro ao reenviar código. Tente novamente.", "error");
     } finally {
@@ -180,9 +192,11 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
         <img
           src="/assets/LOGO.png"
           alt="Logo"
-          className="w-10 h-10 drop-shadow-sm mr-2" 
+          className="w-10 h-10 drop-shadow-sm mr-2"
         />
-        <h2 className="text-2xl font-bold text-blue-900 mb-2">Verificação dois fatores</h2>
+        <h2 className="text-2xl font-bold text-blue-900 mb-2">
+          Verificação dois fatores
+        </h2>
       </div>
       <p className="text-gray-700 mb-4">
         Digite suas credenciais para receber o código de verificação:
@@ -252,9 +266,11 @@ const TwoFactorAuthModal: React.FC<TwoFactorAuthModalProps> = ({
         <img
           src="/assets/LOGO.png"
           alt="Logo"
-          className="w-10 h-10 drop-shadow-sm mr-2" 
+          className="w-10 h-10 drop-shadow-sm mr-2"
         />
-        <h2 className="text-2xl font-bold text-blue-900 mb-2">Verificação 2FA</h2>
+        <h2 className="text-2xl font-bold text-blue-900 mb-2">
+          Verificação 2FA
+        </h2>
       </div>
       <p className="text-gray-600 mb-4">
         Digite o código de 6 dígitos enviado para{" "}
