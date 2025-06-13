@@ -15,6 +15,7 @@ export interface PraiaDTO {
 
 interface SeletorFiltro {
   nomePraia?: string;
+  condicoes?: string[];
 }
 
 export const createPraia = async (praiaData: PraiaDTO): Promise<PraiaDTO> => {
