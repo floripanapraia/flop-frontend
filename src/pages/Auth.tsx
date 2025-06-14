@@ -94,13 +94,12 @@ const Auth: React.FC = () => {
     authLogin(token, userData);
 
     toast.success("Login realizado com sucesso!");
-
-    // Navigate based on user role
-    if (userData.isAdmin === 1) {
-      navigate("/admin/users");
-    } else {
-      navigate("/home");
-    }
+      // Navigate based on user role
+      if (user.isAdmin === 1) {
+        navigate("/admin/users");
+      } else {
+        navigate("/home");
+      }
 
     // Fechar o modal
     setIs2FAModalOpen(false);

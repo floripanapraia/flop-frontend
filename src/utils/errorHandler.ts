@@ -5,6 +5,7 @@ export interface ErrorResponse {
   message: string;
   error: string;
   status: number;
+  details?: string;
 }
 
 /**

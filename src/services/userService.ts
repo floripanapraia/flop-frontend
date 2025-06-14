@@ -6,8 +6,10 @@ export interface Usuario {
   nome: string;
   nickname: string;
   email: string;
-  isAdmin: boolean;
+  isAdmin: number;
   createdAt: string;
+  isBloqueado: number;
+  totalPostagensBloqueadas: number;
 }
 
 interface UsuarioUpdateRequest {
@@ -15,6 +17,14 @@ interface UsuarioUpdateRequest {
   nickname?: string;
   email?: string;
   senha?: string;
+}
+
+export interface UsuarioSeletor {
+  nome?: string;
+  email?: string;
+  nickname?: string;
+  isAdmin?: boolean;
+  // Outros campos
 }
 
 // Get current logged user
@@ -79,6 +89,62 @@ export const deleteUser = async (): Promise<void> => {
     await apiClient.delete(`/usuarios/excluir`);
   } catch (error) {
     console.error('Error deleting user:', error);
+    throw error;
+  }
+};
+
+export const getUserById = async (id: number): Promise<Usuario> => {
+  try {
+    const response = await apiClient.get<Usuario>(`/usuarios/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching user with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+export const getAllUsers = async (): Promise<Usuario[]> => {
+  try {
+    const response = await apiClient.get<any[]>('/usuarios/todos');
+
+    // Mapeia os dados do backend para a interface esperada no frontend
+    const usuarios: Usuario[] = response.data.map((u) => ({
+      id: u.idUsuario, // converte para o campo `id` esperado no frontend
+      nome: u.nome,
+      nickname: u.nickname,
+      email: u.email,
+      fotoPerfil: u.fotoPerfil,
+      isAdmin: u.isAdmin,
+      isBloqueado: u.isBloqueado,
+      totalPostagensBloqueadas: u.totalPostagensBloqueadas,
+      createdAt: u.dataCriacao, // se seu DTO tiver esse campo
+    }));
+
+    return usuarios;
+  } catch (error) {
+    console.error('Erro ao buscar usuários:', error);
+    throw error;
+  }
+};
+
+export const filterUsers = async (seletor: UsuarioSeletor): Promise<Usuario[]> => {
+  try {
+    const response = await apiClient.post<Usuario[]>('/usuarios/filtrar', seletor);
+    return response.data;
+  } catch (error) {
+    console.error('Error filtering users:', error);
+    throw error;
+  }
+};
+
+export const toggleBlockUser = async (id: number, bloquear: boolean): Promise<Usuario> => {
+  try {
+    const response = await apiClient.put<Usuario>(`/usuarios/bloquear/${id}`, null, {
+      params: { bloquear }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error toggling block for user ID ${id}:`, error);
     throw error;
   }
 };

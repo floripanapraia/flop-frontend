@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
+import AdminLayout from '../layouts/AdminLayout';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -28,6 +29,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (adminOnly && user.isAdmin !== 1) {
     return <Navigate to="/home" replace />;
+  }
+
+  // Se for uma rota de admin, automaticamente envolve com AdminLayout
+  if (adminOnly || location.pathname.startsWith('/admin')) {
+    return (
+      <AdminLayout>
+        {children}
+      </AdminLayout>
+    );
   }
 
   return <>{children}</>;

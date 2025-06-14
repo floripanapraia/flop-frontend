@@ -12,7 +12,9 @@ import "react-toastify/dist/ReactToastify.css";
 import Auth from "./pages/Auth";
 import EditUser from "./pages/EditUser";
 import EvaluationFeed from "./pages/EvaluationFeed";
+import FlopFeed from "./pages/FlopFeed";
 import Home from "./pages/Home";
+import PhotoFeed from "./pages/PhotoFeed";
 import UserProfileFlops from "./pages/UserProfileFlops";
 import UserProfilePhotos from "./pages/UserProfilePhotos";
 import FlopFeed from "./pages/FlopFeed";
@@ -22,11 +24,13 @@ import { AuthProvider } from "./contexts/authContext";
 import { BeachProvider } from "./contexts/beachContext";
 import { GeolocationProvider } from "./contexts/geolocationContext";
 import { UserProvider } from "./contexts/userContext";
+import AdminBeaches from "./pages/admin/AdminBeaches";
+import AdminUsers from "./pages/admin/AdminUsers";
 import ProtectedRoute from "./routes/ProtectedRoute";
-
-function AdminUsers() {
-  return <div>Admin Users</div>;
-}
+import RegisterBeach from "./pages/admin/RegisterBeach";
+import AdminSuggestions from "./pages/admin/AdminSuggestions";
+import AdminReports from "./pages/admin/AdminReports";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 const App: React.FC = () => {
   return (
@@ -86,6 +90,38 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute adminOnly>
                   <AdminUsers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/praias"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AdminBeaches />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/praias/cadastrar"
+              element={
+                <ProtectedRoute adminOnly>
+                  <RegisterBeach />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/sugestoes"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AdminSuggestions />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/denuncias"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AdminReports />
                 </ProtectedRoute>
               }
             />
