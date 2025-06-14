@@ -79,6 +79,13 @@ const AdminUsers: React.FC = () => {
           {Number(value) === 1 ? 'Admin' : 'User'}
         </span>
       )
+    }, {
+      key: 'totalPostagensBloqueadas',
+      label: 'POSTAGENS BLOQUEADAS',
+      sortable: true,
+      render: (value) => (
+        <span className="font-medium">{value}</span>
+      )
     },
     ...(activeTab === 'relatorio' ? [{
       key: 'isBloqueado',
