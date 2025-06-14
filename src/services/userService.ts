@@ -9,6 +9,7 @@ export interface Usuario {
   isAdmin: number;
   createdAt: string;
   isBloqueado: number;
+  totalPostagensBloqueadas: number;
 }
 
 interface UsuarioUpdateRequest {
@@ -127,6 +128,7 @@ export const getAllUsers = async (): Promise<Usuario[]> => {
       fotoPerfil: u.fotoPerfil,
       isAdmin: u.isAdmin,
       isBloqueado: u.isBloqueado,
+      totalPostagensBloqueadas: u.totalPostagensBloqueadas,
       createdAt: u.dataCriacao, // se seu DTO tiver esse campo
     }));
 
