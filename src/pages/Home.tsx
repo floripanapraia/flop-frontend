@@ -1,131 +1,120 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, } from "react-router-dom";
 import MapComponent from "../components/MapComponent";
 import ProfileModal from "../components/ProfileModal";
+import RequireAuthModal from "../components/RequireAuthModal";
 import WelcomeModal from "../components/WelcomeModal";
-import { isAuthenticated } from "../services/authService";
+import { useUser } from "../contexts/userContext"; // <-- usamos o UserContext
 import { filterPraias, getAllPraias, PraiaDTO } from "../services/beachService";
-import { getCurrentUser, Usuario } from "../services/userService";
+import ProfileButton from "../components/ProfileButton";
 
 const Home: React.FC = () => {
-  const navigate = useNavigate();
   const location = useLocation();
 
-  const [isAIActive, setIsAIActive] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredBeaches, setFilteredBeaches] = useState<PraiaDTO[]>([]);
   const [selectedBeach, setSelectedBeach] = useState<PraiaDTO | null>(null);
   const [allBeaches, setAllBeaches] = useState<PraiaDTO[]>([]);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
-  const [userData, setUserData] = useState<Usuario | null>(null);
+  const [showRequireAuthModal, setShowRequireAuthModal] = useState(false);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const handleSliderChange = () => {
-    setIsAIActive(!isAIActive);
+
+  const conditions = [
+    { id: "SOL", name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
+    { id: "VENTO", name: "Vento", icon: "/assets/iconFull/vento.svg" },
+    { id: "LOTADA", name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
+    { id: "MAR_ONDAS", name: "Ondas fortes", icon: "/assets/iconFull/mar_ondas.svg" },
+    { id: "AGUA_VIVA", name: "Água-viva", icon: "/assets/iconFull/agua_viva.svg" },
+    { id: "NUBLADO", name: "Nublado", icon: "/assets/iconFull/nublado.svg" },
+    { id: "CHUVA", name: "Chuva", icon: "/assets/iconFull/chuva.svg" },
+    { id: "LIXO", name: "Lixo visível", icon: "/assets/iconFull/lixo.svg" },
+    { id: "LIMPA", name: "Limpa", icon: "/assets/iconFull/limpa.svg" },
+    { id: "MAR_CALMO", name: "Mar calmo", icon: "/assets/iconFull/mar_calmo.svg" },
+    { id: "AGUA_GELADA", name: "Água gelada", icon: "/assets/iconFull/agua_gelada.svg" },
+    { id: "MUSICA", name: "Música alta", icon: "/assets/iconFull/musica.svg" },
+    { id: "ESTACIONAMENTO", name: "Estacionamento", icon: "/assets/iconFull/estacionamento.svg" },
+    { id: "SALVA_VIDAS", name: "Salva-vidas", icon: "/assets/iconFull/salva_vidas.svg" },
+    { id: "ALIMENTACAO", name: "Alimentação", icon: "/assets/iconFull/alimentacao.svg" },
+  ];
+
+  // Pegamos o user diretamente do contexto:
+  const { user } = useUser();
+
+  const handleRequireAuthModalClose = () => {
+    setShowRequireAuthModal(false);
   };
 
   const toggleHelpModal = () => {
     setShowHelpModal(!showHelpModal);
   };
 
-  // Verificar se o usuário está logado e buscar dados do usuário
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      const authenticated = isAuthenticated();
-      setIsUserLoggedIn(authenticated);
+  const toggleCondition = (conditionId: string) => {
+    setSelectedConditions(prev => {
+      const updated = prev.includes(conditionId)
+        ? prev.filter(id => id !== conditionId)
+        : [...prev, conditionId];
 
-      if (authenticated) {
-        try {
-          // Buscar dados do usuário logado
-          const user = await getCurrentUser();
-          setUserData(user);
-        } catch (error) {
-          console.error("Erro ao buscar dados do usuário:", error);
-          // Se houver erro, pode ser que o token seja inválido
-          setIsUserLoggedIn(false);
-          setUserData(null);
-        }
-      } else {
-        setUserData(null);
-      }
-    };
+      return updated;
+    });
+  };
 
-    checkAuthStatus();
+  const conflictingGroups: string[][] = [
+    ["SOL", "NUBLADO", "CHUVA"],
+    ["MAR_CALMO", "MAR_ONDAS"],
+    ["LIMPA", "LIXO"],
+  ];
 
-    // Verificar periodicamente
-    const interval = setInterval(checkAuthStatus, 5000); // verifica a cada 5 segundos
+  const fetchBeaches = async () => {
+    try {
+      const payload = {
+        nomePraia: searchQuery.length > 2 ? searchQuery : undefined,
+        condicoes: selectedConditions.length > 0 ? selectedConditions : undefined,
+      };
 
-    return () => clearInterval(interval);
-  }, []);
+      const result = await filterPraias(payload);
+      setFilteredBeaches(result); // ou result.content se usar paginação
+    } catch (error) {
+      console.error("Erro ao buscar praias:", error);
+    }
+  };
 
   useEffect(() => {
     getAllPraias().then(setAllBeaches).catch(console.error);
   }, []);
 
   useEffect(() => {
-    if (searchQuery.length > 2) {
-      filterPraias({ nomePraia: searchQuery })
-        .then(setFilteredBeaches)
-        .catch(console.error);
+    if (searchQuery.length > 2 || selectedConditions.length > 0) {
+      fetchBeaches();
     } else {
       setFilteredBeaches([]);
     }
-  }, [searchQuery]);
+  }, [searchQuery, selectedConditions]);
 
-  // Função para lidar com o clique do botão principal
-  const handleMainButtonClick = () => {
-    if (isUserLoggedIn) {
-      setIsProfileModalOpen(true);
-    } else {
-      navigate("/auth");
-    }
-  };
 
-  // Componente do botão de perfil
-  const ProfileButton = () => {
-    if (!isUserLoggedIn || !userData) {
-      return (
-        <button
-          onClick={handleMainButtonClick}
-          className="bg-[#182E4C] hover:bg-[#1a365d] text-white px-6 py-3 rounded-3xl text-sm font-medium transition-colors"
-        >
-          ENTRAR
-        </button>
-      );
-    }
 
-    return (
-      <button
-        onClick={handleMainButtonClick}
-        className="w-16 h-16 rounded-full overflow-hidden border-4 border-white shadow-lg hover:border-[#182E4C] transition-all duration-200 hover:shadow-xl"
-        title={`Perfil de ${userData.nome}`}
-      >
-        {userData.fotoPerfil ? (
-          <img
-            src={`data:image/jpeg;base64,${userData.fotoPerfil}`}
-            alt={userData.nome}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-[#182E4C] flex items-center justify-center text-white text-lg font-medium">
-            {userData.nome.charAt(0).toUpperCase()}
-          </div>
-        )}
-      </button>
+  const isConditionDisabled = (conditionId: string) => {
+    const conflictGroup = conflictingGroups.find((group) =>
+      group.includes(conditionId)
+    );
+
+    if (!conflictGroup) return false;
+
+    return selectedConditions.some(
+      (id) => id !== conditionId && conflictGroup.includes(id)
     );
   };
 
   return (
     <div className="relative h-screen w-screen">
-      {/* Passando a praia selecionada como prop para o MapComponent */}
       <MapComponent
         key={location.key}
         activeBeachFromSearch={selectedBeach}
         praias={allBeaches}
       />
 
-      {/* Caixa de busca */}
       <div className="absolute top-4 left-4 bg-white rounded-xl shadow-lg p-4 max-w-[350px] w-full">
         <div className="flex items-center space-x-2 mb-4">
           <img src="/assets/LOGO.png" alt="Logo" className="w-10 h-10" />
@@ -139,7 +128,7 @@ const Home: React.FC = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Pesquisar praia..."
-          className="w-full border px-4 py-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+          className="w-full border px-4 py-2 rounded mb-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         />
 
         <div className="flex flex-col gap-2 pb-4 max-h-80 overflow-y-auto">
@@ -154,74 +143,45 @@ const Home: React.FC = () => {
           ))}
         </div>
 
-        {/* Texto e slider na mesma linha */}
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-xs text-gray-600 leading-relaxed">
-            Procurando a praia ideal em Floripa?
-            <br />
-            Nossa IA pode te ajudar a encontrar o destino perfeito para o seu
-            dia!
-          </p>
-
-          <div className="flex items-center ml-4">
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isAIActive}
-                onChange={handleSliderChange}
-                className="sr-only peer"
-              />
-              <div
-                className={`w-11 h-6 rounded-full peer 
-                ${isAIActive ? "bg-indigo-900" : "bg-gray-200"} 
-                peer-focus:ring-4 peer-focus:ring-indigo-300 
-                transition-colors duration-300`}
-              >
-                <div
-                  className={`absolute top-0.5 left-[2px] 
-                  ${isAIActive ? "translate-x-5" : "translate-x-0"}
-                  bg-white rounded-full h-5 w-5 transition-transform duration-300
-                  shadow-md transform`}
-                />
-              </div>
-            </label>
-          </div>
-        </div>
-
-        {/* Status da IA */}
+        {/* FILTRO DE CONDIÇÕES */}
         <div
-          className={`flex items-center justify-center p-2 rounded-md transition-all duration-300 ${
-            isAIActive
-              ? "bg-indigo-50 border border-indigo-100 animate-pulse"
-              : "bg-transparent"
-          }`}
+          className="grid grid-cols-5 gap-3 mb-4 mt-2 justify-items-center transition-all duration-300"
+          onMouseEnter={() => setIsExpanded(true)}
+          onMouseLeave={() => setIsExpanded(false)}
         >
-          <p
-            className={`text-xs ${
-              isAIActive ? "text-indigo-600" : "text-transparent"
-            }`}
-          >
-            {isAIActive
-              ? "Modo IA ativo: Buscas inteligentes habilitadas"
-              : "."}
-          </p>
+          {(isExpanded ? conditions : conditions.slice(0, 5)).map((cond) => {
+            const isDisabled = isConditionDisabled(cond.id);
+            const isSelected = selectedConditions.includes(cond.id);
+
+            return (
+              <button
+                key={cond.id}
+                onClick={() => toggleCondition(cond.id)}
+                disabled={isDisabled}
+                title={cond.name}
+                className={`w-16 h-16 flex items-center justify-center rounded-xl transition-all duration-200
+          ${isSelected
+                    ? "bg-gray-200 ring-gray-300"
+                    : isDisabled
+                      ? "bg-gray-100 opacity-60 cursor-not-allowed"
+                      : "bg-white hover:ring-gray-300"}
+        `}
+              >
+                <img
+                  src={cond.icon}
+                  alt={cond.name}
+                  className={`w-10 h-10 ${isDisabled ? "opacity-50" : ""}`}
+                />
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Botão de perfil com imagem do usuário */}
       <div className="absolute top-4 right-4">
-        <ProfileButton />
+        <ProfileButton onProfileClick={() => setIsProfileModalOpen(true)} size={64} />
       </div>
 
-      {/* Modal de perfil - só renderiza se o usuário estiver logado */}
-      {isUserLoggedIn && (
-        <ProfileModal
-          isOpen={isProfileModalOpen}
-          onClose={() => setIsProfileModalOpen(false)}
-        />
-      )}
-
-      {/* Botão de ajuda */}
       <button
         onClick={toggleHelpModal}
         className="absolute bottom-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
@@ -230,8 +190,20 @@ const Home: React.FC = () => {
         <span className="text-sky-800 text-xl font-bold">?</span>
       </button>
 
-      {/* Modal de ajuda */}
       {showHelpModal && <WelcomeModal onClose={toggleHelpModal} />}
+      {showRequireAuthModal && (
+        <RequireAuthModal
+          isOpen={showRequireAuthModal}
+          onClose={handleRequireAuthModalClose}
+        />
+      )}
+
+      {user && (
+        <ProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

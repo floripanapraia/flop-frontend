@@ -2,17 +2,20 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import ErrorModal from "../components/ErrorModal";
+import ForgotPasswordModal from "../components/ForgotPasswordModal";
 import * as Components from "../components/LoginCadastro";
 import WelcomeModal from "../components/WelcomeModal";
+import TermsModal from "../components/TermsModal"; // Importar o novo modal
 import { useAuth } from "../contexts/authContext";
-import { cadastrarUsuario, login } from "../services/authService";
+import { cadastrarUsuario, User } from "../services/authService";
 import {
   ErrorResponse,
   handleErrorWithToast,
   normalizeError,
   shouldShowInModal,
 } from "../utils/errorHandler";
-import ForgotPasswordModal from "../components/ForgotPasswordModal";
+import { X } from "lucide-react";
+import TwoFactorAuthModal from "../components/TwoFactorAuthModal";
 
 const Auth: React.FC = () => {
   const [signIn, toggle] = useState<boolean>(true);
@@ -20,7 +23,7 @@ const Auth: React.FC = () => {
 
   const { login: authLogin } = useAuth();
 
-  // Login state
+  // Login state - agora só precisamos do email e senha para o primeiro passo
   const [loginCredentials, setLoginCredentials] = useState({
     email: "",
     senha: "",
@@ -46,10 +49,18 @@ const Auth: React.FC = () => {
   // State to track if the user just registered
   const [justRegistered, setJustRegistered] = useState(false);
 
+  // 2FA Modal state
+  const [is2FAModalOpen, setIs2FAModalOpen] = useState<boolean>(false);
+
+  // Terms of Service states
+  const [showTermsModal, setShowTermsModal] = useState<boolean>(false);
+  const [acceptedTerms, setAcceptedTerms] = useState<boolean>(false);
+
   const handleForgotPasswordSuccess = (): void => {
     // Ação após sucesso na recuperação de senha
     alert("Senha alterada com sucesso! Agora você pode fazer login.");
   };
+
   // Login handlers
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -59,6 +70,7 @@ const Auth: React.FC = () => {
     });
   };
 
+  // Novo handler para o login com 2FA
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -67,16 +79,21 @@ const Auth: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
+    // Abre o modal de 2FA com as credenciais
+    setIs2FAModalOpen(true);
+  };
 
-    try {
-      const { token, user } = await login(loginCredentials.email, loginCredentials.senha);
+  // Handler para fechar o modal de 2FA
+  const handleClose2FAModal = (): void => {
+    setIs2FAModalOpen(false);
+  };
 
-      // Use the integrated auth context
-      authLogin(token, user);
+  // Handler para sucesso no login com 2FA
+  const handleLoginSuccess = (token: string, userData: User): void => {
+    // Use the integrated auth context
+    authLogin(token, userData);
 
-      toast.success("Login realizado com sucesso!");
-
+    toast.success("Login realizado com sucesso!");
       // Navigate based on user role
       if (user.isAdmin === 1) {
         navigate("/admin/users");
@@ -84,19 +101,14 @@ const Auth: React.FC = () => {
         navigate("/home");
       }
 
-    } catch (error: any) {
-      console.error("Erro no login:", error);
+    // Fechar o modal
+    setIs2FAModalOpen(false);
 
-      // Determine if error should be shown in modal or toast
-      if (shouldShowInModal(error)) {
-        setModalError(normalizeError(error));
-        setShowErrorModal(true);
-      } else {
-        handleErrorWithToast(error);
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    // Limpar as credenciais por segurança
+    setLoginCredentials({
+      email: "",
+      senha: "",
+    });
   };
 
   // Cadastro handlers
@@ -108,15 +120,39 @@ const Auth: React.FC = () => {
     });
   };
 
+  // Handler para o checkbox dos termos
+  const handleTermsCheckboxChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setAcceptedTerms(e.target.checked);
+  };
+
+  // Handler para abrir o modal de termos
+  const handleOpenTermsModal = () => {
+    setShowTermsModal(true);
+  };
+
+  // Handler para aceitar os termos pelo modal
+  const handleAcceptTerms = () => {
+    setAcceptedTerms(true);
+    setShowTermsModal(false);
+  };
+
   const validateSignUp = (): boolean => {
     let isValid = true;
 
     if (!signUpData.nickname.trim()) {
       toast.error("Username é obrigatório");
       isValid = false;
+    } else if (signUpData.nickname.trim().length < 3) {
+      toast.error("Username deve ter pelo menos 3 caracteres");
+      isValid = false;
     }
     if (!signUpData.nome.trim()) {
       toast.error("Nome é obrigatório");
+      isValid = false;
+    } else if (signUpData.nome.trim().length < 3) {
+      toast.error("Nome deve ter pelo menos 3 caracteres");
       isValid = false;
     }
     if (!signUpData.email.trim()) {
@@ -135,6 +171,10 @@ const Auth: React.FC = () => {
     }
     if (signUpData.senha !== signUpData.confirmSenha) {
       toast.error("As senhas não conferem");
+      isValid = false;
+    }
+    if (!acceptedTerms) {
+      toast.error("Você deve aceitar os termos de serviço");
       isValid = false;
     }
 
@@ -175,6 +215,9 @@ const Auth: React.FC = () => {
           confirmSenha: "",
         });
 
+        // Reset terms acceptance
+        setAcceptedTerms(false);
+
         // Switch to login form
         toggle(true);
       } catch (error: any) {
@@ -208,8 +251,9 @@ const Auth: React.FC = () => {
         confirmSenha: "",
       });
 
-      // Reset the just registered flag
+      // Reset the just registered flag and terms acceptance
       setJustRegistered(false);
+      setAcceptedTerms(false);
     }
 
     // If we're switching to login form and not coming from registration,
@@ -243,6 +287,16 @@ const Auth: React.FC = () => {
         {/* Cadastro */}
         <Components.SignUpContainer signinIn={signIn}>
           <Components.Form onSubmit={handleSignUpSubmit}>
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={() => navigate("/home")}
+                className="text-blue-900 hover:text-gray-900 transition"
+                aria-label="Fechar"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
             <div className="w-full mb-4">
               <Components.Subtitle>Criando minha conta</Components.Subtitle>
             </div>
@@ -317,7 +371,41 @@ const Auth: React.FC = () => {
                 disabled={isLoading}
               />
             </div>
-            <Components.Button type="submit" disabled={isLoading}>
+
+            {/* Checkbox dos Termos de Serviço */}
+            <div className="w-full mb-3  items-start gap-2">
+              <input
+                type="checkbox"
+                id="acceptTerms"
+                checked={acceptedTerms}
+                onChange={handleTermsCheckboxChange}
+                disabled={isLoading}
+                className="mt-0.5 flex-shrink-0 m-2 w-4 h-4 cursor-pointer"
+              />
+              <label
+                htmlFor="acceptTerms"
+                className="text-sm text-gray-700 leading-tight cursor-pointer"
+              >
+                Aceito os{" "}
+                <button
+                  type="button"
+                  onClick={handleOpenTermsModal}
+                  className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  disabled={isLoading}
+                >
+                  termos de serviço
+                </button>{" "}
+                e política de privacidade
+              </label>
+            </div>
+
+            <Components.Button
+              type="submit"
+              disabled={isLoading || !acceptedTerms}
+              className={`${
+                !acceptedTerms ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
               {isLoading ? "Cadastrando..." : "Cadastre-se"}
             </Components.Button>
           </Components.Form>
@@ -417,12 +505,30 @@ const Auth: React.FC = () => {
         isOpen={showErrorModal}
         onClose={closeErrorModal}
       />
+
       {/* Modal de recuperação de senha */}
       <ForgotPasswordModal
         isOpen={showForgotPassword}
         onClose={() => setShowForgotPassword(false)}
         onSuccess={handleForgotPasswordSuccess}
       />
+
+      {/* Modal de Autenticação 2FA */}
+      <TwoFactorAuthModal
+        isOpen={is2FAModalOpen}
+        onClose={handleClose2FAModal}
+        onSuccess={handleLoginSuccess}
+        email={loginCredentials.email}
+        senha={loginCredentials.senha}
+      />
+
+      {/* Modal de Termos de Serviço */}
+      {showTermsModal && (
+        <TermsModal
+          onClose={() => setShowTermsModal(false)}
+          onAccept={handleAcceptTerms}
+        />
+      )}
     </Components.PageWrapper>
   );
 };

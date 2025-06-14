@@ -20,14 +20,15 @@ export const Container = styled.div`
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   position: relative;
   overflow: hidden;
-  width: 768px;
+  width: 900px; /* Aumentado de 768px para 900px */
   max-width: 95%;
-  min-height: 480px;
+  min-height: 560px; /* Aumentado de 480px para 560px */
 
-  @media (max-width: 768px) {
-    min-height: 520px; // Um pouco mais alto em telas menores
+  @media (max-width: 900px) { /* Ajustado o breakpoint */
+    min-height: 600px; /* Aumentado para mobile também */
   }
 `;
+
 export const SignUpContainer = styled.div<SignInProps>`
   position: absolute;
   top: 0;
@@ -37,7 +38,7 @@ export const SignUpContainer = styled.div<SignInProps>`
   width: 50%;
   opacity: 0;
   z-index: 1;
-  overflow-y: auto; /* Adiciona rolagem vertical quando necessário */
+  /* Removido overflow-y: auto */
   ${(props) =>
     props.signinIn !== true
       ? `
@@ -47,7 +48,7 @@ export const SignUpContainer = styled.div<SignInProps>`
   `
       : null}
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) { /* Ajustado para combinar com o novo breakpoint */
     width: 100%; /* Em telas menores, usa a largura total */
   }
 `;
@@ -60,14 +61,15 @@ export const SignInContainer = styled.div<SignInProps>`
   left: 0;
   width: 50%;
   z-index: 2;
-  overflow-y: auto; /* Adiciona rolagem vertical quando necessário */
+  /* Removido overflow-y: auto */
   ${(props) =>
     props.signinIn !== true ? `transform: translateX(100%);` : null}
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) { /* Ajustado para combinar com o novo breakpoint */
     width: 100%; /* Em telas menores, usa a largura total */
   }
 `;
+
 export const Form = styled.form`
   background-color: #ffffff;
   display: flex;
@@ -78,49 +80,53 @@ export const Form = styled.form`
   height: 100%;
   text-align: center;
   width: 100%;
-  @media (max-width: 768px) {
+  
+  @media (max-width: 900px) { /* Ajustado para combinar com o novo breakpoint */
     padding: 0 20px;
   }
 `;
 
 export const Title = styled.h1`
   font-weight: bold;
-  font-size: 30px;
-  margin: 15px 0 30px;
+  font-size: 26px; /* Reduzido de 30px */
+  margin: 10px 0 20px; /* Reduzido o espaçamento */
   padding: 0 20px;
   max-width: 80%;
-  margin: 0;
 `;
 
 export const Subtitle = styled.h2`
-  font-size: 20px;
+  font-size: 18px; /* Reduzido de 20px */
   color: solid #182e4c;
   text-align: left;
   width: 100%;
   border-bottom: 2px solid #182e4c;
+  margin-bottom: 15px; /* Reduzido espaçamento */
 `;
+
 export const FormLabel = styled.label`
   display: block;
   text-align: left;
   width: 100%;
   font-weight: 500;
   color: #333;
-  font-size: 12px;
+  font-size: 11px; /* Reduzido de 12px */
   color: solid #182e4c;
+  margin-bottom: 3px; /* Reduzido espaçamento */
 `;
+
 export const Input = styled.input`
   background-color: #f1f1f1;
   border: 1px solid #e6e6e6;
-  border-radius: 8px;
-  padding: 12px 15px;
+  border-radius: 6px; /* Reduzido de 8px */
+  padding: 8px 12px; /* Reduzido de 12px 15px */
   width: 100%;
-  box-sizing: border-box; /* Importante: inclui padding e border no cálculo da largura */
+  box-sizing: border-box;
   transition: all 0.3s;
-  font-size: 15px;
+  font-size: 14px; /* Reduzido de 15px */
+  margin-bottom: 8px; /* Reduzido espaçamento entre inputs */
 
   &:focus {
     outline: none;
-
     box-shadow: 0 0 0 2px rgba(7, 89, 133, 0.15);
   }
 
@@ -134,13 +140,13 @@ export const Button = styled.button`
   border: 1px solid #182e4c;
   background-color: #182e4c;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 11px; /* Reduzido de 12px */
   font-weight: bold;
-  padding: 12px 45px;
+  padding: 10px 35px; /* Reduzido de 12px 45px */
   letter-spacing: 1px;
   text-transform: uppercase;
   transition: all 0.3s ease-in-out;
-  margin-top: 15px;
+  margin-top: 10px; /* Reduzido de 15px */
   cursor: pointer;
 
   &:active {
@@ -165,9 +171,9 @@ export const GhostButton = styled(Button)`
 
 export const Anchor = styled.a`
   color: #333;
-  font-size: 14px;
+  font-size: 13px; /* Reduzido de 14px */
   text-decoration: none;
-  margin: 15px 0;
+  margin: 10px 0; /* Reduzido de 15px */
 `;
 
 export const OverlayContainer = styled.div<SignInProps>`
@@ -227,10 +233,10 @@ export const RightOverlayPanel = styled(OverlayPanel)<SignInProps>`
 `;
 
 export const Paragraph = styled.p`
-  font-size: 14px;
+  font-size: 13px; /* Reduzido de 14px */
   font-weight: 100;
-  line-height: 20px;
-  margin: 15px 0 30px;
+  line-height: 18px; /* Reduzido de 20px */
+  margin: 10px 0 20px; /* Reduzido de 15px 0 30px */
   padding: 0 20px;
   max-width: 80%;
   letter-spacing: 0.5px;

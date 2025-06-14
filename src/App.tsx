@@ -17,6 +17,8 @@ import Home from "./pages/Home";
 import PhotoFeed from "./pages/PhotoFeed";
 import UserProfileFlops from "./pages/UserProfileFlops";
 import UserProfilePhotos from "./pages/UserProfilePhotos";
+import FlopFeed from "./pages/FlopFeed";
+import PhotoFeed from "./pages/PhotoFeed";
 
 import { AuthProvider } from "./contexts/authContext";
 import { BeachProvider } from "./contexts/beachContext";
@@ -28,6 +30,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import RegisterBeach from "./pages/admin/RegisterBeach";
 import AdminSuggestions from "./pages/admin/AdminSuggestions";
 import AdminReports from "./pages/admin/AdminReports";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 const App: React.FC = () => {
   return (

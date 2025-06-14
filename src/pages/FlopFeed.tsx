@@ -1,28 +1,40 @@
-import React, { useState, useEffect, useContext } from "react";
+import { Ellipsis } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Beach from "../components/Beach";
-import ReportModal from "../components/ReportModal";
 import ProfileModal from "../components/ProfileModal";
-import { Ellipsis } from "lucide-react";
+import ReportModal from "../components/ReportModal";
+import RequireAuthModal from "../components/RequireAuthModal";
 import ThankYouModal from "../components/ThankYouDenunciaModal";
-import { isAuthenticated } from "../services/authService";
-import { getCurrentUser, Usuario } from "../services/userService";
-import { BeachContext, BeachContextType } from "../contexts/beachContext";
+import { useUser } from "../contexts/userContext";
+import { useBeach } from "../hooks/useBeach";
+import {
+  filterPostagens,
+  createPostagem,
+  PostagemDTO,
+  PostagemSeletor,
+} from "../services/postService";
+import { formatDistanceToNowStrict, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import ProfileButton from "../components/ProfileButton";
+
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
   label: string;
 };
 
+const PAGE_SIZE = 10;
+
 const FlopFeed: React.FC = () => {
   const navigate = useNavigate();
 
+  const { praiaId } = useBeach();
+  const { user } = useUser();
 
-  const beachContext = useContext(BeachContext) as BeachContextType;
-  const { praiaId } = beachContext;
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
-  const [userData, setUserData] = useState<Usuario | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [showRequireAuthModal, setShowRequireAuthModal] = useState(false);
+  const [postContent, setPostContent] = useState("");
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [showThankYouDenunciaModal, setShowThankYouDenunciaModal] =
@@ -31,35 +43,203 @@ const FlopFeed: React.FC = () => {
     "flops"
   );
 
-  // Verificar se o usuário está logado e buscar dados do usuário
+  const [postagens, setPostagens] = useState<PostagemDTO[]>([]);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingPostagens, setLoadingPostagens] = useState(false);
+  const [errorPostagens, setErrorPostagens] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+
+  const tabs: TabType[] = [
+    { id: "avaliacoes", label: "Avaliações" },
+    { id: "fotos", label: "Fotos" },
+    { id: "flops", label: "Flops" },
+  ];
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollPositionRef = useRef<number>(0);
+
+  const filterDate = () => {
+    const now = new Date();
+
+    // Início do dia de 7 dias atrás 
+    const hojeMenos7Dias = new Date(now);
+    hojeMenos7Dias.setDate(now.getDate() - 7);
+    const inicio = new Date(
+      hojeMenos7Dias.getFullYear(),
+      hojeMenos7Dias.getMonth(),
+      hojeMenos7Dias.getDate(),
+      0,
+      0,
+      0,
+      0
+    );
+    const fim = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23,
+      59,
+      59,
+      999
+    );
+    return {
+      criadoEmInicio: inicio.toISOString(),
+      criadoEmFim: fim.toISOString(),
+    };
+  };
+
+  const fetchPostagensPage = async (pageNumber: number) => {
+    if (!praiaId || loadingPostagens) return;
+
+    if (containerRef.current) {
+      scrollPositionRef.current = containerRef.current.scrollTop;
+    }
+
+    setLoadingPostagens(true);
+    setErrorPostagens(null);
+
+    const { criadoEmInicio, criadoEmFim } = filterDate();
+
+    const seletor: PostagemSeletor = {
+      idPraia: praiaId,
+      criadoEmInicio,
+      criadoEmFim,
+      imagem: "SEM IMAGEM",
+      pagina: pageNumber,
+      limite: PAGE_SIZE,
+    };
+
+    try {
+      const lista: PostagemDTO[] = await filterPostagens(seletor);
+
+      if (lista.length < PAGE_SIZE) {
+        setHasMore(false);
+      }
+
+      setPostagens((prev) => {
+        const newPostagens = [...prev, ...lista];
+
+        requestAnimationFrame(() => {
+          if (containerRef.current && pageNumber > 1) {
+            containerRef.current.scrollTop = scrollPositionRef.current;
+          }
+        });
+
+        return newPostagens;
+      });
+    } catch (err) {
+      console.error("Erro ao carregar postagens:", err);
+      setErrorPostagens("Erro ao carregar postagens");
+    } finally {
+      setLoadingPostagens(false);
+    }
+  };
+
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      const authenticated = isAuthenticated();
-      setIsUserLoggedIn(authenticated);
+    setPostagens([]);
+    setPaginaAtual(1);
+    setHasMore(true);
+    setErrorPostagens(null);
 
-      if (authenticated) {
-        try {
-          // Buscar dados do usuário logado
-          const user = await getCurrentUser();
-          setUserData(user);
-        } catch (error) {
-          console.error("Erro ao buscar dados do usuário:", error);
+    if (praiaId) {
+      fetchPostagensPage(1);
+    }
+  }, [praiaId]);
 
-          setIsUserLoggedIn(false);
-          setUserData(null);
-        }
-      } else {
-        setUserData(null);
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onScroll = () => {
+      if (loadingPostagens || !hasMore) return;
+
+      const scrollTop = container.scrollTop;
+      const clientHeight = container.clientHeight;
+      const scrollHeight = container.scrollHeight;
+
+      if (scrollHeight - (scrollTop + clientHeight) < 150) {
+        setPaginaAtual((prev) => prev + 1);
       }
     };
 
-    checkAuthStatus();
+    container.addEventListener("scroll", onScroll);
+    return () => {
+      container.removeEventListener("scroll", onScroll);
+    };
+  }, [loadingPostagens, hasMore]);
 
-    // Verificar periodicamente
-    const interval = setInterval(checkAuthStatus, 5000); // verifica a cada 5 segundos
+  // Carrega próxima página quando paginaAtual muda
+  useEffect(() => {
+    if (paginaAtual > 1 && hasMore && praiaId) {
+      fetchPostagensPage(paginaAtual);
+    }
+  }, [paginaAtual]);
 
-    return () => clearInterval(interval);
-  }, []);
+  const handleMainButtonClick = () => {
+    if (user) {
+      setIsProfileModalOpen(true);
+    } else {
+      navigate("/auth");
+    }
+  };
+
+  const refreshPostagens = () => {
+    setPostagens([]);
+    setPaginaAtual(1);
+    setHasMore(true);
+    setErrorPostagens(null);
+
+    if (praiaId) {
+      fetchPostagensPage(1);
+    }
+  };
+
+  const handlePublicarClick = async () => {
+    if (!user) {
+      setShowRequireAuthModal(true);
+      return;
+    }
+
+    if (!praiaId) {
+      alert("Selecione uma praia primeiro");
+      return;
+    }
+
+    if (!postContent.trim()) {
+      alert("Digite uma mensagem para publicar");
+      return;
+    }
+
+    setIsPublishing(true);
+
+    try {
+      const novaPostagem = {
+        usuarioId: user.id,
+        fotoDoUsuario: user.fotoPerfil || "",
+        nickname: user.nickname || user.nome,
+        praiaId: praiaId,
+        nomePraia: "", // Será preenchido pelo backend
+        mensagem: postContent.trim(),
+        excluida: false,
+      };
+
+      await createPostagem(novaPostagem);
+
+      setPostContent("");
+
+      refreshPostagens();
+    } catch (error) {
+      console.error("Erro ao publicar:", error);
+      alert("Erro ao publicar. Tente novamente.");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleRequireAuthModalClose = () => {
+    setShowRequireAuthModal(false);
+  };
 
   const handleReport = (reason: string) => {
     console.log("Denúncia enviada:", reason);
@@ -67,12 +247,6 @@ const FlopFeed: React.FC = () => {
     setShowReportModal(false);
     setShowThankYouDenunciaModal(true);
   };
-
-  const tabs: TabType[] = [
-    { id: "avaliacoes", label: "Avaliações" },
-    { id: "fotos", label: "Fotos" },
-    { id: "flops", label: "Flops" },
-  ];
 
   const handleTabClick = (tabId: "avaliacoes" | "fotos" | "flops") => {
     if (!praiaId) {
@@ -83,7 +257,6 @@ const FlopFeed: React.FC = () => {
     }
 
     setActiveTab(tabId);
-
 
     switch (tabId) {
       case "avaliacoes":
@@ -98,42 +271,17 @@ const FlopFeed: React.FC = () => {
     }
   };
 
+  // ***** HTML *****
+
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       <Beach />
 
       {/* Botão de perfil */}
       <div className="absolute top-4 right-6 z-50">
-        {!isUserLoggedIn || !userData ? (
-          <button
-            onClick={() => navigate("/auth")}
-            className="bg-[#182E4C] hover:bg-[#1a365d] text-white px-6 py-3 rounded-3xl text-sm font-medium transition-colors"
-          >
-            ENTRAR
-          </button>
-        ) : (
-          <button
-            onClick={() => setIsProfileModalOpen(true)}
-            className="w-12 h-12 rounded-full overflow-hidden border-4 border-white shadow-lg hover:border-[#182E4C] transition-all duration-200 hover:shadow-xl"
-            title={`Perfil de ${userData.nome}`}
-          >
-            {userData.fotoPerfil ? (
-              <img
-                src={`data:image/jpeg;base64,${userData.fotoPerfil}`}
-                alt={userData.nome}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-[#182E4C] flex items-center justify-center text-white text-lg font-medium">
-                {userData.nome.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </button>
-        )}
+        <ProfileButton onProfileClick={() => setIsProfileModalOpen(true)} size={48} />
       </div>
-
-      {/* Modal de perfil - só renderiza se o usuário estiver logado */}
-      {isUserLoggedIn && (
+      {user && (
         <ProfileModal
           isOpen={isProfileModalOpen}
           onClose={() => setIsProfileModalOpen(false)}
@@ -162,8 +310,8 @@ const FlopFeed: React.FC = () => {
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
               className={`px-3 py-1 text-xs font-medium ${activeTab === tab.id
-                  ? "text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
+                ? "text-blue-600"
+                : "text-gray-500 hover:text-gray-700"
                 }`}
             >
               <div className="flex flex-col items-center">
@@ -180,17 +328,16 @@ const FlopFeed: React.FC = () => {
         <div className="bg-white p-4 shadow-sm">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0">
-              {isUserLoggedIn && userData ? (
-                // Mostrar foto do usuário logado ou inicial do nome
-                userData.fotoPerfil ? (
+              {user ? (
+                user.fotoPerfil ? (
                   <img
-                    src={`data:image/jpeg;base64,${userData.fotoPerfil}`}
-                    alt={userData.nome}
+                    src={`data:image/jpeg;base64,${user.fotoPerfil}`}
+                    alt={user.nome}
                     className="w-10 h-10 rounded-full object-cover"
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-[#182E4C] flex items-center justify-center text-white text-sm font-medium">
-                    {userData.nome.charAt(0).toUpperCase()}
+                    {user.nome.charAt(0).toUpperCase()}
                   </div>
                 )
               ) : (
@@ -205,12 +352,19 @@ const FlopFeed: React.FC = () => {
             <div className="flex-1">
               <textarea
                 placeholder="Como está a praia hoje?"
+                value={postContent}
+                onChange={(e) => setPostContent(e.target.value)}
                 className="w-full border-b border-gray-200 p-2 focus:outline-none focus:border-blue-400 resize-none text-sm"
                 rows={2}
+                disabled={isPublishing}
               />
               <div className="flex justify-end mt-2">
-                <button className="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                  Publicar
+                <button
+                  onClick={handlePublicarClick}
+                  disabled={isPublishing || !postContent.trim()}
+                  className="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  {isPublishing ? "Publicando..." : "Publicar"}
                 </button>
               </div>
             </div>
@@ -218,45 +372,86 @@ const FlopFeed: React.FC = () => {
         </div>
 
         {/* Feed de posts */}
-        <div className="flex-1 overflow-y-auto p-6 bg-gray-50 space-y-4">
-          {/* Post  */}
-          <div className="bg-white rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0">
-                <img
-                  src="assets/defaultProfile.svg"
-                  alt="tatiana_sakuma"
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <h3 className="font-bold text-gray-800 text-sm">
-                      tatiana_sakuma
-                    </h3>
-                    <span className="text-gray-400">•</span>
-                    <span className="text-xs text-gray-500">2h atrás</span>
-                  </div>
-                  <button
-                    className="text-gray-400 hover:text-gray-600"
-                    onClick={() => setShowReportModal(true)}
-                  >
-                    <Ellipsis className="h-4 w-4" />
-                  </button>
-                </div>
+        <div
+          ref={containerRef}
+          style={{ overflowAnchor: "none" }}
+          className="flex-1 overflow-y-auto p-6 bg-gray-50 space-y-4"
+        >
+          {/* Loading inicial */}
+          {loadingPostagens && paginaAtual === 1 && (
+            <p className="text-gray-600">Carregando posts de hoje…</p>
+          )}
 
-                <p className="text-gray-700 mt-1 text-sm">
-                  O mar tá tranquilo hoje, sem muita onda, perfeito pra
-                  relaxar... O mar tá tranquilo hoje, sem muita onda, perfeito
-                  pra relaxar... O mar tá tranquilo hoje, sem muita onda,
-                  perfeito pra relaxar... O mar tá tranquilo hoje, sem muita
-                  onda, perfeito pra relaxar... O mar tá tranquilo hoje, sem
-                  muita onda, perfeito pra relaxar...
-                </p>
+          {/* Erro */}
+          {errorPostagens && <p className="text-red-600">{errorPostagens}</p>}
+
+          {/* Nenhum post encontrado */}
+          {!loadingPostagens && postagens.length === 0 && (
+            <p className="text-gray-600">Nenhum post registrado hoje.</p>
+          )}
+
+          {/* Lista de posts */}
+          {postagens.map((post) => {
+            const timeSincePost = formatDistanceToNowStrict(
+              parseISO(post.criadoEm),
+              { addSuffix: true, locale: ptBR }
+            );
+
+            return (
+              <div key={post.idPostagem} className="bg-white rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0">
+                    {post.fotoDoUsuario ? (
+                      <img
+                        src={`data:image/jpeg;base64,${post.fotoDoUsuario}`}
+                        alt={post.nickname}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-[#182E4C] flex items-center justify-center text-white text-sm font-medium">
+                        {post.nickname.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <h3 className="font-bold text-gray-800 text-sm">
+                          {post.nickname}
+                        </h3>
+                        <span className="text-gray-400">•</span>
+                        <span className="text-xs text-gray-500">
+                          {timeSincePost}
+                        </span>
+                      </div>
+                      <button
+                        className="text-gray-400 hover:text-gray-600"
+                        onClick={() => setShowReportModal(true)}
+                      >
+                        <Ellipsis className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <p className="text-gray-700 mt-1 text-sm">
+                      {post.mensagem}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            );
+          })}
+
+          {/* Loading para próximas páginas */}
+          {loadingPostagens && paginaAtual > 1 && (
+            <p className="text-gray-600 text-center">Carregando mais posts…</p>
+          )}
+
+          {/* Fim dos posts */}
+          {!hasMore && postagens.length > 0 && (
+            <p className="text-gray-500 text-center text-sm">
+              Não há mais posts para carregar
+            </p>
+          )}
         </div>
       </div>
 
@@ -269,6 +464,11 @@ const FlopFeed: React.FC = () => {
       <ThankYouModal
         isOpen={showThankYouDenunciaModal}
         onClose={() => setShowThankYouDenunciaModal(false)}
+      />
+
+      <RequireAuthModal
+        isOpen={showRequireAuthModal}
+        onClose={handleRequireAuthModalClose}
       />
     </div>
   );

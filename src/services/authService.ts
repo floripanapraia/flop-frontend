@@ -1,5 +1,5 @@
-import { authToken } from "../config/authToken";
 import apiClient from "./api";
+import { AxiosError } from "axios";
 
 interface UsuarioCreateRequest {
   nome: string;
@@ -27,48 +27,72 @@ interface JWTPayload {
   exp: number;
 }
 
+// Interfaces para 2FA
+interface ApiResponse {
+  success: boolean;
+  message: string;
+}
+
+interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+interface LoginResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+}
+
+interface TwoFactorVerifyRequest {
+  email: string;
+  otp: number;
+}
+
 // Session storage keys
-const AUTH_TOKEN_KEY = 'authToken';
-const AUTH_TOKEN_EXPIRES_AT_KEY = 'authTokenExpiresAt';
-const USER_DATA_KEY = 'userData';
+const AUTH_TOKEN_KEY = "authToken";
+const AUTH_TOKEN_EXPIRES_AT_KEY = "authTokenExpiresAt";
+const USER_DATA_KEY = "userData";
 
 // decode JWT token (client-side decoding - not for security validation)
 const decodeJWT = (token: string): JWTPayload => {
   try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
       atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
     );
 
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error('Error decoding JWT:', error);
-    throw new Error('Invalid token format');
+    console.error("Error decoding JWT:", error);
+    throw new Error("Invalid token format");
   }
 };
 
 // Function to create User object from JWT payload
 const createUserFromJWT = (payload: JWTPayload): User => {
-  const isAdmin = payload.roles.includes('ADMIN') ? 1 : 0;
+  const isAdmin = payload.roles.includes("ADMIN") ? 1 : 0;
 
   return {
     id: payload.idUsuario,
     email: payload.sub,
     nome: payload.sub,
     nickname: payload.sub,
-    isAdmin: isAdmin
+    isAdmin: isAdmin,
   };
 };
 
-export const cadastrarUsuario = async (userData: UsuarioCreateRequest): Promise<void> => {
+export const cadastrarUsuario = async (
+  userData: UsuarioCreateRequest
+): Promise<void> => {
   try {
-    await apiClient.post('/auth/novo', userData);
+    await apiClient.post("/auth/novo", userData);
   } catch (error) {
-    console.error('API Error:', error);
+    console.error("API Error:", error);
     throw error;
   }
 };
@@ -79,19 +103,22 @@ const fetchUserData = async (userId: number): Promise<Partial<User>> => {
     const response = await apiClient.get(`/users/${userId}`);
     return response.data;
   } catch (error) {
-    console.warn('Could not fetch complete user data:', error);
+    console.warn("Could not fetch complete user data:", error);
     return {}; // Return empty object if fetch fails
   }
 };
 
-export const login = async (email: string, senha: string): Promise<{ token: string; user: User }> => {
+export const login = async (
+  email: string,
+  senha: string
+): Promise<{ token: string; user: User }> => {
   try {
     const credentials = btoa(`${email}:${senha}`);
 
-    const response = await apiClient.post<string>('/auth/login', null, {
+    const response = await apiClient.post<string>("/auth/login", null, {
       headers: {
-        'Authorization': `Basic ${credentials}`
-      }
+        Authorization: `Basic ${credentials}`,
+      },
     });
 
     const token = response.data;
@@ -107,7 +134,7 @@ export const login = async (email: string, senha: string): Promise<{ token: stri
     try {
       completeUserData = await fetchUserData(payload.idUsuario);
     } catch (error) {
-      console.warn('Using basic user data from JWT only');
+      console.warn("Using basic user data from JWT only");
     }
 
     // Create user object from JWT payload and merge with complete data
@@ -116,7 +143,7 @@ export const login = async (email: string, senha: string): Promise<{ token: stri
       email: payload.sub,
       nome: completeUserData.nome || payload.sub,
       nickname: completeUserData.nickname || payload.sub,
-      isAdmin: payload.roles.includes('ADMIN') ? 1 : 0
+      isAdmin: payload.roles.includes("ADMIN") ? 1 : 0,
     };
 
     // Store user data in sessionStorage
@@ -124,8 +151,115 @@ export const login = async (email: string, senha: string): Promise<{ token: stri
 
     return { token, user };
   } catch (error) {
-    console.error('Login Error:', error);
+    console.error("Login Error:", error);
     throw error;
+  }
+};
+
+// Primeiro passo do login com 2FA - valida credenciais e envia código 2FA
+export const loginWithTwoFactor = async (
+  email: string,
+  password: string
+): Promise<ApiResponse> => {
+  try {
+    const loginData: LoginRequest = {
+      email,
+      password,
+    };
+
+    const response = await apiClient.post<LoginResponse>(
+      `/auth/login-2fa`,
+      loginData
+    );
+
+    return {
+      success: true,
+      message: response.data.message,
+    };
+  } catch (error) {
+    console.error("Erro detalhado:", error);
+    const axiosError = error as AxiosError<LoginResponse>;
+    return {
+      success: false,
+      message: axiosError.response?.data?.message || "Credenciais inválidas",
+    };
+  }
+};
+
+// Segundo passo do login com 2FA - verifica código e faz login completo
+export const verifyTwoFactorAndLogin = async (
+  email: string,
+  otp: number
+): Promise<{ token: string; user: User }> => {
+  try {
+    const verifyData: TwoFactorVerifyRequest = {
+      email,
+      otp,
+    };
+
+    const response = await apiClient.post<string>(
+      `/auth/verify-2fa`,
+      verifyData
+    );
+
+    const token = response.data;
+
+    // Decode JWT to extract user information
+    const payload = decodeJWT(token);
+
+    // Set the token for future requests first
+    setAuthToken(token);
+
+    // Try to fetch complete user data
+    let completeUserData: Partial<User> = {};
+    try {
+      completeUserData = await fetchUserData(payload.idUsuario);
+    } catch (error) {
+      console.warn("Using basic user data from JWT only");
+    }
+
+    // Create user object from JWT payload and merge with complete data
+    const user: User = {
+      id: payload.idUsuario,
+      email: payload.sub,
+      nome: completeUserData.nome || payload.sub,
+      nickname: completeUserData.nickname || payload.sub,
+      isAdmin: payload.roles.includes("ADMIN") ? 1 : 0,
+    };
+
+    // Store user data in sessionStorage
+    storeUserData(user);
+
+    return { token, user };
+  } catch (error) {
+    console.error("Erro na verificação 2FA:", error);
+    const axiosError = error as AxiosError<string>;
+    throw new Error(
+      axiosError.response?.data || "Código de verificação inválido"
+    );
+  }
+};
+
+// NÃO TA FUNCIOANDO
+export const resendTwoFactorCode = async (
+  email: string
+): Promise<ApiResponse> => {
+  try {
+    const response = await apiClient.post<string>(`/auth/resend-2fa`, {
+      email,
+    });
+
+    return {
+      success: true,
+      message: response.data,
+    };
+  } catch (error) {
+    console.error("Erro ao reenviar código 2FA:", error);
+    const axiosError = error as AxiosError<string>;
+    return {
+      success: false,
+      message: axiosError.response?.data || "Erro ao reenviar código",
+    };
   }
 };
 
@@ -141,18 +275,21 @@ export const logout = (): void => {
 export const setAuthToken = (token: string | null, expiresInMinutes = 60) => {
   if (token) {
     const expiresAt = new Date().getTime() + expiresInMinutes * 60 * 1000;
-    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     sessionStorage.setItem(AUTH_TOKEN_KEY, token);
     sessionStorage.setItem(AUTH_TOKEN_EXPIRES_AT_KEY, expiresAt.toString());
   } else {
-    delete apiClient.defaults.headers.common['Authorization'];
+    delete apiClient.defaults.headers.common["Authorization"];
     sessionStorage.removeItem(AUTH_TOKEN_KEY);
     sessionStorage.removeItem(AUTH_TOKEN_EXPIRES_AT_KEY);
   }
 };
 
 // Get stored auth data from sessionStorage
-export const getStoredAuthData = (): { token: string | null; user: User | null } => {
+export const getStoredAuthData = (): {
+  token: string | null;
+  user: User | null;
+} => {
   const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
   const userDataString = sessionStorage.getItem(USER_DATA_KEY);
 
@@ -161,7 +298,7 @@ export const getStoredAuthData = (): { token: string | null; user: User | null }
     try {
       user = JSON.parse(userDataString);
     } catch (error) {
-      console.error('Error parsing user data from sessionStorage:', error);
+      console.error("Error parsing user data from sessionStorage:", error);
       sessionStorage.removeItem(USER_DATA_KEY);
     }
   }
@@ -175,7 +312,10 @@ export const storeUserData = (user: User): void => {
 };
 
 // Initialize auth from sessionStorage on app start
-export const initializeAuth = (): { token: string | null; user: User | null } => {
+export const initializeAuth = (): {
+  token: string | null;
+  user: User | null;
+} => {
   const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
   const expiresAt = sessionStorage.getItem(AUTH_TOKEN_EXPIRES_AT_KEY);
   const now = new Date().getTime();
@@ -188,7 +328,7 @@ export const initializeAuth = (): { token: string | null; user: User | null } =>
       // Check if token is expired (double check with JWT exp)
       const jwtExpTime = payload.exp * 1000; // Convert to milliseconds
       if (jwtExpTime < now) {
-        console.log('JWT token expired, clearing auth data');
+        console.log("JWT token expired, clearing auth data");
         logout();
         return { token: null, user: null };
       }
@@ -204,7 +344,7 @@ export const initializeAuth = (): { token: string | null; user: User | null } =>
         try {
           user = JSON.parse(storedUserData);
         } catch (error) {
-          console.error('Error parsing stored user data:', error);
+          console.error("Error parsing stored user data:", error);
         }
       }
 
@@ -216,7 +356,7 @@ export const initializeAuth = (): { token: string | null; user: User | null } =>
 
       return { token, user };
     } catch (error) {
-      console.error('Error initializing auth:', error);
+      console.error("Error initializing auth:", error);
       logout();
       return { token: null, user: null };
     }
@@ -247,7 +387,7 @@ export const isTokenValid = (): boolean => {
     const jwtExpTime = payload.exp * 1000;
     return jwtExpTime > now;
   } catch (error) {
-    console.error('Error validating token:', error);
+    console.error("Error validating token:", error);
     return false;
   }
 };
@@ -256,7 +396,6 @@ export const isTokenValid = (): boolean => {
 export const getAuthToken = (): string | null => {
   return sessionStorage.getItem(AUTH_TOKEN_KEY);
 };
-
 
 // Verifica se o usuário está autenticado
 export const isAuthenticated = (): boolean => {

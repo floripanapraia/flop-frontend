@@ -1,42 +1,79 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import EvaluationModal from "./EvaluationModal";
-import ThankYouAvaliacaoModal from "./ThankYouAvaliacaoModal";
 import { Star, X } from "lucide-react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/authContext";
+import { useUser } from "../contexts/userContext";
 import { useBeach } from "../hooks/useBeach";
 import { usePraiaDataSync } from "../hooks/useBeachDataSync";
-import { getCurrentUser, Usuario } from "../services/userService";
+import { AvaliacaoDTO, getAvaliacaoUsuarioHojeNaPraia, verificarAvaliacaoExistente } from "../services/evaluationService";
+import EvaluationModal from "./EvaluationModal";
+import RequireAuthModal from "./RequireAuthModal";
+import ThankYouAvaliacaoModal from "./ThankYouAvaliacaoModal";
 
-const Beach: React.FC = () => {
+interface BeachProps {
+  onNewAvaliacao?: () => void;
+}
+
+const Beach: React.FC<BeachProps> = ({ onNewAvaliacao }) => {
   const navigate = useNavigate();
   const [showEvaluationModal, setShowEvaluationModal] = useState(false);
   const [showThankYouModal, setShowThankYouModal] = useState(false);
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [showRequireAuthModal, setShowRequireAuthModal] = useState(false);
+  const [initialEvaluation, setInitialEvaluation] = useState<AvaliacaoDTO | null>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const user = await getCurrentUser();
-      if (user) {
-        setUsuario(user);
-      }
-    };
-    fetchUser();
-  }, []);
-
-  const { praiaNome, praiaFotoUrl, totalAvaliacoesDoDia } = useBeach();
+  const { praiaNome, praiaFotoUrl, totalAvaliacoesDoDia, praiaId } = useBeach();
   const { condicoesAvaliacoes, loading, refetch } = usePraiaDataSync({
     incluirCondicoes: true,
     incluirMensagens: false,
     incluirImagens: false,
   });
 
-  const toggleEvaluationModal = () => {
-    setShowEvaluationModal(!showEvaluationModal);
+  const { user,  } = useUser();
+  const { isLoading: authLoading } = useAuth();
+
+  const handleAvaliarClick = async () => {
+  if (!user || !user.id) {
+    setShowRequireAuthModal(true);
+    return;
+  }
+
+  if (!praiaId) {
+    console.error("ID da praia não definido");
+    return;
+  }
+
+  try {
+    const existeAvaliacao = await verificarAvaliacaoExistente(user.id, praiaId);
+
+    if (existeAvaliacao) {
+      // Se já existir uma avaliação, configura para editar
+      setInitialEvaluation(await getAvaliacaoUsuarioHojeNaPraia(user.id, praiaId));
+    } else {
+      // Se não houver avaliação, configura para criar uma nova
+      setInitialEvaluation(null);  
+    }
+  } catch (err: any) {
+    console.error("Erro ao verificar avaliação:", err);
+    setInitialEvaluation(null); 
+  }
+
+  setShowEvaluationModal(true); 
+};
+
+  const handleEvaluationModalClose = () => {
+    setShowEvaluationModal(false);
+  };
+
+  const handleRequireAuthModalClose = () => {
+    setShowRequireAuthModal(false);
   };
 
   const handleEvaluationSubmit = (selectedConditions: string[]) => {
     setShowEvaluationModal(false);
     setShowThankYouModal(true);
+    if (onNewAvaliacao) {
+      onNewAvaliacao();
+    }
     refetch();
   };
 
@@ -120,8 +157,8 @@ const Beach: React.FC = () => {
                           alt={label}
                           className="w-14 h-14"
                           onError={(e) =>
-                            ((e.target as HTMLImageElement).style.display =
-                              "none")
+                          ((e.target as HTMLImageElement).style.display =
+                            "none")
                           }
                         />
                       </div>
@@ -141,24 +178,25 @@ const Beach: React.FC = () => {
 
         <div className="mt-6 mb-8 flex justify-center">
           <button
-            onClick={toggleEvaluationModal}
-            className="px-5 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-[#1e3a5f] transition-colors shadow-md"
+            onClick={handleAvaliarClick}
+             className="px-5 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-[#1e3a5f] transition-colors shadow-md"
           >
             Avaliar
           </button>
         </div>
       </div>
 
-      {showEvaluationModal && usuario && (
+      {showEvaluationModal && user && (
         <EvaluationModal
-          onClose={toggleEvaluationModal}
+          onClose={handleEvaluationModalClose}
           beachName={praiaNome || ""}
-          userName={usuario.nome}
-          userNickname={usuario.nickname}
-          fotoPerfil={usuario.fotoPerfil}
-          idUsuario={usuario.id}
+          initialEvaluation={initialEvaluation}
           onSubmit={handleEvaluationSubmit}
         />
+      )}
+
+      {showRequireAuthModal && (
+        <RequireAuthModal isOpen={showRequireAuthModal} onClose={handleRequireAuthModalClose} />
       )}
 
       <ThankYouAvaliacaoModal
