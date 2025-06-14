@@ -1,7 +1,10 @@
-import { AlertTriangle, Ban, UserCheck } from 'lucide-react';
+import { Ban, Download } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import DataTable, { Action, Column, Filter } from '../../components/DataTable';
 import { getAllUsers, toggleBlockUser, Usuario } from '../../services/userService';
+
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import RelatorioUsuariosPDF from '../../components/pdf/RelatorioUsuariosPDF';
 
 const AdminUsers: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'relatorio' | 'banidos'>('relatorio');
@@ -211,6 +214,24 @@ const AdminUsers: React.FC = () => {
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Usuários</h1>
         <p className="text-gray-600 mt-2">Gerencie usuários do sistema</p>
+      </div>
+
+      {/* Botão de Download do PDF */}
+      <div className="flex justify-end mb-4">
+        <PDFDownloadLink
+          document={<RelatorioUsuariosPDF usuarios={dadosFiltrados} titulo="Relatório Geral de Usuários" />}
+          fileName={`relatorio_usuarios_${new Date().toISOString().split('T')[0]}.pdf`}
+        >
+          {({ blob, url, loading, error }) => (
+            <button
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {loading ? 'Gerando PDF...' : 'Exportar para PDF'}
+            </button>
+          )}
+        </PDFDownloadLink>
       </div>
 
       {/* Tabs */}
