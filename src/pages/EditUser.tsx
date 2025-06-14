@@ -10,6 +10,7 @@ import {
   updateUser,
   updateUserProfilePicture,
 } from "../services/userService";
+import { LogOut, Trash2 } from "lucide-react";
 
 const EditUser: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ const EditUser: React.FC = () => {
   const [isChangingPicture, setIsChangingPicture] = useState(false);
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const [pictureFile, setPictureFile] = useState<File | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [form, setForm] = useState({
     nome: "",
@@ -83,6 +85,7 @@ const EditUser: React.FC = () => {
 
     const reader = new FileReader();
     reader.onload = () => {
+      setIsEditing(true);
       setProfilePicture(reader.result as string);
       setIsChangingPicture(true);
     };
@@ -191,18 +194,43 @@ const EditUser: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    setAuthToken(null);
-    navigate("/auth");
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Carregando...</p>
-      </div>
+ const handleLogout = () => {
+    toast(
+      ({ closeToast }) => (
+        <div className="flex flex-col items-center text-center gap-4">
+          <p className="text-sm text-gray-800 font-medium">
+            Deseja realmente sair?
+          </p>
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={() => closeToast?.()}
+              className="px-4 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => {
+                setAuthToken(null);
+                closeToast?.();
+                navigate("/auth");
+              }}
+              className="px-4 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Sair
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        closeButton: false,
+        draggable: false,
+        icon: false,
+      }
     );
-  }
+  };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 py-8">
@@ -225,10 +253,15 @@ const EditUser: React.FC = () => {
             <div className="relative">
               {/* Profile picture with default fallback */}
               <img
-                src={profilePicture || "/assets/kuro.png"}
+                src={
+                  isEditing
+                    ? `${profilePicture}`
+                    : `data:image/jpeg;base64,${profilePicture}`
+                }
                 alt="Perfil"
                 className="w-36 h-36 object-cover rounded-full mb-2"
               />
+
               <label
                 htmlFor="profile-picture-upload"
                 className="absolute bottom-2 right-2 bg-white p-1 rounded-full shadow cursor-pointer"
@@ -269,13 +302,15 @@ const EditUser: React.FC = () => {
               onClick={handleLogout}
               className="w-40 bg-gray-100 py-2 rounded-lg shadow text-sm text-blue-900 flex items-center justify-center gap-2 mb-4"
             >
+              <LogOut size={18} />
               Sair
             </button>
 
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="w-40 bg-gray-100 py-2 rounded-lg text-sm text-red-600 shadow hover:bg-gray-200 transition"
+              className="w-40 bg-gray-100 py-2 rounded-lg text-sm text-red-600 shadow hover:bg-gray-200 transition flex items-center justify-center gap-2"
             >
+              <Trash2 size={18} />
               Deletar conta
             </button>
           </div>
@@ -292,7 +327,8 @@ const EditUser: React.FC = () => {
                 type="text"
                 value={form.nome}
                 onChange={handleChange}
-                className="w-full p-2 rounded bg-gray-200"
+                className="w-full p-2 rounded bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                maxLength={80}
               />
             </div>
 
@@ -303,7 +339,8 @@ const EditUser: React.FC = () => {
                 type="email"
                 value={form.email}
                 onChange={handleChange}
-                className="w-full p-2 rounded bg-gray-200"
+                className="w-full p-2 rounded bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                maxLength={100}
               />
             </div>
 
@@ -316,22 +353,33 @@ const EditUser: React.FC = () => {
                 type="password"
                 value={form.senha}
                 onChange={handleChange}
-                className="w-full p-2 rounded bg-gray-200"
+                className="w-full p-2 rounded bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
                 placeholder="Deixe em branco para manter a senha atual"
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault(); // Bloqueia a tecla de espaço
+                  }
+                }}
+                minLength={8}
+                maxLength={32}
               />
             </div>
 
             <div>
-              <label className="text-sm block text-[#1f2a4d]">
-                Confirmar Nova Senha:
-              </label>
               <input
                 name="confirmarSenha"
                 type="password"
                 value={form.confirmarSenha}
                 onChange={handleChange}
-                className="w-full p-2 rounded bg-gray-200"
+                className="w-full p-2 rounded bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
                 placeholder="Confirme a nova senha"
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault(); // Bloqueia a tecla de espaço
+                  }
+                }}
+                minLength={8}
+                maxLength={32}
               />
             </div>
 

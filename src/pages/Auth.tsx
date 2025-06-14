@@ -1,22 +1,29 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import WelcomeModal from "../components/WelcomeModal";
-import ErrorModal from "../components/ErrorModal";
 import { toast } from "react-toastify";
-import { login, cadastrarUsuario } from "../services/authService";
+import ErrorModal from "../components/ErrorModal";
+import ForgotPasswordModal from "../components/ForgotPasswordModal";
 import * as Components from "../components/LoginCadastro";
+import WelcomeModal from "../components/WelcomeModal";
+import TermsModal from "../components/TermsModal"; // Importar o novo modal
+import { useAuth } from "../contexts/authContext";
+import { cadastrarUsuario, User } from "../services/authService";
 import {
   ErrorResponse,
   handleErrorWithToast,
   normalizeError,
-  shouldShowInModal
+  shouldShowInModal,
 } from "../utils/errorHandler";
+import { X } from "lucide-react";
+import TwoFactorAuthModal from "../components/TwoFactorAuthModal";
 
 const Auth: React.FC = () => {
   const [signIn, toggle] = useState<boolean>(true);
   const navigate = useNavigate();
 
-  // Login state
+  const { login: authLogin } = useAuth();
+
+  // Login state - agora só precisamos do email e senha para o primeiro passo
   const [loginCredentials, setLoginCredentials] = useState({
     email: "",
     senha: "",
@@ -37,9 +44,22 @@ const Auth: React.FC = () => {
   // New state for error modal
   const [modalError, setModalError] = useState<ErrorResponse | null>(null);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState<boolean>(false);
 
   // State to track if the user just registered
   const [justRegistered, setJustRegistered] = useState(false);
+
+  // 2FA Modal state
+  const [is2FAModalOpen, setIs2FAModalOpen] = useState<boolean>(false);
+
+  // Terms of Service states
+  const [showTermsModal, setShowTermsModal] = useState<boolean>(false);
+  const [acceptedTerms, setAcceptedTerms] = useState<boolean>(false);
+
+  const handleForgotPasswordSuccess = (): void => {
+    // Ação após sucesso na recuperação de senha
+    alert("Senha alterada com sucesso! Agora você pode fazer login.");
+  };
 
   // Login handlers
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,6 +70,7 @@ const Auth: React.FC = () => {
     });
   };
 
+  // Novo handler para o login com 2FA
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -58,25 +79,37 @@ const Auth: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
+    // Abre o modal de 2FA com as credenciais
+    setIs2FAModalOpen(true);
+  };
 
-    try {
-      const token = await login(loginCredentials.email, loginCredentials.senha);
-      toast.success("Login realizado com sucesso!");
-      navigate("/editar"); // TODO: Redirect to the right page after login
-    } catch (error: any) {
-      console.error("Erro no login:", error);
+  // Handler para fechar o modal de 2FA
+  const handleClose2FAModal = (): void => {
+    setIs2FAModalOpen(false);
+  };
 
-      // Determine if error should be shown in modal or toast
-      if (shouldShowInModal(error)) {
-        setModalError(normalizeError(error));
-        setShowErrorModal(true);
-      } else {
-        handleErrorWithToast(error);
-      }
-    } finally {
-      setIsLoading(false);
+  // Handler para sucesso no login com 2FA
+  const handleLoginSuccess = (token: string, userData: User): void => {
+    // Use the integrated auth context
+    authLogin(token, userData);
+
+    toast.success("Login realizado com sucesso!");
+
+    // Navigate based on user role
+    if (userData.isAdmin === 1) {
+      navigate("/admin/users");
+    } else {
+      navigate("/home");
     }
+
+    // Fechar o modal
+    setIs2FAModalOpen(false);
+
+    // Limpar as credenciais por segurança
+    setLoginCredentials({
+      email: "",
+      senha: "",
+    });
   };
 
   // Cadastro handlers
@@ -88,15 +121,39 @@ const Auth: React.FC = () => {
     });
   };
 
+  // Handler para o checkbox dos termos
+  const handleTermsCheckboxChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setAcceptedTerms(e.target.checked);
+  };
+
+  // Handler para abrir o modal de termos
+  const handleOpenTermsModal = () => {
+    setShowTermsModal(true);
+  };
+
+  // Handler para aceitar os termos pelo modal
+  const handleAcceptTerms = () => {
+    setAcceptedTerms(true);
+    setShowTermsModal(false);
+  };
+
   const validateSignUp = (): boolean => {
     let isValid = true;
 
     if (!signUpData.nickname.trim()) {
       toast.error("Username é obrigatório");
       isValid = false;
+    } else if (signUpData.nickname.trim().length < 3) {
+      toast.error("Username deve ter pelo menos 3 caracteres");
+      isValid = false;
     }
     if (!signUpData.nome.trim()) {
       toast.error("Nome é obrigatório");
+      isValid = false;
+    } else if (signUpData.nome.trim().length < 3) {
+      toast.error("Nome deve ter pelo menos 3 caracteres");
       isValid = false;
     }
     if (!signUpData.email.trim()) {
@@ -109,9 +166,16 @@ const Auth: React.FC = () => {
     if (!signUpData.senha) {
       toast.error("Senha é obrigatória");
       isValid = false;
+    } else if (signUpData.senha.length < 8) {
+      toast.error("Senha deve ter pelo menos 8 caracteres");
+      isValid = false;
     }
     if (signUpData.senha !== signUpData.confirmSenha) {
       toast.error("As senhas não conferem");
+      isValid = false;
+    }
+    if (!acceptedTerms) {
+      toast.error("Você deve aceitar os termos de serviço");
       isValid = false;
     }
 
@@ -129,7 +193,7 @@ const Auth: React.FC = () => {
           nickname: signUpData.nickname,
           nome: signUpData.nome,
           email: signUpData.email,
-          senha: signUpData.senha
+          senha: signUpData.senha,
         });
 
         toast.success("Conta criada com sucesso!");
@@ -151,6 +215,9 @@ const Auth: React.FC = () => {
           senha: "",
           confirmSenha: "",
         });
+
+        // Reset terms acceptance
+        setAcceptedTerms(false);
 
         // Switch to login form
         toggle(true);
@@ -185,8 +252,9 @@ const Auth: React.FC = () => {
         confirmSenha: "",
       });
 
-      // Reset the just registered flag
+      // Reset the just registered flag and terms acceptance
       setJustRegistered(false);
+      setAcceptedTerms(false);
     }
 
     // If we're switching to login form and not coming from registration,
@@ -220,44 +288,126 @@ const Auth: React.FC = () => {
         {/* Cadastro */}
         <Components.SignUpContainer signinIn={signIn}>
           <Components.Form onSubmit={handleSignUpSubmit}>
-            <Components.Subtitle>Criando minha conta</Components.Subtitle>
-            <Components.Input
-              type="text"
-              name="nickname"
-              placeholder="Username"
-              value={signUpData.nickname}
-              onChange={handleSignUpChange}
-            />
-            <Components.Input
-              type="text"
-              name="nome"
-              placeholder="Nome"
-              value={signUpData.nome}
-              onChange={handleSignUpChange}
-            />
-            <Components.Input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={signUpData.email}
-              onChange={handleSignUpChange}
-            />
-            <Components.Input
-              type="password"
-              name="senha"
-              placeholder="Senha"
-              value={signUpData.senha}
-              onChange={handleSignUpChange}
-            />
-            <Components.Input
-              type="password"
-              name="confirmSenha"
-              placeholder="Confirmar Senha"
-              value={signUpData.confirmSenha}
-              onChange={handleSignUpChange}
-            />
-            <Components.Button type="submit" disabled={isLoading}>
-              {isLoading ? "Entrando..." : "Cadastre-se"}
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={() => navigate("/home")}
+                className="text-blue-900 hover:text-gray-900 transition"
+                aria-label="Fechar"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="w-full mb-4">
+              <Components.Subtitle>Criando minha conta</Components.Subtitle>
+            </div>
+
+            <div className="w-full mb-1">
+              <Components.FormLabel>Username</Components.FormLabel>
+              <Components.Input
+                type="text"
+                name="nickname"
+                value={signUpData.nickname}
+                onChange={handleSignUpChange}
+                maxLength={20}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="w-full mb-1">
+              <Components.FormLabel>Nome</Components.FormLabel>
+              <Components.Input
+                type="text"
+                name="nome"
+                value={signUpData.nome}
+                onChange={handleSignUpChange}
+                maxLength={80}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="w-full mb-1">
+              <Components.FormLabel>Email</Components.FormLabel>
+              <Components.Input
+                type="email"
+                name="email"
+                value={signUpData.email}
+                onChange={handleSignUpChange}
+                maxLength={100}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="w-full mb-1">
+              <Components.FormLabel>Senha</Components.FormLabel>
+              <Components.Input
+                type="password"
+                name="senha"
+                value={signUpData.senha}
+                onChange={handleSignUpChange}
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault(); // Bloqueia a tecla de espaço
+                  }
+                }}
+                minLength={8}
+                maxLength={32}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="w-full mb-1">
+              <Components.FormLabel>Confirmar Senha</Components.FormLabel>
+              <Components.Input
+                type="password"
+                name="confirmSenha"
+                value={signUpData.confirmSenha}
+                onChange={handleSignUpChange}
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault(); // Bloqueia a tecla de espaço
+                  }
+                }}
+                minLength={8}
+                maxLength={32}
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Checkbox dos Termos de Serviço */}
+            <div className="w-full mb-3  items-start gap-2">
+              <input
+                type="checkbox"
+                id="acceptTerms"
+                checked={acceptedTerms}
+                onChange={handleTermsCheckboxChange}
+                disabled={isLoading}
+                className="mt-0.5 flex-shrink-0 m-2 w-4 h-4 cursor-pointer"
+              />
+              <label
+                htmlFor="acceptTerms"
+                className="text-sm text-gray-700 leading-tight cursor-pointer"
+              >
+                Aceito os{" "}
+                <button
+                  type="button"
+                  onClick={handleOpenTermsModal}
+                  className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  disabled={isLoading}
+                >
+                  termos de serviço
+                </button>{" "}
+                e política de privacidade
+              </label>
+            </div>
+
+            <Components.Button
+              type="submit"
+              disabled={isLoading || !acceptedTerms}
+              className={`${
+                !acceptedTerms ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              {isLoading ? "Cadastrando..." : "Cadastre-se"}
             </Components.Button>
           </Components.Form>
         </Components.SignUpContainer>
@@ -265,24 +415,49 @@ const Auth: React.FC = () => {
         {/* Login */}
         <Components.SignInContainer signinIn={signIn}>
           <Components.Form onSubmit={handleLoginSubmit}>
-            <Components.Subtitle>Entrar</Components.Subtitle>
-            <Components.Input
-              type="text"
-              name="email"
-              placeholder="Email"
-              value={loginCredentials.email}
-              onChange={handleLoginChange}
-            />
-            <Components.Input
-              type="password"
-              name="senha"
-              placeholder="Senha"
-              value={loginCredentials.senha}
-              onChange={handleLoginChange}
-            />
-            <Components.Anchor href="#">Esqueceu sua senha?</Components.Anchor>
+            <div className="w-full mb-4">
+              <Components.Subtitle>Entrar</Components.Subtitle>
+            </div>
+
+            <div className="w-full mb-1">
+              <Components.FormLabel>Email</Components.FormLabel>
+              <Components.Input
+                type="text"
+                name="email"
+                value={loginCredentials.email}
+                onChange={handleLoginChange}
+                maxLength={100}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="w-full mb-1">
+              <Components.FormLabel>Senha</Components.FormLabel>
+              <Components.Input
+                type="password"
+                name="senha"
+                value={loginCredentials.senha}
+                onChange={handleLoginChange}
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault(); // Bloqueia a tecla de espaço
+                  }
+                }}
+                disabled={isLoading}
+              />
+            </div>
+
+            <p>
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-sm  text-grey-800 link-button"
+              >
+                Esqueceu sua senha?
+              </button>
+            </p>
             <Components.Button type="submit" disabled={isLoading}>
-              {isLoading ? "Processando..." : "Entrar"}
+              {isLoading ? "Entrando..." : "Entrar"}
             </Components.Button>
           </Components.Form>
         </Components.SignInContainer>
@@ -318,6 +493,7 @@ const Auth: React.FC = () => {
         onClick={toggleHelpModal}
         className="absolute bottom-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
         aria-label="Ajuda"
+        disabled={isLoading}
       >
         <span className="text-sky-800 text-xl font-bold">?</span>
       </button>
@@ -330,6 +506,30 @@ const Auth: React.FC = () => {
         isOpen={showErrorModal}
         onClose={closeErrorModal}
       />
+
+      {/* Modal de recuperação de senha */}
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        onSuccess={handleForgotPasswordSuccess}
+      />
+
+      {/* Modal de Autenticação 2FA */}
+      <TwoFactorAuthModal
+        isOpen={is2FAModalOpen}
+        onClose={handleClose2FAModal}
+        onSuccess={handleLoginSuccess}
+        email={loginCredentials.email}
+        senha={loginCredentials.senha}
+      />
+
+      {/* Modal de Termos de Serviço */}
+      {showTermsModal && (
+        <TermsModal
+          onClose={() => setShowTermsModal(false)}
+          onAccept={handleAcceptTerms}
+        />
+      )}
     </Components.PageWrapper>
   );
 };

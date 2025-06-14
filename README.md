@@ -27,7 +27,7 @@ Este é o frontend da aplicação **Floripa na Praia**, desenvolvido em React pa
    ```
 3. Configure o arquivo `.env` para definir a URL da API:
    ```sh
-   API_URL=http://localhost:8080
+   API_URL=http://localhost:8080/flop
    ```
 4. Inicie o servidor de desenvolvimento:
    ```sh
@@ -35,7 +35,7 @@ Este é o frontend da aplicação **Floripa na Praia**, desenvolvido em React pa
    # ou
    yarn dev
    ```
-5. O frontend estará disponível em `http://localhost:5173`.
+5. O frontend estará disponível em `http://localhost:3000`.
 
 ## Estrutura do Projeto
 ```
