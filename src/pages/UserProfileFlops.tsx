@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { setAuthToken } from "../services/authService";
 import SuggestBeachModal from "../components/SuggestBeachModal";
-import { Sugestao } from "../services/suggestionService";
+import { SugestaoDTO } from "../services/suggestionService";
 import { LogOut, MapPin, Settings } from "lucide-react";
 import { useUser } from "../contexts/userContext";
 import { filterPostagens, PostagemDTO, PostagemSeletor } from "../services/postService";
@@ -94,7 +94,7 @@ const UserProfileFlops: React.FC = () => {
     navigate(tab === "fotos" ? "/perfilFotos" : "/perfilFlops");
   };
 
-  const handleSugestaoSuccess = (s: Sugestao) => { toast.success(`Sugestão "${s.nomePraia}" enviada com sucesso!`); setIsModalOpen(false); };
+  const handleSugestaoSuccess = (s: SugestaoDTO) => { toast.success(`Sugestão "${s.nomePraia}" enviada com sucesso!`); setIsModalOpen(false); };
   const handleSugestaoError = (err: string) => toast.error(`Erro ao enviar sugestão: ${err}`);
 
   return (

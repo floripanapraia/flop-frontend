@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { setAuthToken } from "../services/authService";
 import SuggestBeachModal from "../components/SuggestBeachModal";
-import { Sugestao } from "../services/suggestionService";
 import { LogOut, MapPin, Settings } from "lucide-react";
 import { useUser } from "../contexts/userContext";
 import {
@@ -13,6 +12,7 @@ import {
 } from "../services/postService";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { SugestaoDTO } from "../services/suggestionService";
 
 type TabType = {
   id: "fotos" | "flops";
@@ -114,7 +114,7 @@ const UserProfilePhotos: React.FC = () => {
     navigate(tabId === "fotos" ? "/perfilFotos" : "/perfilFlops");
   };
 
-  const handleSugestaoSuccess = (sugestao: Sugestao) => {
+  const handleSugestaoSuccess = (sugestao: SugestaoDTO) => {
     toast.success(`Sugestão "${sugestao.nomePraia}" enviada com sucesso!`);
     setIsModalOpen(false);
   };

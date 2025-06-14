@@ -7,8 +7,8 @@ export interface SugestaoDTO {
   descricao: string;
   analisada: boolean;
   criadaEm: string;
-  idUsuario: number;
-  nomeUsuario: string;
+  idUsuario?: number;
+  nomeUsuario?: string;
 }
 
 interface SeletorFiltro {
@@ -16,12 +16,27 @@ interface SeletorFiltro {
   dataFim?: string;
 }
 
+export const createSugestao = async (
+  sugestaoData: Omit<SugestaoDTO, "idSugestao" | "analisada" | "criadaEm">
+): Promise<SugestaoDTO> => {
+  try {
+    const response = await apiClient.post<SugestaoDTO>(
+      "/sugestoes/cadastrar",
+      sugestaoData
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao cadastrar sugestão:", error);
+    throw error;
+  }
+};
+
 export const analisarSugestao = async (
-  sugestaoId: number,
+  sugestaoId: number
 ): Promise<SugestaoDTO> => {
   try {
     const response = await apiClient.patch<SugestaoDTO>(
-      `/sugestoes/${sugestaoId}/analisar`,
+      `/sugestoes/${sugestaoId}/analisar`
     );
     return response.data;
   } catch (error) {
@@ -40,9 +55,13 @@ export const getAllSugestoes = async (): Promise<SugestaoDTO[]> => {
   }
 };
 
-export const getSugestaoById = async (sugestaoId: number): Promise<SugestaoDTO> => {
+export const getSugestaoById = async (
+  sugestaoId: number
+): Promise<SugestaoDTO> => {
   try {
-    const response = await apiClient.get<SugestaoDTO>(`/sugestoes/${sugestaoId}`);
+    const response = await apiClient.get<SugestaoDTO>(
+      `/sugestoes/${sugestaoId}`
+    );
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar sugestão por ID:", error);

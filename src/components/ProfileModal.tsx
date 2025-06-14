@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import SuggestBeachModal from "./SuggestBeachModal";
 import { setAuthToken } from "../services/authService";
 import { getCurrentUser } from "../services/userService";
-import { Sugestao } from "../services/suggestionService";
+import { SugestaoDTO } from "../services/suggestionService";
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -98,7 +98,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     );
   };
 
-  const handleSugestaoSuccess = (sugestao: Sugestao) => {
+  const handleSugestaoSuccess = (sugestao: SugestaoDTO) => {
     toast.success(
       `Sugestão "${sugestao.nomePraia}" enviada com sucesso! Nossa equipe irá analisar em breve.`
     );

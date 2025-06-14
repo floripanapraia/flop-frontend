@@ -12,9 +12,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Auth from "./pages/Auth";
 import EditUser from "./pages/EditUser";
 import EvaluationFeed from "./pages/EvaluationFeed";
-import FlopFeed from "./pages/FlopFeed";
 import Home from "./pages/Home";
-import PhotoFeed from "./pages/PhotoFeed";
 import UserProfileFlops from "./pages/UserProfileFlops";
 import UserProfilePhotos from "./pages/UserProfilePhotos";
 import FlopFeed from "./pages/FlopFeed";
@@ -30,7 +28,6 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import RegisterBeach from "./pages/admin/RegisterBeach";
 import AdminSuggestions from "./pages/admin/AdminSuggestions";
 import AdminReports from "./pages/admin/AdminReports";
-import ProtectedRoute from "./routes/ProtectedRoute";
 
 const App: React.FC = () => {
   return (

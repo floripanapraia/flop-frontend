@@ -72,7 +72,7 @@ const AdminSuggestions: React.FC = () => {
 
     if (nomeUsuarioFilter) {
       filtered = filtered.filter(sugestao =>
-        sugestao.nomeUsuario.toLowerCase().includes(nomeUsuarioFilter.toLowerCase())
+        sugestao.nomeUsuario?.toLowerCase().includes(nomeUsuarioFilter.toLowerCase())
       );
     }
 

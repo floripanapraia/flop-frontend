@@ -1,6 +1,6 @@
 import { X, ChevronDown } from "lucide-react";
 import React, { useState } from "react";
-import { createSugestao, Sugestao } from "../services/suggestionService";
+import { createSugestao, SugestaoDTO } from "../services/suggestionService";
 
 // Lista dos bairros de Florianópolis
 const BAIRROS_FLORIANOPOLIS = [
@@ -36,7 +36,7 @@ const BAIRROS_FLORIANOPOLIS = [
 
 interface SuggestBeachModalProps {
   onClose: () => void;
-  onSuccess?: (sugestao: Sugestao) => void;
+  onSuccess?: (sugestao: SugestaoDTO) => void;
   onError?: (error: string) => void;
 }
 
@@ -58,7 +58,7 @@ const SuggestBeachModal: React.FC<SuggestBeachModalProps> = ({
 
     try {
       const sugestaoData: Omit<
-        Sugestao,
+        SugestaoDTO,
         "idSugestao" | "analisada" | "criadaEm"
       > = {
         nomePraia: beachName.trim(),

@@ -95,7 +95,7 @@ const Auth: React.FC = () => {
 
     toast.success("Login realizado com sucesso!");
       // Navigate based on user role
-      if (user.isAdmin === 1) {
+      if (userData.isAdmin === 1) {
         navigate("/admin/users");
       } else {
         navigate("/home");
