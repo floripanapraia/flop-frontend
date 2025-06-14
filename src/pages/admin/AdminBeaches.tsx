@@ -1,8 +1,10 @@
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { Download, Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DataTable, { Column, Filter } from '../../components/DataTable';
+import RelatorioPraiasPDF from '../../components/pdf/RelatorioPraiasPDF';
 import { getAllPraias, PraiaDTO } from '../../services/beachService';
-import { Plus } from 'lucide-react';
 
 const AdminBeaches: React.FC = () => {
   const [praias, setPraias] = useState<PraiaDTO[]>([]);
@@ -86,11 +88,29 @@ const AdminBeaches: React.FC = () => {
         </div>
         <button
           onClick={handleCadastrarPraia}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          className="inline-flex items-center px-4 py-2 bg-blue-900 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
         >
           <Plus className="w-5 h-5 mr-2" />
           Cadastrar Praia
         </button>
+      </div>
+
+      {/* Botão de Download do PDF */}
+      <div className="flex justify-end mb-4">
+        <PDFDownloadLink
+          document={<RelatorioPraiasPDF praias={praias} />}
+          fileName={`relatorio_praias_${new Date().toISOString().split('T')[0]}.pdf`}
+        >
+          {({ blob, url, loading, error }) => (
+            <button
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {loading ? 'Gerando PDF...' : 'Exportar para PDF'}
+            </button>
+          )}
+        </PDFDownloadLink>
       </div>
 
       {/* Stats Cards */}
