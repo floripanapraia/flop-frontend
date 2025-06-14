@@ -5,6 +5,7 @@ import ErrorModal from "../components/ErrorModal";
 import ForgotPasswordModal from "../components/ForgotPasswordModal";
 import * as Components from "../components/LoginCadastro";
 import WelcomeModal from "../components/WelcomeModal";
+import TermsModal from "../components/TermsModal"; // Importar o novo modal
 import { useAuth } from "../contexts/authContext";
 import { cadastrarUsuario, User } from "../services/authService";
 import {
@@ -50,6 +51,10 @@ const Auth: React.FC = () => {
 
   // 2FA Modal state
   const [is2FAModalOpen, setIs2FAModalOpen] = useState<boolean>(false);
+
+  // Terms of Service states
+  const [showTermsModal, setShowTermsModal] = useState<boolean>(false);
+  const [acceptedTerms, setAcceptedTerms] = useState<boolean>(false);
 
   const handleForgotPasswordSuccess = (): void => {
     // Ação após sucesso na recuperação de senha
@@ -107,10 +112,6 @@ const Auth: React.FC = () => {
     });
   };
 
-  // Se o TwoFactorAuthModal precisar das credenciais, você pode criar um contexto
-  // ou modificar o modal para aceitar as credenciais via props
-  // Por enquanto, vamos usar sem essas props
-
   // Cadastro handlers
   const handleSignUpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -118,6 +119,24 @@ const Auth: React.FC = () => {
       ...signUpData,
       [name]: value,
     });
+  };
+
+  // Handler para o checkbox dos termos
+  const handleTermsCheckboxChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setAcceptedTerms(e.target.checked);
+  };
+
+  // Handler para abrir o modal de termos
+  const handleOpenTermsModal = () => {
+    setShowTermsModal(true);
+  };
+
+  // Handler para aceitar os termos pelo modal
+  const handleAcceptTerms = () => {
+    setAcceptedTerms(true);
+    setShowTermsModal(false);
   };
 
   const validateSignUp = (): boolean => {
@@ -153,6 +172,10 @@ const Auth: React.FC = () => {
     }
     if (signUpData.senha !== signUpData.confirmSenha) {
       toast.error("As senhas não conferem");
+      isValid = false;
+    }
+    if (!acceptedTerms) {
+      toast.error("Você deve aceitar os termos de serviço");
       isValid = false;
     }
 
@@ -193,6 +216,9 @@ const Auth: React.FC = () => {
           confirmSenha: "",
         });
 
+        // Reset terms acceptance
+        setAcceptedTerms(false);
+
         // Switch to login form
         toggle(true);
       } catch (error: any) {
@@ -226,8 +252,9 @@ const Auth: React.FC = () => {
         confirmSenha: "",
       });
 
-      // Reset the just registered flag
+      // Reset the just registered flag and terms acceptance
       setJustRegistered(false);
+      setAcceptedTerms(false);
     }
 
     // If we're switching to login form and not coming from registration,
@@ -345,7 +372,41 @@ const Auth: React.FC = () => {
                 disabled={isLoading}
               />
             </div>
-            <Components.Button type="submit" disabled={isLoading}>
+
+            {/* Checkbox dos Termos de Serviço */}
+            <div className="w-full mb-3  items-start gap-2">
+              <input
+                type="checkbox"
+                id="acceptTerms"
+                checked={acceptedTerms}
+                onChange={handleTermsCheckboxChange}
+                disabled={isLoading}
+                className="mt-0.5 flex-shrink-0 m-2 w-4 h-4 cursor-pointer"
+              />
+              <label
+                htmlFor="acceptTerms"
+                className="text-sm text-gray-700 leading-tight cursor-pointer"
+              >
+                Aceito os{" "}
+                <button
+                  type="button"
+                  onClick={handleOpenTermsModal}
+                  className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  disabled={isLoading}
+                >
+                  termos de serviço
+                </button>{" "}
+                e política de privacidade
+              </label>
+            </div>
+
+            <Components.Button
+              type="submit"
+              disabled={isLoading || !acceptedTerms}
+              className={`${
+                !acceptedTerms ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
               {isLoading ? "Cadastrando..." : "Cadastre-se"}
             </Components.Button>
           </Components.Form>
@@ -461,6 +522,14 @@ const Auth: React.FC = () => {
         email={loginCredentials.email}
         senha={loginCredentials.senha}
       />
+
+      {/* Modal de Termos de Serviço */}
+      {showTermsModal && (
+        <TermsModal
+          onClose={() => setShowTermsModal(false)}
+          onAccept={handleAcceptTerms}
+        />
+      )}
     </Components.PageWrapper>
   );
 };
