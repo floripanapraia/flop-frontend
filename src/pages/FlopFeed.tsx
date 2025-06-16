@@ -20,7 +20,6 @@ import ProfileButton from "../components/ProfileButton";
 import { useGeoContext } from "../contexts/geolocationContext";
 import { toast } from "react-toastify";
 
-
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
   label: string;
@@ -191,8 +190,6 @@ const FlopFeed: React.FC = () => {
     }
   };
 
- 
-
   const handlePublicarClick = async () => {
     if (!user) {
       setShowRequireAuthModal(true);
@@ -209,7 +206,7 @@ const FlopFeed: React.FC = () => {
       return;
     }
     if (!isGeolocationEnabled || !coords?.latitudeUser || !coords?.longitudeUser) {
-     toast.warn("A localização está desativada. Ative-a nas configurações do navegador e atualize a página para poder postar nesta praia.", {
+      toast.warn("A localização está desativada. Ative-a nas configurações do navegador e atualize a página para poder postar nesta praia.", {
         position: "top-center",
         autoClose: 5000,
       });
@@ -236,9 +233,12 @@ const FlopFeed: React.FC = () => {
       setPostContent("");
       refreshPostagens();
     } catch (error: any) {
-     const msg =
-      error.response?.data?.message || "Erro ao publicar. Tente novamente.";
-    toast.error(msg);
+      const msg =
+        error.response?.data?.message || "Erro ao publicar. Tente novamente.";
+      toast.warn(msg, {
+        position: "top-center",
+        autoClose: 6000,
+      });
     } finally {
       setIsPublishing(false);
     }
