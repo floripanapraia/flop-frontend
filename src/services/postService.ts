@@ -7,11 +7,17 @@ export interface PostagemDTO {
   nickname: string;
   praiaId: number;
   nomePraia: string;
-  criadoEm: string;
-  imagem?: string;
+  criadoEm?: string;
+  imagem?: string | null;
   mensagem: string;
   excluida: boolean;
 }
+
+export interface CriarPostagemDTO extends PostagemDTO{
+  latitudeUser: number;
+  longitudeUser: number;
+}
+
 
 export interface PostagemSeletor {
   titulo?: string;
@@ -26,9 +32,7 @@ export interface PostagemSeletor {
   sort?: string;
 }
 
-export const createPostagem = async (
-  postagemData: Omit<PostagemDTO, "idPostagem" | "criadoEm" | "usuario">
-): Promise<PostagemDTO> => {
+export const createPostagem = async (postagemData: CriarPostagemDTO): Promise<PostagemDTO> => {
   try {
     const response = await apiClient.post<PostagemDTO>(
       "/postagens/cadastrar",
