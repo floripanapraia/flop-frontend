@@ -5,6 +5,9 @@ export function useGeolocation() {
   const [coords, setCoords] = useState<Coordinates | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [geoError, setGeoError] = useState<GeolocationPositionError | null>(null);
+
+  const isGeolocationEnabled = !geoError || geoError.code !== geoError.PERMISSION_DENIED;
 
   useEffect(() => {
     getCurrentLocation()
@@ -13,6 +16,7 @@ export function useGeolocation() {
         setLoading(false);
       })
       .catch((err: GeolocationPositionError) => {
+        setGeoError(err);
         switch (err.code) {
           case err.PERMISSION_DENIED:
             setError("Permissão de localização negada, não é possível realizar a solicitação.");
@@ -25,10 +29,12 @@ export function useGeolocation() {
             break;
           default:
             setError("Erro desconhecido na geolocalização.");
+            break;
         }
         setLoading(false);
       });
+
   }, []);
 
-  return { coords, error, loading };
+  return { coords, error, loading, isGeolocationEnabled };
 }
