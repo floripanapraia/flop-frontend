@@ -1,6 +1,6 @@
 export interface Coordinates {
-  lat: number;
-  lng: number;
+  latitudeUser: number;
+  longitudeUser: number;
 }
 
 export function getCurrentLocation(
@@ -16,7 +16,7 @@ export function getCurrentLocation(
     } else {
       navigator.geolocation.getCurrentPosition(
         ({ coords }) => {
-          resolve({ lat: coords.latitude, lng: coords.longitude });
+          resolve({ latitudeUser: coords.latitude, longitudeUser: coords.longitude });
         },
         (err) => {
           reject(err);
