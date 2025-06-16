@@ -3,6 +3,9 @@ import React, { useEffect, useState } from "react";
 import { useUser } from "../contexts/userContext";
 import { useBeach } from "../hooks/useBeach";
 import { Condicoes, createAvaliacao, updateAvaliacao, AvaliacaoDTO } from "../services/evaluationService";
+import { useGeoContext } from "../contexts/geolocationContext";
+import { toast } from "react-toastify";
+
 
 interface EvaluationModalProps {
   beachName: string;
@@ -18,65 +21,21 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
   initialEvaluation = null,
 }) => {
   const conditions = [
-    { id: Condicoes.SOL, name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
-    {
-      id: Condicoes.MAR_ONDAS,
-      name: "Ondas fortes",
-      icon: "/assets/iconFull/mar_ondas.svg",
-    },
-    {
-      id: Condicoes.LOTADA,
-      name: "Lotada",
-      icon: "/assets/iconFull/lotada.svg",
-    },
-    {
-      id: Condicoes.NUBLADO,
-      name: "Nublado",
-      icon: "/assets/iconFull/nublado.svg",
-    },
-    {
-      id: Condicoes.AGUA_VIVA,
-      name: "Água-viva",
-      icon: "/assets/iconFull/agua_viva.svg",
-    },
-    {
-      id: Condicoes.LIXO,
-      name: "Lixo visível",
-      icon: "/assets/iconFull/lixo.svg",
-    },
-    { id: Condicoes.CHUVA, name: "Chuva", icon: "/assets/iconFull/chuva.svg" },
-    {
-      id: Condicoes.MAR_CALMO,
-      name: "Mar calmo",
-      icon: "/assets/iconFull/mar_calmo.svg",
-    },
-    { id: Condicoes.LIMPA, name: "Limpa", icon: "/assets/iconFull/limpa.svg" },
-    { id: Condicoes.VENTO, name: "Vento", icon: "/assets/iconFull/vento.svg" },
-    {
-      id: Condicoes.AGUA_GELADA,
-      name: "Água gelada",
-      icon: "/assets/iconFull/agua_gelada.svg",
-    },
-    {
-      id: Condicoes.MUSICA,
-      name: "Música alta",
-      icon: "/assets/iconFull/musica.svg",
-    },
-    {
-      id: Condicoes.ESTACIONAMENTO,
-      name: "Estacionamento",
-      icon: "/assets/iconFull/estacionamento.svg",
-    },
-    {
-      id: Condicoes.SALVA_VIDAS,
-      name: "Salva-vidas",
-      icon: "/assets/iconFull/salva_vidas.svg",
-    },
-    {
-      id: Condicoes.ALIMENTACAO,
-      name: "Alimentação",
-      icon: "/assets/iconFull/alimentacao.svg",
-    },
+    { id: "SOL", name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
+    { id: "VENTO", name: "Vento", icon: "/assets/iconFull/vento.svg" },
+    { id: "LOTADA", name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
+    { id: "MAR_ONDAS", name: "Ondas fortes", icon: "/assets/iconFull/mar_ondas.svg" },
+    { id: "AGUA_VIVA", name: "Água-viva", icon: "/assets/iconFull/agua_viva.svg" },
+    { id: "NUBLADO", name: "Nublado", icon: "/assets/iconFull/nublado.svg" },
+    { id: "CHUVA", name: "Chuva", icon: "/assets/iconFull/chuva.svg" },
+    { id: "LIXO", name: "Lixo visível", icon: "/assets/iconFull/lixo.svg" },
+    { id: "LIMPA", name: "Limpa", icon: "/assets/iconFull/limpa.svg" },
+    { id: "MAR_CALMO", name: "Mar calmo", icon: "/assets/iconFull/mar_calmo.svg" },
+    { id: "AGUA_GELADA", name: "Água gelada", icon: "/assets/iconFull/agua_gelada.svg" },
+    { id: "MUSICA", name: "Música alta", icon: "/assets/iconFull/musica.svg" },
+    { id: "ESTACIONAMENTO", name: "Estacionamento", icon: "/assets/iconFull/estacionamento.svg" },
+    { id: "SALVA_VIDAS", name: "Salva-vidas", icon: "/assets/iconFull/salva_vidas.svg" },
+    { id: "ALIMENTACAO", name: "Alimentação", icon: "/assets/iconFull/alimentacao.svg" },
   ];
 
   const conflictingGroups: Condicoes[][] = [
@@ -87,26 +46,39 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
 
   const { praiaId } = useBeach();
   const { user } = useUser();
+  const { coords, isGeolocationEnabled } = useGeoContext();
 
   const [selectedConditions, setSelectedConditions] = useState<Condicoes[]>([]);
   const [existingEvaluationId, setExistingEvaluationId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(!initialEvaluation);
   const [isEditing, setIsEditing] = useState<boolean>(!!initialEvaluation);
 
+  const userLat = coords?.latitudeUser!;
+  const userLng = coords?.longitudeUser!;
+
   useEffect(() => {
     if (initialEvaluation) {
       setSelectedConditions(initialEvaluation.condicoes);
       setExistingEvaluationId(initialEvaluation.idAvaliacao!);
       setIsEditing(true);
-      setIsLoading(false); 
+      setIsLoading(false);
     } else {
       // Se não houver avaliação, prepara para uma nova
       setSelectedConditions([]);
       setExistingEvaluationId(null);
       setIsEditing(false);
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   }, [initialEvaluation]);
+
+  useEffect(() => {
+    if (!isLoading && (!coords || !isGeolocationEnabled)) {
+      toast.warn("A localização está desativada. Ative-a nas configurações do navegador e atualize a página para poder avaliar esta praia.", {
+        position: "top-center",
+        autoClose: 5000,
+      });
+    }
+  }, [coords, isGeolocationEnabled, isLoading]);
 
 
   const toggleCondition = (conditionId: Condicoes) => {
@@ -140,30 +112,43 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
   };
 
   const handleSubmit = async () => {
+    if (!isGeolocationEnabled || !coords?.latitudeUser || !coords?.longitudeUser) {
+      toast.warn("A localização está desativada. Ative-a nas configurações do navegador e atualize a página para poder avaliar esta praia.", {
+        position: "top-center",
+        autoClose: 5000,
+      });
+      return;
+    }
+
     if (!praiaId || !user) {
       console.error("Praia ou usuário não definidos");
       return;
     }
 
+    const payload = {
+      idPraia: praiaId,
+      idUsuario: user.id,
+      condicoes: selectedConditions,
+      latitudeUser: userLat,
+      longitudeUser: userLng,
+    };
+
     try {
       if (isEditing && existingEvaluationId) {
-        // Atualizar avaliação existente
-        await updateAvaliacao(existingEvaluationId, {
-          condicoes: selectedConditions,
-        });
+        await updateAvaliacao(existingEvaluationId, payload);
       } else {
-        // Criar nova avaliação
-        await createAvaliacao({
-          idPraia: praiaId,
-          condicoes: selectedConditions,
-          idUsuario: user.id,
-          nickname: user.nickname,
-        });
+        await createAvaliacao(payload);
       }
-
       onSubmit(selectedConditions);
-    } catch (error) {
-      console.error("Erro ao enviar avaliação:", error);
+      onClose();
+    } catch (error: any) {
+      const msg =
+        error.response?.data?.message ||
+        "Erro ao enviar avaliação. Tente novamente.";
+      toast.warn(msg, {
+        position: "top-center",
+        autoClose: 6000,
+      });
     }
   };
 
@@ -247,11 +232,11 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
               <button
                 key={condition.id}
                 type="button"
-                onClick={() => toggleCondition(condition.id)}
-                disabled={isConditionDisabled(condition.id)}
-                className={`flex items-center p-2 rounded-3xl transition-colors h-full ${selectedConditions.includes(condition.id)
+                onClick={() => toggleCondition(condition.id as Condicoes)}
+                disabled={isConditionDisabled(condition.id as Condicoes)}
+                className={`flex items-center p-2 rounded-3xl transition-colors h-full ${selectedConditions.includes(condition.id as Condicoes)
                   ? "bg-gray-200 border-gray-200 text-black-700 rounded-5xl"
-                  : isConditionDisabled(condition.id)
+                  : isConditionDisabled(condition.id as Condicoes)
                     ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
                     : "bg-white border-gray-200 hover:bg-gray-100"
                   }`}
@@ -259,7 +244,7 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
                 <img
                   src={condition.icon}
                   alt={condition.name}
-                  className={`w-12 h-12 mr-2 ${isConditionDisabled(condition.id) ? "opacity-50" : ""
+                  className={`w-12 h-12 mr-2 ${isConditionDisabled(condition.id as Condicoes) ? "opacity-50" : ""
                     }`}
                 />
                 <span className="text-sm font-medium text-center text-blue-900">
