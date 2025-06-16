@@ -20,13 +20,19 @@ export enum Condicoes {
 
 export interface AvaliacaoDTO {
   idAvaliacao?: number;
-  nickname: string;
-  criadoEm: string;
+  nickname?: string;
+  criadoEm?: string;
   condicoes: Condicoes[];
   idUsuario: number;
   idPraia: number;
   fotoPerfil?: string;
 }
+
+export interface CriarAvaliacaoPayload extends AvaliacaoDTO {
+  latitudeUser: number;
+  longitudeUser: number;
+};
+
 
 export interface SeletorFiltro {
   idUsuario?: number;
@@ -39,7 +45,7 @@ export interface SeletorFiltro {
 }
 
 export const createAvaliacao = async (
-  avaliacaoData: Omit<AvaliacaoDTO, "idAvaliacao" | "username" | "criadoEm">
+  avaliacaoData: CriarAvaliacaoPayload
 ): Promise<AvaliacaoDTO> => {
   try {
     const response = await apiClient.post<AvaliacaoDTO>(
@@ -55,9 +61,7 @@ export const createAvaliacao = async (
 
 export const updateAvaliacao = async (
   avaliacaoId: number,
-  avaliacaoData: Partial<
-    Omit<AvaliacaoDTO, "idAvaliacao" | "username" | "criadoEm">
-  >
+  avaliacaoData: CriarAvaliacaoPayload
 ): Promise<AvaliacaoDTO> => {
   try {
     const response = await apiClient.put<AvaliacaoDTO>(
