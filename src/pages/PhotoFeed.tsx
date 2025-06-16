@@ -204,19 +204,14 @@ const PhotoFeed: React.FC = () => {
       alert("Digite uma mensagem ou selecione uma imagem para publicar");
       return;
     }
-    
+
     if (!isGeolocationEnabled || !coords?.latitudeUser || !coords?.longitudeUser) {
-       toast.warn("A localização está desativada. Ative-a nas configurações do navegador e atualize a página para poder postar nesta praia.", {
-              position: "top-center",
-              autoClose: 5000,
-            });
+      toast.warn("A localização está desativada. Ative-a nas configurações do navegador e atualize a página para poder postar nesta praia.", {
+        position: "top-center",
+        autoClose: 5000,
+      });
       return;
     }
-
-    if (postContent.trim() && !imageFile) {
-      toast.info("Sua mensagem foi publicada no feed de Flops.");
-    }
-
 
     setIsPublishing(true);
 
@@ -242,12 +237,20 @@ const PhotoFeed: React.FC = () => {
         await uploadImagemPostagem(formData, savedPostagem.idPostagem);
       }
 
+      if (postContent.trim() && !imageFile) {
+        toast.info("Sua mensagem foi publicada no feed de Flops.");
+      }
+
       setPostContent("");
       setImageFile(null);
       refreshPostagens();
-    } catch (error) {
-      console.error("Erro ao publicar:", error);
-      alert("Erro ao publicar. Tente novamente.");
+    } catch (error: any) {
+      const msg =
+        error.response?.data?.message || "Erro ao publicar. Tente novamente.";
+      toast.warn(msg, {
+        position: "top-center",
+        autoClose: 6000,
+      });
     } finally {
       setIsPublishing(false);
     }
