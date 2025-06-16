@@ -19,7 +19,7 @@ import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "react-toastify";
 import ProfileButton from "../components/ProfileButton";
-
+import { useGeoContext } from "../contexts/geolocationContext";
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
@@ -32,6 +32,7 @@ const PhotoFeed: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   const { praiaId } = useBeach();
+  const { coords, isGeolocationEnabled } = useGeoContext();
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showRequireAuthModal, setShowRequireAuthModal] = useState(false);
@@ -177,14 +178,6 @@ const PhotoFeed: React.FC = () => {
     }
   }, [paginaAtual]);
 
-  const handleMainButtonClick = () => {
-    if (user) {
-      setIsProfileModalOpen(true);
-    } else {
-      navigate("/auth");
-    }
-  };
-
   const refreshPostagens = () => {
     setPostagens([]);
     setPaginaAtual(1);
@@ -211,10 +204,19 @@ const PhotoFeed: React.FC = () => {
       alert("Digite uma mensagem ou selecione uma imagem para publicar");
       return;
     }
+    
+    if (!isGeolocationEnabled || !coords?.latitudeUser || !coords?.longitudeUser) {
+       toast.warn("A localização está desativada. Ative-a nas configurações do navegador e atualize a página para poder postar nesta praia.", {
+              position: "top-center",
+              autoClose: 5000,
+            });
+      return;
+    }
 
     if (postContent.trim() && !imageFile) {
       toast.info("Sua mensagem foi publicada no feed de Flops.");
     }
+
 
     setIsPublishing(true);
 
@@ -227,6 +229,8 @@ const PhotoFeed: React.FC = () => {
         nomePraia: "",
         mensagem: postContent.trim(),
         excluida: false,
+        latitudeUser: coords.latitudeUser,
+        longitudeUser: coords.longitudeUser,
       };
 
       const savedPostagem: PostagemDTO = await createPostagem(novaPostagem);
@@ -290,7 +294,7 @@ const PhotoFeed: React.FC = () => {
 
       {/* Botão de perfil */}
       <div className="absolute top-4 right-6 z-50">
-      
+
         <ProfileButton onProfileClick={() => setIsProfileModalOpen(true)} size={48} />
       </div>
       {user && (
@@ -424,7 +428,7 @@ const PhotoFeed: React.FC = () => {
           {/* Lista de posts */}
           {postagens.map((post) => {
             const timeSincePost = formatDistanceToNowStrict(
-              parseISO(post.criadoEm),
+              parseISO(post.criadoEm ?? ""),
               { addSuffix: true, locale: ptBR }
             );
 
