@@ -21,21 +21,22 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
   initialEvaluation = null,
 }) => {
   const conditions = [
-    { id: "SOL", name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
-    { id: "VENTO", name: "Vento", icon: "/assets/iconFull/vento.svg" },
-    { id: "LOTADA", name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
-    { id: "MAR_ONDAS", name: "Ondas fortes", icon: "/assets/iconFull/mar_ondas.svg" },
-    { id: "AGUA_VIVA", name: "Água-viva", icon: "/assets/iconFull/agua_viva.svg" },
-    { id: "NUBLADO", name: "Nublado", icon: "/assets/iconFull/nublado.svg" },
-    { id: "CHUVA", name: "Chuva", icon: "/assets/iconFull/chuva.svg" },
-    { id: "LIXO", name: "Lixo visível", icon: "/assets/iconFull/lixo.svg" },
-    { id: "LIMPA", name: "Limpa", icon: "/assets/iconFull/limpa.svg" },
-    { id: "MAR_CALMO", name: "Mar calmo", icon: "/assets/iconFull/mar_calmo.svg" },
-    { id: "AGUA_GELADA", name: "Água gelada", icon: "/assets/iconFull/agua_gelada.svg" },
-    { id: "MUSICA", name: "Música alta", icon: "/assets/iconFull/musica.svg" },
-    { id: "ESTACIONAMENTO", name: "Estacionamento", icon: "/assets/iconFull/estacionamento.svg" },
-    { id: "SALVA_VIDAS", name: "Salva-vidas", icon: "/assets/iconFull/salva_vidas.svg" },
-    { id: "ALIMENTACAO", name: "Alimentação", icon: "/assets/iconFull/alimentacao.svg" },
+    { id: Condicoes.SOL, name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
+    { id: Condicoes.MAR_ONDAS, name: "Ondas fortes", icon: "/assets/iconFull/mar_ondas.svg" },
+    { id: Condicoes.LOTADA, name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
+    { id: Condicoes.NUBLADO, name: "Nublado", icon: "/assets/iconFull/nublado.svg" },
+    { id: Condicoes.AGUA_VIVA, name: "Água-viva", icon: "/assets/iconFull/agua_viva.svg" },
+    { id: Condicoes.LIXO, name: "Lixo visível", icon: "/assets/iconFull/lixo.svg" },
+    { id: Condicoes.CHUVA, name: "Chuva", icon: "/assets/iconFull/chuva.svg" },
+    { id: Condicoes.MAR_CALMO, name: "Mar calmo", icon: "/assets/iconFull/mar_calmo.svg" },
+    { id: Condicoes.LIMPA, name: "Limpa", icon: "/assets/iconFull/limpa.svg" },
+    { id: Condicoes.VENTO, name: "Vento", icon: "/assets/iconFull/vento.svg" },
+    { id: Condicoes.AGUA_GELADA, name: "Água gelada", icon: "/assets/iconFull/agua_gelada.svg" },
+    { id: Condicoes.MUSICA, name: "Música alta", icon: "/assets/iconFull/musica.svg" },
+    { id: Condicoes.ESTACIONAMENTO, name: "Estacionamento", icon: "/assets/iconFull/estacionamento.svg" },
+    { id: Condicoes.SALVA_VIDAS, name: "Salva-vidas", icon: "/assets/iconFull/salva_vidas.svg" },
+    { id: Condicoes.ALIMENTACAO, name: "Alimentação", icon: "/assets/iconFull/alimentacao.svg" },
+
   ];
 
   const conflictingGroups: Condicoes[][] = [
