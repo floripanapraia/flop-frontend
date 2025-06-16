@@ -1,6 +1,10 @@
 import {
   LogOut,
-  Menu
+  MapPin,
+  Menu,
+  MessageSquareWarning,
+  UsersRound,
+  Waves
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
@@ -32,23 +36,27 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     {
       name: 'Denúncias',
       path: '/admin/denuncias',
+      icon: MessageSquareWarning,
     },
     {
       name: 'Sugestão',
       path: '/admin/sugestoes',
+      icon: MapPin,
     },
     {
       name: 'Praias',
       path: '/admin/praias',
+      icon: Waves,
     },
     {
       name: 'Usuários',
       path: '/admin/users',
+      icon: UsersRound,
     }
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -65,7 +73,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       `}>
         <div className="flex flex-col h-full">
           {/* User Info */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-4 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center space-x-3">
               <div>
                 <p className="font-medium text-gray-900">Olá Admin!</p>
@@ -74,8 +82,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </div>
 
           {/* Navigation Menu */}
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
             {menuItems.map((item) => {
+              const IconComponent = item.icon;
               return (
                 <NavLink
                   key={item.path}
@@ -88,6 +97,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                     }`
                   }
                 >
+                  <IconComponent className="w-5 h-5" />
                   <span className="font-medium">{item.name}</span>
                 </NavLink>
               );
@@ -95,7 +105,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </nav>
 
           {/* Logout Button */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-200 flex-shrink-0">
             <button
               onClick={handleLogout}
               className="flex items-center space-x-3 w-full px-4 py-3 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors duration-200"
@@ -108,9 +118,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Top Bar (Mobile) */}
-        <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4">
+        <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <button
               onClick={toggleSidebar}
@@ -121,8 +131,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </div>
         </div>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
+        {/* Page Content - Scrollable Area */}
+        <main className="flex-1 overflow-y-auto bg-gray-50">
           <div className="container mx-auto px-4 py-6 lg:px-8">
             {children}
           </div>
