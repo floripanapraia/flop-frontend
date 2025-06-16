@@ -17,6 +17,8 @@ import {
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import ProfileButton from "../components/ProfileButton";
+import { useGeoContext } from "../contexts/geolocationContext";
+import { toast } from "react-toastify";
 
 
 type TabType = {
@@ -31,6 +33,7 @@ const FlopFeed: React.FC = () => {
 
   const { praiaId } = useBeach();
   const { user } = useUser();
+  const { coords, isGeolocationEnabled } = useGeoContext();
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showRequireAuthModal, setShowRequireAuthModal] = useState(false);
@@ -176,13 +179,6 @@ const FlopFeed: React.FC = () => {
     }
   }, [paginaAtual]);
 
-  const handleMainButtonClick = () => {
-    if (user) {
-      setIsProfileModalOpen(true);
-    } else {
-      navigate("/auth");
-    }
-  };
 
   const refreshPostagens = () => {
     setPostagens([]);
@@ -194,6 +190,8 @@ const FlopFeed: React.FC = () => {
       fetchPostagensPage(1);
     }
   };
+
+ 
 
   const handlePublicarClick = async () => {
     if (!user) {
@@ -210,6 +208,13 @@ const FlopFeed: React.FC = () => {
       alert("Digite uma mensagem para publicar");
       return;
     }
+    if (!isGeolocationEnabled || !coords?.latitudeUser || !coords?.longitudeUser) {
+     toast.warn("A localização está desativada. Ative-a nas configurações do navegador e atualize a página para poder postar nesta praia.", {
+        position: "top-center",
+        autoClose: 5000,
+      });
+      return;
+    }
 
     setIsPublishing(true);
 
@@ -219,19 +224,21 @@ const FlopFeed: React.FC = () => {
         fotoDoUsuario: user.fotoPerfil || "",
         nickname: user.nickname || user.nome,
         praiaId: praiaId,
-        nomePraia: "", // Será preenchido pelo backend
+        nomePraia: "",
         mensagem: postContent.trim(),
         excluida: false,
+        latitudeUser: coords.latitudeUser,
+        longitudeUser: coords.longitudeUser,
       };
 
       await createPostagem(novaPostagem);
 
       setPostContent("");
-
       refreshPostagens();
-    } catch (error) {
-      console.error("Erro ao publicar:", error);
-      alert("Erro ao publicar. Tente novamente.");
+    } catch (error: any) {
+     const msg =
+      error.response?.data?.message || "Erro ao publicar. Tente novamente.";
+    toast.error(msg);
     } finally {
       setIsPublishing(false);
     }
@@ -393,7 +400,7 @@ const FlopFeed: React.FC = () => {
           {/* Lista de posts */}
           {postagens.map((post) => {
             const timeSincePost = formatDistanceToNowStrict(
-              parseISO(post.criadoEm),
+              parseISO(post.criadoEm ?? ""),
               { addSuffix: true, locale: ptBR }
             );
 

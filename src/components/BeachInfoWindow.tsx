@@ -17,7 +17,7 @@ const CONDITION_ICONS: Record<string, string> = {
   MAR_CALMO: "/assets/iconFull/mar_calmo.svg",
   MUSICA: "/assets/iconFull/musica.svg",
   NUBLADO: "/assets/iconFull/nublado.svg",
-  ONDA: "/assets/iconFull/onda.svg",
+  MAR_ONDAS: "/assets/iconFull/mar_ondas.svg",
   SALVA_VIDAS: "/assets/iconFull/salva_vidas.svg",
   SOL: "/assets/iconFull/SOL.svg",
   VENTO: "/assets/iconFull/vento.svg",
