@@ -289,7 +289,7 @@ const EvaluationFeed: React.FC = () => {
             avaliacoes.map((item) => {
               // converte ISO para algo como "há 2 horas"
               const calculateTimeSincePost = formatDistanceToNowStrict(
-                parseISO(item.criadoEm),
+                parseISO(item?.criadoEm ?? ""),
                 { addSuffix: true, locale: ptBR }
               );
 
@@ -310,7 +310,7 @@ const EvaluationFeed: React.FC = () => {
                       ) : (
                         <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg transition-all duration-200 hover:shadow-xl">
                           <div className="w-full h-full bg-[#182E4C] flex items-center justify-center text-white text-lg font-medium">
-                            {item.nickname.charAt(0).toUpperCase()}
+                            {(item?.nickname?.charAt(0)?.toUpperCase() ?? "")}
                           </div>
                         </div>
                       )}
