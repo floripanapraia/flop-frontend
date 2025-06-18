@@ -1,4 +1,4 @@
-import { Ellipsis } from "lucide-react";
+import { Ellipsis, Flag, Trash2 } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Beach from "../components/Beach";
@@ -13,12 +13,15 @@ import {
   createPostagem,
   PostagemDTO,
   PostagemSeletor,
+  deletePostagem,
 } from "../services/postService";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import ProfileButton from "../components/ProfileButton";
 import { useGeoContext } from "../contexts/geolocationContext";
 import { toast } from "react-toastify";
+import ConfirmationModal from "../components/ConfirmationModal";
+import { createDenuncia, MotivosDenuncia } from "../services/reportService";
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
@@ -37,20 +40,18 @@ const FlopFeed: React.FC = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showRequireAuthModal, setShowRequireAuthModal] = useState(false);
   const [postContent, setPostContent] = useState("");
-
   const [showReportModal, setShowReportModal] = useState(false);
-  const [showThankYouDenunciaModal, setShowThankYouDenunciaModal] =
-    useState(false);
-  const [activeTab, setActiveTab] = useState<"avaliacoes" | "fotos" | "flops">(
-    "flops"
-  );
-
+  const [showThankYouDenunciaModal, setShowThankYouDenunciaModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<"avaliacoes" | "fotos" | "flops">("flops");
   const [postagens, setPostagens] = useState<PostagemDTO[]>([]);
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingPostagens, setLoadingPostagens] = useState(false);
   const [errorPostagens, setErrorPostagens] = useState<string | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+  const [showPostOptions, setShowPostOptions] = useState<number | null>(null);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   const tabs: TabType[] = [
     { id: "avaliacoes", label: "Avaliações" },
@@ -171,13 +172,28 @@ const FlopFeed: React.FC = () => {
     };
   }, [loadingPostagens, hasMore]);
 
-  // Carrega próxima página quando paginaAtual muda
+  // Carrega próxima página quando pagina atual mudar
   useEffect(() => {
     if (paginaAtual > 1 && hasMore && praiaId) {
       fetchPostagensPage(paginaAtual);
     }
   }, [paginaAtual]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+
+      if (!target.closest(".post-options-menu") && !target.closest(".ellipsis-button")) {
+        setShowPostOptions(null);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   const refreshPostagens = () => {
     setPostagens([]);
@@ -248,13 +264,6 @@ const FlopFeed: React.FC = () => {
     setShowRequireAuthModal(false);
   };
 
-  const handleReport = (reason: string) => {
-    console.log("Denúncia enviada:", reason);
-    // lógica de denuncia
-    setShowReportModal(false);
-    setShowThankYouDenunciaModal(true);
-  };
-
   const handleTabClick = (tabId: "avaliacoes" | "fotos" | "flops") => {
     if (!praiaId) {
       console.warn("Nenhuma praia selecionada");
@@ -275,6 +284,59 @@ const FlopFeed: React.FC = () => {
       case "flops":
         navigate(`/flops/${praiaId}`);
         break;
+    }
+  };
+
+  const handleEllipsisClick = (postId: number) => {
+    setShowPostOptions((prev) => (prev === postId ? null : postId));
+  };
+
+  const handleDeletePost = (postId: number) => {
+    setSelectedPostId(postId);
+    setShowConfirmationModal(true);
+  };
+
+  const confirmDeletePost = async () => {
+    if (!selectedPostId) return;
+
+    try {
+      await deletePostagem(selectedPostId);
+      toast.success("Postagem excluída com sucesso.");
+      refreshPostagens();
+    } catch (err) {
+      toast.error("Erro ao excluir postagem.");
+    } finally {
+      setShowConfirmationModal(false);
+      setSelectedPostId(null);
+    }
+  };
+
+  const handleReportClick = (postId: number) => {
+    if (!user) {
+      setShowRequireAuthModal(true);
+      return;
+    }
+    setSelectedPostId(postId);
+    setShowReportModal(true);
+  };
+
+  const handleReport = async (reason: MotivosDenuncia) => {
+    if (!selectedPostId || !user) return;
+
+    try {
+      await createDenuncia({
+        postagemId: selectedPostId,
+        usuarioId: user.id,
+        motivo: reason,
+      });
+
+      toast.success("Denúncia registrada com sucesso!");
+      setShowThankYouDenunciaModal(true);
+    } catch (error) {
+      toast.error("Erro ao registrar denúncia.");
+    } finally {
+      setShowReportModal(false);
+      setSelectedPostId(null);
     }
   };
 
@@ -364,7 +426,11 @@ const FlopFeed: React.FC = () => {
                 className="w-full border-b border-gray-200 p-2 focus:outline-none focus:border-blue-400 resize-none text-sm"
                 rows={2}
                 disabled={isPublishing}
+                maxLength={300}
               />
+              <div className="text-right text-xs text-gray-500 mt-1">
+                {postContent.length}/300 caracteres
+              </div>
               <div className="flex justify-end mt-2">
                 <button
                   onClick={handlePublicarClick}
@@ -405,7 +471,7 @@ const FlopFeed: React.FC = () => {
             );
 
             return (
-              <div key={post.idPostagem} className="bg-white rounded-lg p-4">
+              <div key={post.idPostagem} className="relative bg-white rounded-lg p-4">
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
                     {post.fotoDoUsuario ? (
@@ -432,12 +498,31 @@ const FlopFeed: React.FC = () => {
                         </span>
                       </div>
                       <button
-                        className="text-gray-400 hover:text-gray-600"
-                        onClick={() => setShowReportModal(true)}
+                        className="ellipsis-button text-gray-400 hover:text-gray-600"
+                        onClick={() => post.idPostagem !== undefined && handleEllipsisClick(post.idPostagem)}
                       >
                         <Ellipsis className="h-4 w-4" />
                       </button>
                     </div>
+                    {showPostOptions === post.idPostagem && (
+                      <div className="post-options-menu absolute right-0 mt-2 bg-white border rounded shadow z-50 w-40">
+                        {user?.id === post.usuarioId ? (
+                          <button
+                            onClick={() => post.idPostagem !== undefined && handleDeletePost(post.idPostagem)}
+                            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                          >
+                            <Trash2 />Excluir
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => post.idPostagem !== undefined && handleReportClick(post.idPostagem)}
+                            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                          >
+                            <Flag /> Denunciar
+                          </button>
+                        )}
+                      </div>
+                    )}
 
                     <p className="text-gray-700 mt-1 text-sm">
                       {post.mensagem}
@@ -465,8 +550,9 @@ const FlopFeed: React.FC = () => {
       <ReportModal
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
-        onReport={handleReport}
+        onReport={(reason) => handleReport(reason as MotivosDenuncia)}
       />
+
 
       <ThankYouModal
         isOpen={showThankYouDenunciaModal}
@@ -477,7 +563,17 @@ const FlopFeed: React.FC = () => {
         isOpen={showRequireAuthModal}
         onClose={handleRequireAuthModalClose}
       />
+
+      <ConfirmationModal
+        isOpen={showConfirmationModal}
+        onClose={() => setShowConfirmationModal(false)}
+        onConfirm={confirmDeletePost}
+        title="Excluir postagem"
+        message="Tem certeza que deseja excluir esta postagem?"
+      />
+
     </div>
+
   );
 };
 
