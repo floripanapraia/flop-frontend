@@ -9,6 +9,9 @@ import { useUser } from "../contexts/userContext";
 import { filterPostagens, PostagemDTO, PostagemSeletor } from "../services/postService";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import ConfirmationModal from "../components/ConfirmationModal";
+import { Ellipsis, Trash2 } from "lucide-react";
+import { deletePostagem } from "../services/postService";
 
 type TabType = {
   id: "fotos" | "flops";
@@ -27,6 +30,9 @@ const UserProfileFlops: React.FC = () => {
   const [errorPostagens, setErrorPostagens] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"fotos" | "flops">("flops");
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+  const [showPostOptions, setShowPostOptions] = useState<number | null>(null);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef<number>(0);
@@ -76,6 +82,26 @@ const UserProfileFlops: React.FC = () => {
     }
   }, [paginaAtual, hasMore, user?.id]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      console.log("clique")
+      const target = event.target as HTMLElement;
+
+      if (!target.closest(".post-options-menu") && !target.closest(".ellipsis-button")) {
+        setShowPostOptions(null);
+        console.log("clique 2")
+
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
+
   const handleLogout = () => {
     toast(({ closeToast }) => (
       <div className="flex flex-col items-center text-center gap-4">
@@ -96,6 +122,32 @@ const UserProfileFlops: React.FC = () => {
 
   const handleSugestaoSuccess = (s: SugestaoDTO) => { toast.success(`Sugestão "${s.nomePraia}" enviada com sucesso!`); setIsModalOpen(false); };
   const handleSugestaoError = (err: string) => toast.error(`Erro ao enviar sugestão: ${err}`);
+
+  const handleEllipsisClick = (postId: number) => {
+    setShowPostOptions((prev) => (prev === postId ? null : postId));
+  };
+
+  const handleDeletePost = (postId: number) => {
+    setSelectedPostId(postId);
+    setShowConfirmationModal(true);
+  };
+
+  const confirmDeletePost = async () => {
+    if (!selectedPostId) return;
+
+    try {
+      await deletePostagem(selectedPostId);
+      toast.success("Postagem excluída com sucesso!");
+
+      setPostagens((prev) => prev.filter((p) => p.idPostagem !== selectedPostId));
+    } catch (err) {
+      toast.error("Erro ao excluir postagem.");
+    } finally {
+      setShowConfirmationModal(false);
+      setSelectedPostId(null);
+    }
+  };
+
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-1 sm:px-2 py-2 sm:py-4">
@@ -170,7 +222,7 @@ const UserProfileFlops: React.FC = () => {
                 ) : (
                   <div className="space-y-4 p-2">
                     {postagens.map(post => (
-                      <div key={post.idPostagem} className="bg-white rounded-lg p-4">
+                      <div key={post.idPostagem} className="relative bg-white rounded-lg p-4">
                         <div className="flex items-start space-x-3">
                           <div className="flex-shrink-0">
                             <img
@@ -186,9 +238,22 @@ const UserProfileFlops: React.FC = () => {
                                 <span className="text-gray-400">•</span>
                                 <span className="text-xs text-gray-500">{formatDistanceToNowStrict(parseISO(post.criadoEm ?? ""), { locale: ptBR })}</span>
                               </div>
-                              <button className="text-blue-900" onClick={() => console.log("Denunciar post")}>{/* icon */}
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" /></svg>
+                              <button
+                                className="ellipsis-button text-gray-400 hover:text-gray-600"
+                                onClick={() => post.idPostagem && handleEllipsisClick(post.idPostagem)}
+                              >
+                                <Ellipsis className="h-4 w-4" />
                               </button>
+                              {showPostOptions === post.idPostagem && (
+                                <div className="post-options-menu absolute right-0 mt-14 bg-white border rounded shadow z-50 w-40">
+                                  <button
+                                    onClick={() => post.idPostagem && handleDeletePost(post.idPostagem)}
+                                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                  >
+                                    <Trash2 /> Excluir
+                                  </button>
+                                </div>
+                              )}
                             </div>
                             <p className="text-gray-700 mt-1 text-sm">{post.mensagem}</p>
                           </div>
@@ -210,6 +275,13 @@ const UserProfileFlops: React.FC = () => {
       {isModalOpen && (
         <SuggestBeachModal onClose={() => setIsModalOpen(false)} onSuccess={handleSugestaoSuccess} onError={handleSugestaoError} />
       )}
+      <ConfirmationModal
+        isOpen={showConfirmationModal}
+        onClose={() => setShowConfirmationModal(false)}
+        onConfirm={confirmDeletePost}
+        title="Excluir postagem"
+        message="Tem certeza que deseja excluir esta postagem?"
+      />
     </div>
   );
 };
