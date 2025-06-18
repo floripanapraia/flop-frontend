@@ -6,7 +6,6 @@ import { Condicoes, createAvaliacao, updateAvaliacao, AvaliacaoDTO } from "../se
 import { useGeoContext } from "../contexts/geolocationContext";
 import { toast } from "react-toastify";
 
-
 interface EvaluationModalProps {
   beachName: string;
   onClose: () => void;
