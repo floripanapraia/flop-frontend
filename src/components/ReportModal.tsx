@@ -1,28 +1,21 @@
 import React, { useState } from "react";
 import { X, ChevronRight } from "lucide-react";
+import { MotivosDenuncia } from "../services/reportService";
 
-// Enum para os motivos de denúncia
-export enum ReportReason {
-  INADEQUADO = "INADEQUADO",
-  INCORRETO = "INCORRETO",
-  SPAM_PROPAGANDA = "SPAM_PROPAGANDA",
-  ILEGAL = "ILEGAL",
-  VIOLACAO_PRIVACIDADE = "VIOLACAO_PRIVACIDADE",
-}
 
 // Mapeamento dos enum values para texto
-const reportReasonLabels: Record<ReportReason, string> = {
-  [ReportReason.INADEQUADO]: "Conteúdo inadequado",
-  [ReportReason.INCORRETO]: "Informação incorreta",
-  [ReportReason.SPAM_PROPAGANDA]: "Spam ou Propaganda",
-  [ReportReason.ILEGAL]: "Conteúdo ilegal",
-  [ReportReason.VIOLACAO_PRIVACIDADE]: "Violação de Privacidade",
+const reportReasonLabels: Record<MotivosDenuncia, string> = {
+  [MotivosDenuncia.INADEQUADO]: "Conteúdo inadequado",
+  [MotivosDenuncia.INCORRETO]: "Informação incorreta",
+  [MotivosDenuncia.SPAM_PROPAGANDA]: "Spam ou Propaganda",
+  [MotivosDenuncia.ILEGAL]: "Conteúdo ilegal",
+  [MotivosDenuncia.VIOLACAO_PRIVACIDADE]: "Violação de Privacidade",
 };
 
 interface ReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onReport: (reason: ReportReason) => void;
+  onReport: (reason: MotivosDenuncia) => void;
 }
 
 const ReportModal: React.FC<ReportModalProps> = ({
@@ -36,7 +29,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
     }
   };
  
-  const handleReasonSelect = (reason: ReportReason) => {
+  const handleReasonSelect = (reason: MotivosDenuncia) => {
     onReport(reason);
     onClose();
   };
@@ -68,7 +61,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
           </p>
 
           <div className="space-y-2">
-            {Object.values(ReportReason).map((reason) => (
+            {Object.values(MotivosDenuncia).map((reason) => (
               <button
                 key={reason}
                 onClick={() => handleReasonSelect(reason)}

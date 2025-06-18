@@ -13,6 +13,9 @@ import {
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SugestaoDTO } from "../services/suggestionService";
+import ConfirmationModal from "../components/ConfirmationModal";
+import { Ellipsis, Trash2 } from "lucide-react";
+import { deletePostagem } from "../services/postService";
 
 type TabType = {
   id: "fotos" | "flops";
@@ -29,6 +32,9 @@ const UserProfilePhotos: React.FC = () => {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [errorPostagens, setErrorPostagens] = useState<string | null>(null);
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+  const [showPostOptions, setShowPostOptions] = useState<number | null>(null);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   const { user } = useUser();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -104,6 +110,25 @@ const UserProfilePhotos: React.FC = () => {
     );
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      console.log("clique")
+      const target = event.target as HTMLElement;
+
+      if (!target.closest(".post-options-menu") && !target.closest(".ellipsis-button")) {
+        setShowPostOptions(null);
+        console.log("clique 2")
+
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
   const tabs: TabType[] = [
     { id: "fotos", label: "Fotos" },
     { id: "flops", label: "Flops" },
@@ -123,6 +148,31 @@ const UserProfilePhotos: React.FC = () => {
     toast.error(`Erro ao enviar sugestão: ${error}`);
   };
 
+  const handleEllipsisClick = (postId: number) => {
+    setShowPostOptions((prev) => (prev === postId ? null : postId));
+  };
+
+  const handleDeletePost = (postId: number) => {
+    setSelectedPostId(postId);
+    setShowConfirmationModal(true);
+  };
+
+  const confirmDeletePost = async () => {
+    if (!selectedPostId) return;
+
+    try {
+      await deletePostagem(selectedPostId);
+      toast.success("Postagem excluída com sucesso!");
+
+      setPostagens((prev) => prev.filter((p) => p.idPostagem !== selectedPostId));
+    } catch (err) {
+      toast.error("Erro ao excluir postagem.");
+    } finally {
+      setShowConfirmationModal(false);
+      setSelectedPostId(null);
+    }
+  };
+
   return (
     <div className="relative min-h-screen flex items-center justify-center px-1 sm:px-2 py-2 sm:py-4">
       <img src="/assets/FlopBG.png" alt="Background" className="absolute top-0 left-0 w-full h-full object-cover z-0" />
@@ -130,7 +180,7 @@ const UserProfilePhotos: React.FC = () => {
       <div className="relative z-10 bg-white rounded-lg shadow-lg w-full max-w-7xl p-4 sm:p-6 md:p-8 h-[90vh] my-4">
         <div className="flex flex-col lg:flex-row h-full">
           {/* Sidebar */}
-         <div className="flex flex-col items-center w-full lg:w-1/3 mb-6 lg:mb-0">
+          <div className="flex flex-col items-center w-full lg:w-1/3 mb-6 lg:mb-0">
             <div className="flex flex-col items-center w-full mb-4">
               <div className="relative mb-4">
                 <img
@@ -195,7 +245,7 @@ const UserProfilePhotos: React.FC = () => {
                 ) : (
                   <div className="space-y-4 p-2">
                     {postagens.map((postagem) => (
-                      <div key={postagem.idPostagem} className="bg-white rounded-lg p-4">
+                      <div key={postagem.idPostagem} className="relative bg-white rounded-lg p-4">
                         <div className="flex items-start space-x-3">
                           <div className="flex-shrink-0">
                             <img
@@ -211,9 +261,22 @@ const UserProfilePhotos: React.FC = () => {
                                 <span className="text-gray-400">•</span>
                                 <span className="text-xs text-gray-500">{formatDistanceToNowStrict(parseISO(postagem.criadoEm ?? ""), { locale: ptBR })}</span>
                               </div>
-                              <button className="text-blue-900" onClick={() => console.log("Denunciar post")}>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" /></svg>
+                              <button
+                                className="ellipsis-button text-gray-400 hover:text-gray-600"
+                                onClick={() => postagem.idPostagem && handleEllipsisClick(postagem.idPostagem)}
+                              >
+                                <Ellipsis className="h-4 w-4" />
                               </button>
+                              {showPostOptions === postagem.idPostagem && (
+                                <div className="post-options-menu absolute right-0 mt-14 bg-white border rounded shadow z-50 w-40">
+                                  <button
+                                    onClick={() => postagem.idPostagem && handleDeletePost(postagem.idPostagem)}
+                                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                  >
+                                    <Trash2 /> Excluir
+                                  </button>
+                                </div>
+                              )}
                             </div>
                             {postagem.imagem && (
                               <div className="mt-2 mb-2 rounded-lg overflow-hidden">
@@ -247,6 +310,14 @@ const UserProfilePhotos: React.FC = () => {
       {isModalOpen && (
         <SuggestBeachModal onClose={() => setIsModalOpen(false)} onSuccess={handleSugestaoSuccess} onError={handleSugestaoError} />
       )}
+
+      <ConfirmationModal
+        isOpen={showConfirmationModal}
+        onClose={() => setShowConfirmationModal(false)}
+        onConfirm={confirmDeletePost}
+        title="Excluir postagem"
+        message="Tem certeza que deseja excluir esta postagem?"
+      />
     </div>
   );
 };

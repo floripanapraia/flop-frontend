@@ -97,3 +97,25 @@ export const analisarDenunciasPostagem = async (
     throw error;
   }
 };
+
+export const createDenuncia = async (params: {
+  postagemId: number;
+  usuarioId: number;
+  motivo: MotivosDenuncia;
+}): Promise<void> => {
+  try {
+    await apiClient.post("/denuncias/cadastrar", {
+      usuarioDenunciador: {
+        "idUsuario": params.usuarioId,
+      },
+      postagem: {
+        "idPostagem": params.postagemId,
+      },
+      motivo: params.motivo,
+      status: StatusDenuncia.PENDENTE,
+    });
+  } catch (error) {
+    console.error("Erro ao cadastrar denúncia:", error);
+    throw error;
+  }
+};

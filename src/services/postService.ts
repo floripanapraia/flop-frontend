@@ -131,3 +131,12 @@ export const getTotalPaginas = async (
     throw error;
   }
 };
+
+export const deletePostagem = async (postagemId: number): Promise<void> => {
+  try {
+    await apiClient.delete(`/postagens/excluir/${postagemId}`);
+  } catch (error) {
+    console.error("Erro ao excluir postagem:", error);
+    throw error;
+  }
+};

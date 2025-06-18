@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Beach from "../components/Beach";
-import { Ellipsis, ImageUp } from "lucide-react";
+import { Ellipsis, ImageUp, Flag, Trash2 } from "lucide-react";
 import ReportModal from "../components/ReportModal";
 import ProfileModal from "../components/ProfileModal";
 import RequireAuthModal from "../components/RequireAuthModal";
@@ -14,12 +14,16 @@ import {
   PostagemDTO,
   PostagemSeletor,
   uploadImagemPostagem,
+  deletePostagem,
 } from "../services/postService";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "react-toastify";
 import ProfileButton from "../components/ProfileButton";
 import { useGeoContext } from "../contexts/geolocationContext";
+import ConfirmationModal from "../components/ConfirmationModal";
+import { createDenuncia, MotivosDenuncia } from "../services/reportService";
+
 
 type TabType = {
   id: "avaliacoes" | "fotos" | "flops";
@@ -52,6 +56,10 @@ const PhotoFeed: React.FC = () => {
   const [errorPostagens, setErrorPostagens] = useState<string | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+  const [showPostOptions, setShowPostOptions] = useState<number | null>(null);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef<number>(0);
@@ -171,12 +179,31 @@ const PhotoFeed: React.FC = () => {
     };
   }, [loadingPostagens, hasMore]);
 
-  // Carrega próxima página quando paginaAtual muda
+  // Carrega próxima página quando pagina atual mudar
   useEffect(() => {
     if (paginaAtual > 1 && hasMore && praiaId) {
       fetchPostagensPage(paginaAtual);
     }
   }, [paginaAtual]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      console.log("clique")
+      const target = event.target as HTMLElement;
+
+      if (!target.closest(".post-options-menu") && !target.closest(".ellipsis-button")) {
+        setShowPostOptions(null);
+              console.log("clique 2")
+
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   const refreshPostagens = () => {
     setPostagens([]);
@@ -260,12 +287,6 @@ const PhotoFeed: React.FC = () => {
     setShowRequireAuthModal(false);
   };
 
-  const handleReport = (reason: string) => {
-    console.log("Denúncia enviada:", reason);
-    //  lógica para enviar a denúncia
-    alert(`Denúncia enviada: ${reason}`);
-  };
-
   const handleTabClick = (tabId: "avaliacoes" | "fotos" | "flops") => {
     if (!praiaId) {
       console.warn("Nenhuma praia selecionada");
@@ -286,6 +307,59 @@ const PhotoFeed: React.FC = () => {
       case "flops":
         navigate(`/flops/${praiaId}`);
         break;
+    }
+  };
+
+  const handleEllipsisClick = (postId: number) => {
+    setShowPostOptions((prev) => (prev === postId ? null : postId));
+  };
+
+  const handleDeletePost = (postId: number) => {
+    setSelectedPostId(postId);
+    setShowConfirmationModal(true);
+  };
+
+  const confirmDeletePost = async () => {
+    if (!selectedPostId) return;
+
+    try {
+      await deletePostagem(selectedPostId);
+      toast.success("Postagem excluída com sucesso.");
+      refreshPostagens();
+    } catch (err) {
+      toast.error("Erro ao excluir postagem.");
+    } finally {
+      setShowConfirmationModal(false);
+      setSelectedPostId(null);
+    }
+  };
+
+  const handleReportClick = (postId: number) => {
+    if (!user) {
+      setShowRequireAuthModal(true);
+      return;
+    }
+    setSelectedPostId(postId);
+    setShowReportModal(true);
+  };
+
+  const handleReport = async (reason: MotivosDenuncia) => {
+    if (!selectedPostId || !user) return;
+
+    try {
+      await createDenuncia({
+        postagemId: selectedPostId,
+        usuarioId: user.id,
+        motivo: reason,
+      });
+
+      toast.success("Denúncia registrada com sucesso!");
+      setShowThankYouDenunciaModal(true);
+    } catch (error) {
+      toast.error("Erro ao registrar denúncia.");
+    } finally {
+      setShowReportModal(false);
+      setSelectedPostId(null);
     }
   };
 
@@ -376,7 +450,11 @@ const PhotoFeed: React.FC = () => {
                 className="w-full border-b border-gray-200 p-2 focus:outline-none focus:border-blue-400 resize-none text-sm"
                 rows={2}
                 disabled={isPublishing}
+                maxLength={300}
               />
+              <div className="text-right text-xs text-gray-500 mt-1">
+                {postContent.length}/300 caracteres
+              </div>
               <div className="flex justify-between items-center mt-2">
                 <label htmlFor="image-upload" className="cursor-pointer">
                   <ImageUp className="h-6 w-6 text-gray-500 hover:text-blue-500 transition-colors" />
@@ -430,13 +508,14 @@ const PhotoFeed: React.FC = () => {
 
           {/* Lista de posts */}
           {postagens.map((post) => {
+            console.log(post)
             const timeSincePost = formatDistanceToNowStrict(
               parseISO(post.criadoEm ?? ""),
               { addSuffix: true, locale: ptBR }
             );
 
             return (
-              <div key={post.idPostagem} className="bg-white rounded-lg p-4">
+              <div key={post.idPostagem} className="relative bg-white rounded-lg p-4">
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
                     {post.fotoDoUsuario ? (
@@ -463,22 +542,42 @@ const PhotoFeed: React.FC = () => {
                         </span>
                       </div>
                       <button
-                        className="text-gray-400 hover:text-gray-600"
-                        onClick={() => setShowReportModal(true)}
+                        className="ellipsis-button text-gray-400 hover:text-gray-600"
+                        onClick={() => post.idPostagem !== undefined && handleEllipsisClick(post.idPostagem)}
                       >
                         <Ellipsis className="h-4 w-4" />
                       </button>
                     </div>
+                    {showPostOptions === post.idPostagem && (
+                      <div className="post-options-menu absolute right-0 mt-2 bg-white border rounded shadow z-50 w-40">
+                        {user?.id === post.usuarioId ? (
+                          <button
+                            onClick={() => post.idPostagem !== undefined && handleDeletePost(post.idPostagem)}
+                            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                          >
+                            <Trash2 />Excluir
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => post.idPostagem !== undefined && handleReportClick(post.idPostagem)}
+                            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                          >
+                            <Flag /> Denunciar
+                          </button>
+                        )}
+                      </div>
+                    )}
+
 
                     {/* Foto & mensagem */}
                     {post.imagem && (
                       <img
                         src={`data:image/jpeg;base64,${post.imagem}`}
                         alt="Foto da postagem"
-                        className="mt-2 w-full max-h-80 object-cover rounded-lg"
+                        className="mt-2 w-4/5 max-h-80 object-cover rounded-lg mx-auto"
                       />
                     )}
-                    <p className="text-gray-700 mt-1 text-sm">
+                    <p className="w-4/5 text-gray-700 mt-1 text-sm mx-auto">
                       {post.mensagem}
                     </p>
 
@@ -505,7 +604,7 @@ const PhotoFeed: React.FC = () => {
       <ReportModal
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
-        onReport={handleReport}
+        onReport={(reason) => handleReport(reason as MotivosDenuncia)}
       />
 
       <ThankYouModal
@@ -516,6 +615,14 @@ const PhotoFeed: React.FC = () => {
       <RequireAuthModal
         isOpen={showRequireAuthModal}
         onClose={handleRequireAuthModalClose}
+      />
+
+      <ConfirmationModal
+        isOpen={showConfirmationModal}
+        onClose={() => setShowConfirmationModal(false)}
+        onConfirm={confirmDeletePost}
+        title="Excluir postagem"
+        message="Tem certeza que deseja excluir esta postagem?"
       />
     </div>
   );
