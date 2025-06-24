@@ -4,3 +4,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+
+# A variável de ambiente não é necessária aqui porque o Nginx vai cuidar do proxy
+RUN npm run build
