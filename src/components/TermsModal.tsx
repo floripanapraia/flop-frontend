@@ -328,7 +328,7 @@ const TermsModal: React.FC<TermsModalProps> = ({ onClose, onAccept }) => {
             onClick={handleAccept}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
           >
-            Aceitar Termos
+            Aceitar
           </button>
         </div>
       </div>
