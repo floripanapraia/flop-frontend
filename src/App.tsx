@@ -37,7 +37,7 @@ const App: React.FC = () => {
           <Routes>
             {/* Public Routes */}
             <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={<Navigate to="/auth" replace />} />
+            <Route path="/" element={<Navigate to="/home" replace />} />
 
             {/* Routes that require BeachProvider + GeolocationProvider */}
             <Route
