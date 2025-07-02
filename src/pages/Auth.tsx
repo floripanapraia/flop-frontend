@@ -386,16 +386,15 @@ const Auth: React.FC = () => {
                 htmlFor="acceptTerms"
                 className="text-sm text-gray-700 leading-tight cursor-pointer"
               >
-                Aceito os{" "}
+                Aceito a{" "}
                 <button
                   type="button"
                   onClick={handleOpenTermsModal}
                   className="text-blue-600 hover:text-blue-800 underline font-medium"
                   disabled={isLoading}
                 >
-                  termos de serviço
-                </button>{" "}
-                e política de privacidade
+                política de privacidade
+                </button>{"."}
               </label>
             </div>
 
