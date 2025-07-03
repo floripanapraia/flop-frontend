@@ -68,24 +68,8 @@ const FlopFeed: React.FC = () => {
     // Início do dia de 7 dias atrás 
     const hojeMenos7Dias = new Date(now);
     hojeMenos7Dias.setDate(now.getDate() - 7);
-    const inicio = new Date(
-      hojeMenos7Dias.getFullYear(),
-      hojeMenos7Dias.getMonth(),
-      hojeMenos7Dias.getDate(),
-      0,
-      0,
-      0,
-      0
-    );
-    const fim = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      23,
-      59,
-      59,
-      999
-    );
+    const inicio = new Date(hojeMenos7Dias.getFullYear(), hojeMenos7Dias.getMonth(), hojeMenos7Dias.getDate(), 0, 0, 0, 0);
+    const fim = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
     return {
       criadoEmInicio: inicio.toISOString(),
       criadoEmFim: fim.toISOString(),
@@ -343,11 +327,10 @@ const FlopFeed: React.FC = () => {
   // ***** HTML *****
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden">
-      <Beach />
+    <div className="relative min-h-screen w-screen max-w-screen overflow-hidden">
 
       {/* Botão de perfil */}
-      <div className="absolute top-4 right-6 z-50">
+      <div className="absolute top-4 right-4 sm:right-6 z-50">
         <ProfileButton onProfileClick={() => setIsProfileModalOpen(true)} size={48} />
       </div>
       {user && (
@@ -358,222 +341,221 @@ const FlopFeed: React.FC = () => {
       )}
 
       {/* Área do feed */}
-      <div className="ml-[620px] h-full flex flex-col">
-        <div className="bg-white px-6 pt-5 pb-2 border-b">
-          <div className="flex items-center space-x-3">
-            <img
-              src="/assets/LOGO.png"
-              alt="Logo"
-              className="w-10 h-10 drop-shadow-sm"
-            />
-            <h2 className="text-[#182E4D] text-xl font-bold">
-              Floripa na Praia
-            </h2>
+      <div className="h-full flex flex-col lg:flex-row">
+        <div className="w-full lg:max-w-[620px] mb-6 lg:mb-0">
+          <Beach />
+        </div>
+
+        <div className="flex-1 flex flex-col h-[calc(100vh-3rem)] lg:h-screen">
+          <div className="bg-white px-4 md:px-6 pt-5 pb-2 border-b">
+            <div className="flex items-center space-x-3">
+              <img src="/assets/LOGO.png" alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-sm" />
+              <h2 className="text-[#182E4D] text-lg sm:text-xl font-bold">Floripa na Praia</h2>
+            </div>
           </div>
-        </div>
 
-        {/* Barra de navegação */}
-        <div className="bg-white border-b border-gray-200 py-2 flex justify-around shadow-sm sticky top-0 z-40">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabClick(tab.id)}
-              className={`px-3 py-1 text-xs font-medium ${activeTab === tab.id
-                ? "text-blue-600"
-                : "text-gray-500 hover:text-gray-700"
-                }`}
-            >
-              <div className="flex flex-col items-center">
-                <span>{tab.label}</span>
-                {activeTab === tab.id && (
-                  <div className="w-5 h-0.5 bg-blue-600 mt-1 rounded-full"></div>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
+          {/* Barra de navegação */}
+          <div className="bg-white border-b border-gray-200 py-2 flex justify-around shadow-sm sticky top-0 z-40">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabClick(tab.id)}
+                className={`px-3 py-1 text-xs font-medium ${activeTab === tab.id
+                  ? "text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+                  }`}
+              >
+                <div className="flex flex-col items-center">
+                  <span>{tab.label}</span>
+                  {activeTab === tab.id && (
+                    <div className="w-5 h-0.5 bg-blue-600 mt-1 rounded-full"></div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
 
-        {/* Área de publicação */}
-        <div className="bg-white p-4 shadow-sm">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0">
-              {user ? (
-                user.fotoPerfil ? (
+          {/* Área de publicação */}
+          <div className="bg-white p-4 shadow-sm">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                {user ? (
+                  user.fotoPerfil ? (
+                    <img
+                      src={`data:image/jpeg;base64,${user.fotoPerfil}`}
+                      alt={user.nome}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-[#182E4C] flex items-center justify-center text-white text-sm font-medium">
+                      {user.nome.charAt(0).toUpperCase()}
+                    </div>
+                  )
+                ) : (
+                  // Imagem padrão se não estiver logado
                   <img
-                    src={`data:image/jpeg;base64,${user.fotoPerfil}`}
-                    alt={user.nome}
+                    src="assets/defaultProfile.svg"
+                    alt="Perfil"
                     className="w-10 h-10 rounded-full object-cover"
                   />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-[#182E4C] flex items-center justify-center text-white text-sm font-medium">
-                    {user.nome.charAt(0).toUpperCase()}
-                  </div>
-                )
-              ) : (
-                // Imagem padrão se não estiver logado
-                <img
-                  src="assets/defaultProfile.svg"
-                  alt="Perfil"
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              )}
-            </div>
-            <div className="flex-1">
-              <textarea
-                placeholder="Como está a praia hoje?"
-                value={postContent}
-                onChange={(e) => setPostContent(e.target.value)}
-                className="w-full border-b border-gray-200 p-2 focus:outline-none focus:border-blue-400 resize-none text-sm"
-                rows={2}
-                disabled={isPublishing}
-                maxLength={300}
-              />
-              <div className="text-right text-xs text-gray-500 mt-1">
-                {postContent.length}/300 caracteres
+                )}
               </div>
-              <div className="flex justify-end mt-2">
-                <button
-                  onClick={handlePublicarClick}
-                  disabled={isPublishing || !postContent.trim()}
-                  className="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                  {isPublishing ? "Publicando..." : "Publicar"}
-                </button>
+              <div className="flex-1">
+                <textarea
+                  placeholder="Como está a praia hoje?"
+                  value={postContent}
+                  onChange={(e) => setPostContent(e.target.value)}
+                  className="w-full border-b border-gray-200 p-2 focus:outline-none focus:border-blue-400 resize-none text-sm"
+                  rows={2}
+                  disabled={isPublishing}
+                  maxLength={300}
+                />
+                <div className="text-right text-xs text-gray-500 mt-1">
+                  {postContent.length}/300 caracteres
+                </div>
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={handlePublicarClick}
+                    disabled={isPublishing || !postContent.trim()}
+                    className="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {isPublishing ? "Publicando..." : "Publicar"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Feed de posts */}
-        <div
-          ref={containerRef}
-          style={{ overflowAnchor: "none" }}
-          className="flex-1 overflow-y-auto p-6 bg-gray-50 space-y-4"
-        >
-          {/* Loading inicial */}
-          {loadingPostagens && paginaAtual === 1 && (
-            <p className="text-gray-600">Carregando posts de hoje…</p>
-          )}
+          {/* Feed de posts */}
+          <div
+            ref={containerRef}
+            style={{ overflowAnchor: "none" }}
+            className="flex-1 overflow-y-auto p-6 bg-gray-50 space-y-4"
+          >
+            {/* Loading inicial */}
+            {loadingPostagens && paginaAtual === 1 && (
+              <p className="text-gray-600">Carregando posts de hoje…</p>
+            )}
 
-          {/* Erro */}
-          {errorPostagens && <p className="text-red-600">{errorPostagens}</p>}
+            {/* Erro */}
+            {errorPostagens && <p className="text-red-600">{errorPostagens}</p>}
 
-          {/* Nenhum post encontrado */}
-          {!loadingPostagens && postagens.length === 0 && (
-            <p className="text-gray-600">Nenhum post registrado hoje.</p>
-          )}
+            {/* Nenhum post encontrado */}
+            {!loadingPostagens && postagens.length === 0 && (
+              <p className="text-gray-600">Nenhum post registrado hoje.</p>
+            )}
 
-          {/* Lista de posts */}
-          {postagens.map((post) => {
-            const timeSincePost = formatDistanceToNowStrict(
-              parseISO(post.criadoEm ?? ""),
-              { addSuffix: true, locale: ptBR }
-            );
+            {/* Lista de posts */}
+            {postagens.map((post) => {
+              const timeSincePost = formatDistanceToNowStrict(
+                parseISO(post.criadoEm ?? ""),
+                { addSuffix: true, locale: ptBR }
+              );
 
-            return (
-              <div key={post.idPostagem} className="relative bg-white rounded-lg p-4">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0">
-                    {post.fotoDoUsuario ? (
-                      <img
-                        src={`data:image/jpeg;base64,${post.fotoDoUsuario}`}
-                        alt={post.nickname}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-[#182E4C] flex items-center justify-center text-white text-sm font-medium">
-                        {post.nickname.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="font-bold text-gray-800 text-sm">
-                          {post.nickname}
-                        </h3>
-                        <span className="text-gray-400">•</span>
-                        <span className="text-xs text-gray-500">
-                          {timeSincePost}
-                        </span>
-                      </div>
-                      <button
-                        className="ellipsis-button text-gray-400 hover:text-gray-600"
-                        onClick={() => post.idPostagem !== undefined && handleEllipsisClick(post.idPostagem)}
-                      >
-                        <Ellipsis className="h-4 w-4" />
-                      </button>
+              return (
+                <div key={post.idPostagem} className="relative bg-white rounded-lg p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      {post.fotoDoUsuario ? (
+                        <img
+                          src={`data:image/jpeg;base64,${post.fotoDoUsuario}`}
+                          alt={post.nickname}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-[#182E4C] flex items-center justify-center text-white text-sm font-medium">
+                          {post.nickname.charAt(0).toUpperCase()}
+                        </div>
+                      )}
                     </div>
-                    {showPostOptions === post.idPostagem && (
-                      <div className="post-options-menu absolute right-0 mt-2 bg-white border rounded shadow z-50 w-40">
-                        {user?.id === post.usuarioId ? (
-                          <button
-                            onClick={() => post.idPostagem !== undefined && handleDeletePost(post.idPostagem)}
-                            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                          >
-                            <Trash2 />Excluir
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => post.idPostagem !== undefined && handleReportClick(post.idPostagem)}
-                            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                          >
-                            <Flag /> Denunciar
-                          </button>
-                        )}
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <h3 className="font-bold text-gray-800 text-sm">
+                            {post.nickname}
+                          </h3>
+                          <span className="text-gray-400">•</span>
+                          <span className="text-xs text-gray-500">
+                            {timeSincePost}
+                          </span>
+                        </div>
+                        <button
+                          className="ellipsis-button text-gray-400 hover:text-gray-600"
+                          onClick={() => post.idPostagem !== undefined && handleEllipsisClick(post.idPostagem)}
+                        >
+                          <Ellipsis className="h-4 w-4" />
+                        </button>
                       </div>
-                    )}
+                      {showPostOptions === post.idPostagem && (
+                        <div className="post-options-menu absolute right-0 mt-2 bg-white border rounded shadow z-50 w-40">
+                          {user?.id === post.usuarioId ? (
+                            <button
+                              onClick={() => post.idPostagem !== undefined && handleDeletePost(post.idPostagem)}
+                              className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                            >
+                              <Trash2 />Excluir
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => post.idPostagem !== undefined && handleReportClick(post.idPostagem)}
+                              className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                            >
+                              <Flag /> Denunciar
+                            </button>
+                          )}
+                        </div>
+                      )}
 
-                    <p className="text-gray-700 mt-1 text-sm">
-                      {post.mensagem}
-                    </p>
+                      <p className="text-gray-700 mt-1 text-sm">
+                        {post.mensagem}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {/* Loading para próximas páginas */}
-          {loadingPostagens && paginaAtual > 1 && (
-            <p className="text-gray-600 text-center">Carregando mais posts…</p>
-          )}
+            {/* Loading para próximas páginas */}
+            {loadingPostagens && paginaAtual > 1 && (
+              <p className="text-gray-600 text-center">Carregando mais posts…</p>
+            )}
 
-          {/* Fim dos posts */}
-          {!hasMore && postagens.length > 0 && (
-            <p className="text-gray-500 text-center text-sm">
-              Não há mais posts para carregar
-            </p>
-          )}
+            {/* Fim dos posts */}
+            {!hasMore && postagens.length > 0 && (
+              <p className="text-gray-500 text-center text-sm">
+                Não há mais posts para carregar
+              </p>
+            )}
+          </div>
         </div>
+
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          onReport={(reason) => handleReport(reason as MotivosDenuncia)}
+        />
+
+
+        <ThankYouModal
+          isOpen={showThankYouDenunciaModal}
+          onClose={() => setShowThankYouDenunciaModal(false)}
+        />
+
+        <RequireAuthModal
+          isOpen={showRequireAuthModal}
+          onClose={handleRequireAuthModalClose}
+        />
+
+        <ConfirmationModal
+          isOpen={showConfirmationModal}
+          onClose={() => setShowConfirmationModal(false)}
+          onConfirm={confirmDeletePost}
+          title="Excluir postagem"
+          message="Tem certeza que deseja excluir esta postagem?"
+        />
+
       </div>
-
-      <ReportModal
-        isOpen={showReportModal}
-        onClose={() => setShowReportModal(false)}
-        onReport={(reason) => handleReport(reason as MotivosDenuncia)}
-      />
-
-
-      <ThankYouModal
-        isOpen={showThankYouDenunciaModal}
-        onClose={() => setShowThankYouDenunciaModal(false)}
-      />
-
-      <RequireAuthModal
-        isOpen={showRequireAuthModal}
-        onClose={handleRequireAuthModalClose}
-      />
-
-      <ConfirmationModal
-        isOpen={showConfirmationModal}
-        onClose={() => setShowConfirmationModal(false)}
-        onConfirm={confirmDeletePost}
-        title="Excluir postagem"
-        message="Tem certeza que deseja excluir esta postagem?"
-      />
-
     </div>
-
   );
 };
 
