@@ -23,7 +23,7 @@ const Home: React.FC = () => {
 
 
   const conditions = [
-    { id: "SOL", name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
+    { id: "SOL", name: "Ensolarado", icon: "/assets/iconFull/sol.svg" },
     { id: "VENTO", name: "Vento", icon: "/assets/iconFull/vento.svg" },
     { id: "LOTADA", name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
     { id: "MAR_ONDAS", name: "Ondas fortes", icon: "/assets/iconFull/mar_ondas.svg" },
