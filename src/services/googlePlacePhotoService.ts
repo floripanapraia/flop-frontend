@@ -27,7 +27,6 @@ export function getPlacePhotoUrl(
           placeResult?.photos?.length
         ) {
           const url = placeResult.photos![0].getUrl({ maxWidth });
-          console.log("[getPlacePhotoUrl] photo URL:", url);
           resolve(url);
         } else {
           console.warn(

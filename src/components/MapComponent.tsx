@@ -31,7 +31,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     north: -27.0790,
     south: -28.0001,
     east: -48.0767,
-    west: -48.8091,
+    west: -48.8799972,
   };
 
   const mapOptions = {

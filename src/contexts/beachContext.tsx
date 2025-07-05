@@ -66,8 +66,6 @@ export const BeachProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  
-
   return (
     <BeachContext.Provider
       value={{

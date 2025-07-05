@@ -84,12 +84,10 @@ const UserProfileFlops: React.FC = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      console.log("clique")
       const target = event.target as HTMLElement;
 
       if (!target.closest(".post-options-menu") && !target.closest(".ellipsis-button")) {
         setShowPostOptions(null);
-        console.log("clique 2")
 
       }
     };

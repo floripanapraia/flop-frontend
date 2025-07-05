@@ -28,37 +28,37 @@ const Beach: React.FC<BeachProps> = ({ onNewAvaliacao }) => {
     incluirImagens: false,
   });
 
-  const { user,  } = useUser();
+  const { user, } = useUser();
   const { isLoading: authLoading } = useAuth();
 
   const handleAvaliarClick = async () => {
-  if (!user || !user.id) {
-    setShowRequireAuthModal(true);
-    return;
-  }
-
-  if (!praiaId) {
-    console.error("ID da praia não definido");
-    return;
-  }
-
-  try {
-    const existeAvaliacao = await verificarAvaliacaoExistente(user.id, praiaId);
-
-    if (existeAvaliacao) {
-      // Se já existir uma avaliação, configura para editar
-      setInitialEvaluation(await getAvaliacaoUsuarioHojeNaPraia(user.id, praiaId));
-    } else {
-      // Se não houver avaliação, configura para criar uma nova
-      setInitialEvaluation(null);  
+    if (!user || !user.id) {
+      setShowRequireAuthModal(true);
+      return;
     }
-  } catch (err: any) {
-    console.error("Erro ao verificar avaliação:", err);
-    setInitialEvaluation(null); 
-  }
 
-  setShowEvaluationModal(true); 
-};
+    if (!praiaId) {
+      console.error("ID da praia não definido");
+      return;
+    }
+
+    try {
+      const existeAvaliacao = await verificarAvaliacaoExistente(user.id, praiaId);
+
+      if (existeAvaliacao) {
+        // Se já existir uma avaliação, configura para editar
+        setInitialEvaluation(await getAvaliacaoUsuarioHojeNaPraia(user.id, praiaId));
+      } else {
+        // Se não houver avaliação, configura para criar uma nova
+        setInitialEvaluation(null);
+      }
+    } catch (err: any) {
+      console.error("Erro ao verificar avaliação:", err);
+      setInitialEvaluation(null);
+    }
+
+    setShowEvaluationModal(true);
+  };
 
   const handleEvaluationModalClose = () => {
     setShowEvaluationModal(false);
@@ -83,7 +83,8 @@ const Beach: React.FC<BeachProps> = ({ onNewAvaliacao }) => {
 
   return (
     <div>
-      <div className="absolute top-0 left-0 h-full bg-white/95 backdrop-blur-md shadow-xl w-[620px] max-w-full flex flex-col rounded-r-3xl overflow-hidden">
+      <div className="relative lg:absolute top-0 left-0 h-full bg-white/95 backdrop-blur-md shadow-xl w-full lg:w-[620px] max-w-full flex flex-col rounded-none lg:rounded-r-3xl overflow-hidden">
+
         <div
           className="px-6 pt-8 pb-24 border relative"
           style={{
@@ -95,20 +96,16 @@ const Beach: React.FC<BeachProps> = ({ onNewAvaliacao }) => {
             backgroundRepeat: "no-repeat",
           }}
         >
-          <div className="absolute inset-0 bg-black/30 z-0"></div>
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3"></div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => navigate("/home")}
-                  className="p-2 text-white hover:text-blue-300 transition-colors"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
+          <div className="flex items-center justify-between mb-4 flex-row sm:flex-row-reverse">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate("/home")}
+                className="p-2 text-white hover:text-blue-300 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
             </div>
-            <div className="flex-1 mx-4"></div>
+            <div className="flex items-center space-x-3"></div>
           </div>
         </div>
 
@@ -140,11 +137,13 @@ const Beach: React.FC<BeachProps> = ({ onNewAvaliacao }) => {
             {!loading && condicoesAvaliacoes.length > 0 && (
               <div className="grid grid-cols-4 gap-4">
                 {condicoesAvaliacoes.slice(0, 8).map(([condicao, votos]) => {
-                  const icon = `/assets/iconFull/${condicao.toLowerCase()}.svg`;
+                  const icon = `/assets/iconFull/${condicao}.svg`;
                   const label = condicao
                     .replace(/_/g, " ")
                     .toLowerCase()
-                    .replace(/\b\w/g, (c) => c.toUpperCase());
+                    .replace("agua viva", "agua-viva")
+                    .replace(/\b\w/g, (c) => c.toUpperCase())
+                    .replace(/\bAgua\b/, "Água");
 
                   return (
                     <div
@@ -179,7 +178,7 @@ const Beach: React.FC<BeachProps> = ({ onNewAvaliacao }) => {
         <div className="mt-6 mb-8 flex justify-center">
           <button
             onClick={handleAvaliarClick}
-             className="px-5 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-[#1e3a5f] transition-colors shadow-md"
+            className="px-5 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-[#1e3a5f] transition-colors shadow-md"
           >
             Avaliar
           </button>

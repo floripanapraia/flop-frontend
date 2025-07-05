@@ -153,7 +153,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
       className="fixed top-0 right-0 w-full h-full flex justify-end bg-black bg-opacity-25 z-50"
       onClick={handleOutsideClick}
     >
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-xs h-auto min-h-[54vh] max-h-[90vh] m-4 p-6 flex flex-col gap-4 overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-lg w-[70%] sm:w-full max-w-xs h-auto min-h-[40vh] sm:min-h-[54vh] max-h-[80vh] sm:max-h-[90vh] m-4 p-4 sm:p-6 flex flex-col gap-4 overflow-y-auto">
         {/* Cabeçalho do perfil */}
         <div className="flex flex-col items-center gap-3">
           <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
