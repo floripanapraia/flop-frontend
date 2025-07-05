@@ -137,12 +137,14 @@ const Beach: React.FC<BeachProps> = ({ onNewAvaliacao }) => {
             {!loading && condicoesAvaliacoes.length > 0 && (
               <div className="grid grid-cols-4 gap-4">
                 {condicoesAvaliacoes.slice(0, 8).map(([condicao, votos]) => {
-                  const icon = `/assets/iconFull/${condicao}.svg`;
+                  const icon = `/assets/iconFull/${condicao.toLowerCase()}.svg`;
                   const label = condicao
+                  .toLowerCase()
                     .replace(/_/g, " ")
-                    .toLowerCase()
                     .replace("agua viva", "agua-viva")
+                    .replace("mar ondas", "ondas fortes")
                     .replace(/\b\w/g, (c) => c.toUpperCase())
+                    .replace(/\bMusica\b/, "Música")
                     .replace(/\bAgua\b/, "Água");
 
                   return (
