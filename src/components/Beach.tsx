@@ -5,7 +5,7 @@ import { useAuth } from "../contexts/authContext";
 import { useUser } from "../contexts/userContext";
 import { useBeach } from "../hooks/useBeach";
 import { usePraiaDataSync } from "../hooks/useBeachDataSync";
-import { AvaliacaoDTO, getAvaliacaoUsuarioHojeNaPraia, verificarAvaliacaoExistente } from "../services/evaluationService";
+import { AvaliacaoDTO, getAvaliacaoUsuarioHojeNaPraia, verificarAvaliacaoExistente, Condicoes } from "../services/evaluationService";
 import EvaluationModal from "./EvaluationModal";
 import RequireAuthModal from "./RequireAuthModal";
 import ThankYouAvaliacaoModal from "./ThankYouAvaliacaoModal";
@@ -28,8 +28,26 @@ const Beach: React.FC<BeachProps> = ({ onNewAvaliacao }) => {
     incluirImagens: false,
   });
 
+  const conditions = [
+    { id: Condicoes.SOL, name: "Sol", icon: "/assets/iconFull/sol.svg" },
+    { id: Condicoes.MAR_ONDAS, name: "Ondas fortes", icon: "/assets/iconFull/mar_ondas.svg" },
+    { id: Condicoes.LOTADA, name: "Lotada", icon: "/assets/iconFull/lotada.svg" },
+    { id: Condicoes.NUBLADO, name: "Nublado", icon: "/assets/iconFull/nublado.svg" },
+    { id: Condicoes.AGUA_VIVA, name: "Água-viva", icon: "/assets/iconFull/agua_viva.svg" },
+    { id: Condicoes.LIXO, name: "Lixo", icon: "/assets/iconFull/lixo.svg" },
+    { id: Condicoes.CHUVA, name: "Chuva", icon: "/assets/iconFull/chuva.svg" },
+    { id: Condicoes.MAR_CALMO, name: "Mar calmo", icon: "/assets/iconFull/mar_calmo.svg" },
+    { id: Condicoes.LIMPA, name: "Limpa", icon: "/assets/iconFull/limpa.svg" },
+    { id: Condicoes.VENTO, name: "Vento", icon: "/assets/iconFull/vento.svg" },
+    { id: Condicoes.AGUA_GELADA, name: "Água gelada", icon: "/assets/iconFull/agua_gelada.svg" },
+    { id: Condicoes.MUSICA, name: "Música alta", icon: "/assets/iconFull/musica.svg" },
+    { id: Condicoes.ESTACIONAMENTO, name: "Estacionamento", icon: "/assets/iconFull/estacionamento.svg" },
+    { id: Condicoes.SALVA_VIDAS, name: "Salva-vidas", icon: "/assets/iconFull/salva_vidas.svg" },
+    { id: Condicoes.ALIMENTACAO, name: "Alimentação", icon: "/assets/iconFull/alimentacao.svg" },
+
+  ];
+
   const { user, } = useUser();
-  const { isLoading: authLoading } = useAuth();
 
   const handleAvaliarClick = async () => {
     if (!user || !user.id) {
@@ -137,38 +155,23 @@ const Beach: React.FC<BeachProps> = ({ onNewAvaliacao }) => {
             {!loading && condicoesAvaliacoes.length > 0 && (
               <div className="grid grid-cols-4 gap-4">
                 {condicoesAvaliacoes.slice(0, 8).map(([condicao, votos]) => {
-                  const icon = `/assets/iconFull/${condicao.toLowerCase()}.svg`;
-                  const label = condicao
-                  .toLowerCase()
-                    .replace(/_/g, " ")
-                    .replace("agua viva", "agua-viva")
-                    .replace("mar ondas", "ondas fortes")
-                    .replace(/\b\w/g, (c) => c.toUpperCase())
-                    .replace(/\bMusica\b/, "Música")
-                    .replace(/\bAgua\b/, "Água");
+                  const matched = conditions.find((c) => c.id === condicao);
+                  if (!matched) return null;
 
                   return (
-                    <div
-                      key={condicao}
-                      className="flex flex-col items-center group"
-                    >
+                    <div key={condicao} className="flex flex-col items-center text-center group">
                       <div className="p-3 rounded-xl mb-2 bg-white group-hover:bg-gray-100 transition-colors">
                         <img
-                          src={icon}
-                          alt={label}
+                          src={matched.icon}
+                          alt={matched.name}
                           className="w-14 h-14"
                           onError={(e) =>
-                          ((e.target as HTMLImageElement).style.display =
-                            "none")
+                            ((e.target as HTMLImageElement).style.display = "none")
                           }
                         />
                       </div>
-                      <p className="text-xs font-medium text-gray-700 text-center">
-                        {label}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {votos} votos
-                      </p>
+                      <p className="text-xs font-medium text-blue-900">{matched.name}</p>
+                      <p className="text-xs text-gray-400">{votos} votos</p>
                     </div>
                   );
                 })}

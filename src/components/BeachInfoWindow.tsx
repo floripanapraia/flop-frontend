@@ -7,19 +7,19 @@ import { useBeach } from "../hooks/useBeach";
 
 const CONDITION_ICONS: Record<string, string> = {
   AGUA_GELADA: "/assets/iconFull/agua_gelada.svg",
-  AGUA_VIVA: "/assets/iconFull/AGUA_VIVA.svg",
+  AGUA_VIVA: "/assets/iconFull/agua_viva.svg",
   ALIMENTACAO: "/assets/iconFull/alimentacao.svg",
   CHUVA: "/assets/iconFull/chuva.svg",
   ESTACIONAMENTO: "/assets/iconFull/estacionamento.svg",
   LIMPA: "/assets/iconFull/limpa.svg",
   LIXO: "/assets/iconFull/lixo.svg",
-  LOTADA: "/assets/iconFull/LOTADA.svg",
+  LOTADA: "/assets/iconFull/lotada.svg",
   MAR_CALMO: "/assets/iconFull/mar_calmo.svg",
   MUSICA: "/assets/iconFull/musica.svg",
   NUBLADO: "/assets/iconFull/nublado.svg",
   MAR_ONDAS: "/assets/iconFull/mar_ondas.svg",
   SALVA_VIDAS: "/assets/iconFull/salva_vidas.svg",
-  SOL: "/assets/iconFull/SOL.svg",
+  SOL: "/assets/iconFull/sol.svg",
   VENTO: "/assets/iconFull/vento.svg",
 };
 
