@@ -270,7 +270,9 @@ const EvaluationFeed: React.FC = () => {
                         {/* Ícones de condições para cada avaliação */}
                         <div className="flex items-center mt-3 space-x-4 flex-wrap">
                           {item.condicoes.map((cond) => {
-                            const iconPath = `/assets/iconFull/${cond}.svg`;
+                            const iconPath = `/assets/iconFull/${cond
+                              .toLowerCase()
+                              .replace(/_/g, "_")}.svg`;
                             return (
                               <div key={cond} className="flex flex-col items-center">
                                 <img
