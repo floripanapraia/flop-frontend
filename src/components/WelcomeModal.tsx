@@ -7,7 +7,7 @@ interface WelcomeModalProps {
 
 const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
   const categories = [
-    { id: "sunny", name: "Ensolarado", icon: "/assets/iconFull/SOL.svg" },
+    { id: "sunny", name: "Ensolarado", icon: "/assets/iconFull/sol.svg" },
     {
       id: "waves",
       name: "Ondas fortes",
