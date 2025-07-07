@@ -1,16 +1,80 @@
-import { Ban, Download } from 'lucide-react';
+import { AlertTriangle, Ban, CheckCircle, Download } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import DataTable, { Action, Column, Filter } from '../../components/DataTable';
 import { getAllUsers, toggleBlockUser, Usuario } from '../../services/userService';
+import { toast } from 'react-toastify';
 
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import RelatorioUsuariosPDF from '../../components/pdf/RelatorioUsuariosPDF';
+
+// --- Componente de Modal de Confirmação ---
+const ConfirmationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmText = "Confirmar",
+  cancelText = "Cancelar",
+  isLoading = false
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  message: React.ReactNode;
+  confirmText?: string;
+  cancelText?: string;
+  isLoading?: boolean;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <div className="flex items-start">
+          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+            <AlertTriangle className="h-6 w-6 text-red-600" aria-hidden="true" />
+          </div>
+          <div className="ml-4 text-left">
+            <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+              {title}
+            </h3>
+            <div className="mt-2">
+              <p className="text-sm text-gray-500">{message}</p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+          <button
+            type="button"
+            className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50`}
+            onClick={onConfirm}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Processando...' : confirmText}
+          </button>
+          <button
+            type="button"
+            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+            onClick={onClose}
+          >
+            {cancelText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AdminUsers: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'relatorio' | 'banidos'>('relatorio');
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<Usuario | null>(null);
 
   useEffect(() => {
     const fetchUsuarios = async () => {
@@ -145,56 +209,49 @@ const AdminUsers: React.FC = () => {
   ];
 
   // Função para banir/desbanir usuário
-  const handleToggleBan = async (usuario: Usuario) => {
-    // Verificar se é admin ou se já está processando
+  const handleToggleBanClick = (usuario: Usuario) => {
     if (Number(usuario.isAdmin) === 1) {
-      alert('Não é possível banir um administrador.');
+      toast.warn('Não é possível banir um administrador.');
       return;
     }
+    setSelectedUser(usuario);
+    setIsModalOpen(true);
+  };
 
-    if (actionLoading === usuario.id) {
-      return; // Já está processando
-    }
+  const executeToggleBan = async () => {
+    if (!selectedUser) return;
 
-    const action = usuario.isBloqueado ? 'desbanir' : 'banir';
-    const confirmMessage = usuario.isBloqueado
-      ? `Tem certeza que deseja desbanir o usuário ${usuario.nickname}?`
-      : `Tem certeza que deseja banir o usuário ${usuario.nickname}? Esta ação impedirá o usuário de acessar o sistema.`;
+    setActionLoading(selectedUser.id);
 
-    if (!window.confirm(confirmMessage)) {
-      return;
-    }
-
-    setActionLoading(usuario.id);
+    const action = selectedUser.isBloqueado ? 'desbanir' : 'banir';
+    const actionPastTense = selectedUser.isBloqueado ? 'desbanido' : 'banido';
 
     try {
-      if (usuario.isBloqueado) {
-        // Desbanir usuário
-        await toggleBlockUser(usuario.id, false);
-        console.log(`Usuário ${usuario.nickname} foi desbanido com sucesso`);
-      } else {
-        // Banir usuário
-        await toggleBlockUser(usuario.id, true);
-        console.log(`Usuário ${usuario.nickname} foi banido com sucesso`);
-      }
+      const newBlockedState = !selectedUser.isBloqueado;
+      await toggleBlockUser(selectedUser.id, newBlockedState);
 
-      // Atualizar estado local
       setUsuarios(prev =>
         prev.map(u =>
-          u.id === usuario.id
-            ? { ...u, isBloqueado: u.isBloqueado === 1 ? 0 : 1 }
+          u.id === selectedUser.id
+            ? { ...u, isBloqueado: newBlockedState ? 1 : 0 }
             : u
         )
       );
 
-      // Mostrar notificação de sucesso
-      alert(`Usuário ${action}do com sucesso!`);
+      toast.success(
+        <span>
+          Usuário <strong className="font-semibold">@{selectedUser.nickname}</strong> foi {actionPastTense} com sucesso!
+        </span>,
+        { icon: <CheckCircle className="text-green-500" /> }
+      );
 
     } catch (error) {
       console.error(`Erro ao ${action} usuário:`, error);
-      alert(`Erro ao ${action} usuário. Tente novamente.`);
+      toast.error(`Erro ao ${action} o usuário. Tente novamente.`);
     } finally {
       setActionLoading(null);
+      setIsModalOpen(false);
+      setSelectedUser(null);
     }
   };
 
@@ -204,12 +261,28 @@ const AdminUsers: React.FC = () => {
       label: 'Banir/Desbanir',
       icon: <Ban className="w-4 h-4" />,
       variant: 'warning',
-      onClick: handleToggleBan
+      onClick: handleToggleBanClick
     }
   ];
 
   return (
     <div>
+      {/* Renderizar o Modal de Confirmação */}
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={executeToggleBan}
+        title={selectedUser?.isBloqueado ? "Desbanir Usuário" : "Banir Usuário"}
+        message={
+          <span>
+            Tem certeza que deseja {selectedUser?.isBloqueado ? 'desbanir' : 'banir'} o usuário{' '}
+            <strong className="font-semibold text-blue-600">@{selectedUser?.nickname}</strong>?
+            {!selectedUser?.isBloqueado && <p className="mt-2 text-xs text-gray-500">Esta ação impedirá o usuário de acessar o sistema.</p>}
+          </span>
+        }
+        confirmText={selectedUser?.isBloqueado ? "Sim, desbanir" : "Sim, banir"}
+        isLoading={actionLoading !== null}
+      />
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Usuários</h1>
